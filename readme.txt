@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: Denis Deng
+Contributors: Denishua
 Donate link: http://fairyfish.net/
 Tags: Related,Posts
 Requires at least: 2.3
