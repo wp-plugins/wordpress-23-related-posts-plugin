@@ -1,7 +1,7 @@
 === Plugin Name ===
 Contributors: denishua
 Tags: Related,Posts
-Requires at least: 2.3
+Requires at least: 2.3  beta 1
 Tested up to: 2.3 beta 3
 
 WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2.3 tags, and add the related posts to feed.
