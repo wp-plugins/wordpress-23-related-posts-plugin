@@ -47,8 +47,7 @@ function wp23_get_related_posts() {
 	
 	$limit = get_option("wp23_RP_limit");
 	
-	if ($limit = "")	$limit = 0;
-	if ($limit != 0) $limitclause = "LIMIT $limit";
+	if ($limit) $limitclause = "LIMIT $limit";
 
 	$q = <<<SQL
 	SELECT DISTINCT p.*, count(t_r.object_id) as cnt
