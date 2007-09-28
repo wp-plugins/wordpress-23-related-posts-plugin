@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP 2.3 Related Posts
-Version: 0.3
+Version: 0.31
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WorPdress 2.3
 Author: Denis,PaoPao
@@ -30,7 +30,7 @@ http://www.gnu.org/licenses/gpl.txt
 	Just install the plugin in your blog and activate
 */
 
-load_plugin_textdomain('wp23_related_posts');
+load_plugin_textdomain('wp23_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (_FILE_)) );
 
 function wp23_get_related_posts() {
 	global $wpdb, $post;
