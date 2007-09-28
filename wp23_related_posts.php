@@ -30,7 +30,7 @@ http://www.gnu.org/licenses/gpl.txt
 	Just install the plugin in your blog and activate
 */
 
-load_plugin_textdomain('wp23_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (_FILE_)) );
+load_plugin_textdomain('wp23_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) );
 
 function wp23_get_related_posts() {
 	global $wpdb, $post;
