@@ -9,8 +9,8 @@ WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2
 
 == Description ==
 
-<p>WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2.3 tags, and add the related posts to feed.</p>
-
+WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2.3 tags, and add the related posts to feed.
+What would you like to be displayed when there is no related posts, "no related post" or "n" random posts, or anything else, please leave a comment in the plugin page. Thanks in advance!
 
 
 == Installation ==
