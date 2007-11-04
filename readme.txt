@@ -19,3 +19,7 @@ WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Place `<?php wp23_related_posts(); ?>` in your templates
 1. Navigate to Manage > Option > WP23 Related Posts to configure plugin output.
+
+== Screenshots ==
+
+1.Option Panel 'trunk/screenshot-1.png'
