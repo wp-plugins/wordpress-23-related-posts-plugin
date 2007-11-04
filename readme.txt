@@ -11,8 +11,6 @@ WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2
 
 <p>WordPress 2.3 Related Posts Plugin will generate a related posts via WordPress 2.3 tags, and add the related posts to feed.</p>
 
-
-
 == Installation ==
 
 1. Upload the folder WP23RP to the `/wp-content/plugins/` directory
