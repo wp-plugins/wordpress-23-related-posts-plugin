@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WP 2.3 Related Posts
-Version: 0.50
+Version: 0.51
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WorPdress 2.3
 Author: Denis,PaoPao
@@ -60,12 +60,12 @@ function wp23_get_related_posts() {
 
 	//echo $q;
 
-	$posts = $wpdb->get_results($q);
+	$related_posts = $wpdb->get_results($q);
 	$output = "";
 	$wp23_RP_title = get_option("wp23_RP_title");
 	if(!$wp23_RP_title) $wp23_RP_title= __("Related Post",'wp23_related_posts');
 	
-	if (!$posts){
+	if (!$related_posts){
 	
 		$wp23_no_RP = get_option("wp23_no_RP");
 		
@@ -79,13 +79,13 @@ function wp23_get_related_posts() {
 		}	else{
 			if($wp23_no_RP == "random"){
 				if(!$wp23_no_RP_text) $wp23_no_RP_text= __("Random Posts",'wp23_related_posts');
-				$posts = wp23_random_posts($limitclause);
+				$related_posts = wp23_random_posts($limitclause);
 			}	elseif($wp23_no_RP == "commented"){
 				if(!$wp23_no_RP_text) $wp23_no_RP_text= __("Most Commented Posts",'wp23_related_posts');
-				$posts = wp23_most_commented_posts($limitclause);
+				$related_posts = wp23_most_commented_posts($limitclause);
 			}	elseif($wp23_no_RP == "popularity"){
 				if(!$wp23_no_RP_text) $wp23_no_RP_text= __("Most Popular Posts",'wp23_related_posts');
-				$posts = wp23_most_popular_posts($limitclause);
+				$related_posts = wp23_most_popular_posts($limitclause);
 			}else{
 				return __("Something wrong",'wp23_related_posts');;
 			}
@@ -93,20 +93,20 @@ function wp23_get_related_posts() {
 		}
 	}		
 		
-	foreach ($posts as $post ){
+	foreach ($related_posts as $related_post ){
 		$output .= '<li>';
 		
 		$show_date = get_option("wp23_RP_Date");
 		if ($show_date){
 			$dateformat = get_option('date_format');
-			$output .=   mysql2date($dateformat, $post->post_date) . " -- ";
+			$output .=   mysql2date($dateformat, $related_post->post_date) . " -- ";
 		}
 		
-		$output .=  '<a href="'.get_permalink($post->ID).'" title="'.wptexturize($post->post_title).'">'.wptexturize($post->post_title).'';
+		$output .=  '<a href="'.get_permalink($related_post->ID).'" title="'.wptexturize($related_post->post_title).'">'.wptexturize($related_post->post_title).'';
 		
 		$show_comments_count = get_option("wp23_RP_Comments");
 		if ($show_comments_count){
-			$output .=  " (" . $post->comment_count . ")";
+			$output .=  " (" . $related_post->comment_count . ")";
 		}
 		
 		$output .=  '</a></li>';
@@ -138,24 +138,21 @@ function wp23_random_posts ($limitclause="") {
     global $wpdb, $tableposts, $post;
 		
     $q = "SELECT ID, post_title, post_date, comment_count FROM $tableposts WHERE post_status = 'publish' AND post_type = 'post' AND ID != $post->ID ORDER BY RAND() $limitclause";
-    $posts = $wpdb->get_results($q);
-	return $posts ;
+    return $wpdb->get_results($q);
 }
 
 
 function wp23_most_commented_posts($limitclause="") {
 	global $wpdb; 
     $q = "SELECT ID, post_title, post_date, COUNT($wpdb->comments.comment_post_ID) AS 'comment_count' FROM $wpdb->posts, $wpdb->comments WHERE comment_approved = '1' AND $wpdb->posts.ID=$wpdb->comments.comment_post_ID AND post_status = 'publish' GROUP BY $wpdb->comments.comment_post_ID ORDER BY comment_count DESC $limitclause"; 
-    $posts = $wpdb->get_results($q); 
-    return $posts ;
+    return $wpdb->get_results($q);
 } 
 
 function wp23_most_popular_posts ($limitclause="") {
     global $wpdb, $table_prefix;
 		
     $q = $sql = "SELECT p.ID, p.post_title, p.post_date, p.comment_count FROM ". $table_prefix ."ak_popularity as akpc,".$table_prefix ."posts as p WHERE p.ID = akpc.post_id ORDER BY akpc.total DESC $limitclause";;
-    $posts = $wpdb->get_results($q);
-	return $posts ;
+    return $wpdb->get_results($q);
 }
 
 add_action('admin_menu', 'wp23_add_related_posts_options_page');
