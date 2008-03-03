@@ -1,6 +1,7 @@
 === Plugin Name ===
 Contributors: denishua
 Tags: Related,Posts
+Donate link: http://fairyfish.net/donate/
 Requires at least: 2.3  beta 1
 Tested up to: 2.3
 Stable tag: trunk
