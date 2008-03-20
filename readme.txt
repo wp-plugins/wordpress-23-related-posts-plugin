@@ -21,7 +21,13 @@ What would you like to be displayed when there is no related posts, "no related 
 1. Place `<?php wp_related_posts(); ?>` in your templates
 1. Navigate to Manage > Option > WordPress Related Posts to configure plugin output.
 
+== Screenshots ==
+
+1. WordPress Related Posts Plugin Option Setting.
+
+
 == Upgrade ==
+
 1. Delete the old plugin folder `WP23RP`.
 1. Upload the folder WPRP to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
