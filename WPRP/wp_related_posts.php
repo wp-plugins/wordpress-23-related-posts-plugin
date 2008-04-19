@@ -198,7 +198,7 @@ function wp_get_most_commented_posts($limitclause="") {
 
 function wp_most_commented_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_commented_posts = wp_get_most_commented_posts ($limitclause="");
+	$most_commented_posts = wp_get_most_commented_posts ($limitclause);
 	
 	foreach ($most_commented_posts as $most_commented_post ){
 		$output .= '<li>';
@@ -220,7 +220,7 @@ function wp_get_most_popular_posts ($limitclause="") {
 
 function wp_most_popular_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_popular_posts = wp_get_most_popular_posts ($limitclause="");
+	$most_popular_posts = wp_get_most_popular_posts ($limitclause);
 	
 	foreach ($most_popular_posts as $most_popular_post ){
 		$output .= '<li>';
