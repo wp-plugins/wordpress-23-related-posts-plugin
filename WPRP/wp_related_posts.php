@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 0.6
+Version: 0.8
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WorPdress
-Author: Denis,PaoPao
+Author: Denis
 Author URI: http://fairyfish.net/
 
 Copyright (c) 2007
@@ -32,48 +32,11 @@ http://www.gnu.org/licenses/gpl.txt
 
 load_plugin_textdomain('wp_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) . '/lang');
 
-function wp_related_posts_activation(){
-	$limit = get_option("wp23_RP_limit");
-	$exclude = get_option("wp23_RP_exclude");
-	$wp23_RP_title = get_option("wp23_RP_title");
-	$wp23_no_RP = get_option("wp23_no_RP");
-	$wp23_no_RP_text = get_option("wp23_no_RP_text");
-	$show_date = get_option("wp23_RP_Date");
-	$show_comments_count = get_option("wp23_RP_Comments");
-	$wp23_RP_RSS = get_option("wp23_RP_RSS");
-	
-	if($limit || $exclude || $wp23_RP_title  || $wp23_no_RP || $wp23_no_RP_text || $show_date || $dateformat  || $show_comments_count || $wp23_RP_RSS ){
-		$wp_rp = array (
-			"wp_rp_title" 	=> $wp23_RP_title,
-			"wp_no_rp"		=> $wp23_no_RP,
-			"wp_no_rp_text"	=> $wp23_no_RP_text,
-			"wp_rp_limit"	=> $limit,
-			'wp_rp_exclude'	=> $exclude,
-			'wp_rp_rss'		=> $wp23_RP_RSS,
-			'wp_rp_comments'=> $show_comments_count,
-			'wp_rp_date'	=> $show_date
-		);
-		
-		update_option("wp_rp",$wp_rp);
-		
-		delete_option("wp23_RP_limit");
-		delete_option("wp23_RP_exclude");
-		delete_option("wp23_RP_title");
-		delete_option("wp23_no_RP");
-		delete_option("wp23_no_RP_text");
-		delete_option("wp23_RP_Date");
-		delete_option("wp23_RP_Comments");
-		delete_option("wp23_RP_RSS");
-	}
-}
-
-register_activation_hook(basename(__FILE__),'wp_related_posts_activation');
-
 function wp_get_related_posts() {
 	global $wpdb, $post,$table_prefix;
 	$wp_rp = get_option("wp_rp");
 	
-	$exclude = $wp_rp["wp_rp_exclude"];
+	$exclude = explode(",",$wp_rp["wp_rp_exclude"]);
 	$limit = $wp_rp["wp_rp_limit"];
 	$wp_rp_title = $wp_rp["wp_rp_title"];
 	$wp_no_rp = $wp_rp["wp_no_rp"];
@@ -87,7 +50,7 @@ function wp_get_related_posts() {
 		$cats = $wpdb->get_results($q);
 		
 		foreach(($cats) as $cat) {
-			if (strpos($exclude,$cat->term_id) !== false){
+			if (in_array($cat->term_id, $exclude) != false){
 				return;
 			}
 		}
@@ -98,15 +61,15 @@ function wp_get_related_posts() {
 	$tags = wp_get_post_tags($post->ID);
 
 	//print_r($tags);
-
-	$taglist = "'" . str_replace("'",'',str_replace('"','',urldecode($tags[0]->term_id))). "'";
+	
+	$taglist = "'" . $tags[0]->term_id. "'";
+	
 	$tagcount = count($tags);
 	if ($tagcount > 1) {
 		for ($i = 1; $i <= $tagcount; $i++) {
-			$taglist = $taglist . ", '" . str_replace("'",'',str_replace('"','',urldecode($tags[$i]->term_id))) . "'";
+			$taglist = $taglist . ", '" . $tags[$i]->term_id . "'";
 		}
 	}
-	
 		
 	if ($limit) {
 		$limitclause = "LIMIT $limit";
@@ -171,8 +134,30 @@ function wp_get_related_posts() {
 
 function wp_related_posts(){
 
+    global $id;
+    
+    $output_old = get_post_meta($id, "related_posts", $single = true);
+    
+    if($output_old){
+      $time = time();
+      if(($time - $output_old["time"])<600){
+        echo $output_old["related_posts"];
+        return;
+      }
+    }
+		
 	$output = wp_get_related_posts() ;
-	echo $output;	
+	
+  $output_new = array("time"=>time(),"related_posts"=>$output);
+    if($output_old){
+      update_post_meta($id, 'related_posts', $output_new);
+    }else{
+      if(!add_post_meta($id, 'related_posts', $output_new, true)){
+        update_post_meta($id, 'related_posts', $output_new);
+      }
+    }
+
+	echo $output;
 }
 
 function wp23_related_posts() {
@@ -214,7 +199,7 @@ function wp_get_random_posts ($limitclause="") {
 
 function wp_random_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$random_posts = wp_get_random_posts ($limitclause="");
+	$random_posts = wp_get_random_posts ($limitclause);
 	
 	foreach ($random_posts as $random_post ){
 		$output .= '<li>';
@@ -235,7 +220,7 @@ function wp_get_most_commented_posts($limitclause="") {
 
 function wp_most_commented_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_commented_posts = wp_get_most_commented_posts ($limitclause="");
+	$most_commented_posts = wp_get_most_commented_posts ($limitclause);
 	
 	foreach ($most_commented_posts as $most_commented_post ){
 		$output .= '<li>';
@@ -257,7 +242,7 @@ function wp_get_most_popular_posts ($limitclause="") {
 
 function wp_most_popular_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_popular_posts = wp_get_most_popular_posts ($limitclause="");
+	$most_popular_posts = wp_get_most_popular_posts ($limitclause);
 	
 	foreach ($most_popular_posts as $most_popular_post ){
 		$output .= '<li>';
