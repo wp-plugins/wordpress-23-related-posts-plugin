@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 0.7
+Version: 0.8
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WorPdress
-Author: Denis,PaoPao
+Author: Denis
 Author URI: http://fairyfish.net/
 
 Copyright (c) 2007
@@ -134,8 +134,30 @@ function wp_get_related_posts() {
 
 function wp_related_posts(){
 
+    global $id;
+    
+    $output_old = get_post_meta($id, "related_posts", $single = true);
+    
+    if($output_old){
+      $time = time();
+      if(($time - $output_old["time"])<600){
+        echo $output_old["related_posts"];
+        return;
+      }
+    }
+		
 	$output = wp_get_related_posts() ;
-	echo $output;	
+	
+  $output_new = array("time"=>time(),"related_posts"=>$output);
+    if($output_old){
+      update_post_meta($id, 'related_posts', $output_new);
+    }else{
+      if(!add_post_meta($id, 'related_posts', $output_new, true)){
+        update_post_meta($id, 'related_posts', $output_new);
+      }
+    }
+
+	echo $output;
 }
 
 function wp23_related_posts() {
