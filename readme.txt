@@ -12,6 +12,7 @@ WordPress Related Posts Plugin will generate a related posts via WordPress tags,
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
+Please search and submit your transaltion here: <a href="http://fairyfish.net/2008/06/06/wordpress-related-posts-plugin-translation/">http://fairyfish.net/2008/06/06/wordpress-related-posts-plugin-translation/</a> 
 
 == Installation ==
 
