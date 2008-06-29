@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 0.6
+Version: 0.9
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
-Description: Generate a related posts list via tags of WorPdress
-Author: Denis,PaoPao
+Description: Generate a related posts list via tags of WordPress
+Author: Denis
 Author URI: http://fairyfish.net/
 
 Copyright (c) 2007
@@ -30,50 +30,16 @@ http://www.gnu.org/licenses/gpl.txt
 	Just install the plugin in your blog and activate
 */
 
-load_plugin_textdomain('wp_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) . '/lang');
-
-function wp_related_posts_activation(){
-	$limit = get_option("wp23_RP_limit");
-	$exclude = get_option("wp23_RP_exclude");
-	$wp23_RP_title = get_option("wp23_RP_title");
-	$wp23_no_RP = get_option("wp23_no_RP");
-	$wp23_no_RP_text = get_option("wp23_no_RP_text");
-	$show_date = get_option("wp23_RP_Date");
-	$show_comments_count = get_option("wp23_RP_Comments");
-	$wp23_RP_RSS = get_option("wp23_RP_RSS");
-	
-	if($limit || $exclude || $wp23_RP_title  || $wp23_no_RP || $wp23_no_RP_text || $show_date || $dateformat  || $show_comments_count || $wp23_RP_RSS ){
-		$wp_rp = array (
-			"wp_rp_title" 	=> $wp23_RP_title,
-			"wp_no_rp"		=> $wp23_no_RP,
-			"wp_no_rp_text"	=> $wp23_no_RP_text,
-			"wp_rp_limit"	=> $limit,
-			'wp_rp_exclude'	=> $exclude,
-			'wp_rp_rss'		=> $wp23_RP_RSS,
-			'wp_rp_comments'=> $show_comments_count,
-			'wp_rp_date'	=> $show_date
-		);
-		
-		update_option("wp_rp",$wp_rp);
-		
-		delete_option("wp23_RP_limit");
-		delete_option("wp23_RP_exclude");
-		delete_option("wp23_RP_title");
-		delete_option("wp23_no_RP");
-		delete_option("wp23_no_RP_text");
-		delete_option("wp23_RP_Date");
-		delete_option("wp23_RP_Comments");
-		delete_option("wp23_RP_RSS");
-	}
+add_action('init', 'init_textdomain');
+function init_textdomain(){
+  load_plugin_textdomain('wp_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) . '/lang');
 }
-
-register_activation_hook(basename(__FILE__),'wp_related_posts_activation');
 
 function wp_get_related_posts() {
 	global $wpdb, $post,$table_prefix;
 	$wp_rp = get_option("wp_rp");
 	
-	$exclude = $wp_rp["wp_rp_exclude"];
+	$exclude = explode(",",$wp_rp["wp_rp_exclude"]);
 	$limit = $wp_rp["wp_rp_limit"];
 	$wp_rp_title = $wp_rp["wp_rp_title"];
 	$wp_no_rp = $wp_rp["wp_no_rp"];
@@ -87,7 +53,7 @@ function wp_get_related_posts() {
 		$cats = $wpdb->get_results($q);
 		
 		foreach(($cats) as $cat) {
-			if (strpos($exclude,$cat->term_id) !== false){
+			if (in_array($cat->term_id, $exclude) != false){
 				return;
 			}
 		}
@@ -98,15 +64,15 @@ function wp_get_related_posts() {
 	$tags = wp_get_post_tags($post->ID);
 
 	//print_r($tags);
-
-	$taglist = "'" . str_replace("'",'',str_replace('"','',urldecode($tags[0]->term_id))). "'";
+	
+	$taglist = "'" . $tags[0]->term_id. "'";
+	
 	$tagcount = count($tags);
 	if ($tagcount > 1) {
 		for ($i = 1; $i <= $tagcount; $i++) {
-			$taglist = $taglist . ", '" . str_replace("'",'',str_replace('"','',urldecode($tags[$i]->term_id))) . "'";
+			$taglist = $taglist . ", '" . $tags[$i]->term_id . "'";
 		}
 	}
-	
 		
 	if ($limit) {
 		$limitclause = "LIMIT $limit";
@@ -171,8 +137,32 @@ function wp_get_related_posts() {
 
 function wp_related_posts(){
 
+    global $id;
+    
+    $preview = $_GET['preview'];
+    
+    $output_old = get_post_meta($id, "related_posts", $single = true);
+    
+    if($output_old){
+      $time = time();
+      if(($time - $output_old["time"])<600){
+        echo $output_old["related_posts"];
+        return;
+      }
+    }
+		
 	$output = wp_get_related_posts() ;
-	echo $output;	
+	
+  $output_new = array("time"=>time(),"related_posts"=>$output);
+    if($output_old){
+      update_post_meta($id, 'related_posts', $output_new);
+    }else{
+      if(!add_post_meta($id, 'related_posts', $output_new, true)){
+        update_post_meta($id, 'related_posts', $output_new);
+      }
+    }
+
+	echo $output;
 }
 
 function wp23_related_posts() {
@@ -214,7 +204,7 @@ function wp_get_random_posts ($limitclause="") {
 
 function wp_random_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$random_posts = wp_get_random_posts ($limitclause="");
+	$random_posts = wp_get_random_posts ($limitclause);
 	
 	foreach ($random_posts as $random_post ){
 		$output .= '<li>';
@@ -235,7 +225,7 @@ function wp_get_most_commented_posts($limitclause="") {
 
 function wp_most_commented_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_commented_posts = wp_get_most_commented_posts ($limitclause="");
+	$most_commented_posts = wp_get_most_commented_posts ($limitclause);
 	
 	foreach ($most_commented_posts as $most_commented_post ){
 		$output .= '<li>';
@@ -257,7 +247,7 @@ function wp_get_most_popular_posts ($limitclause="") {
 
 function wp_most_popular_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
-	$most_popular_posts = wp_get_most_popular_posts ($limitclause="");
+	$most_popular_posts = wp_get_most_popular_posts ($limitclause);
 	
 	foreach ($most_popular_posts as $most_popular_post ){
 		$output .= '<li>';
@@ -308,99 +298,114 @@ function wp_related_posts_options_subpanel() {
     <div class="wrap">
         <h2 id="write-post"><?php _e("Related Posts Options&hellip;",'wp_related_posts');?></h2>
         <p><?php _e("WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.",'wp_related_posts');?></p>
-		<form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=<?php echo basename(__FILE__); ?>">
-                <h3><?php _e("Related Posts Preference",'wp_related_posts');?></h3>
-                <table class="form-table">
-                    <tr>
-                        <th><?php _e("Related Posts Title:",'wp_related_posts'); ?></th>
-                        <td>
-							<input type="text" name="wp_rp_title_option" value="<?php echo $wp_rp["wp_rp_title"]; ?>" />
-						</td>
-                    </tr>
-					<tr>
-                        <th><?php _e("When No Related Posts, Dispaly:",'wp_related_posts'); ?></th>
-                        <td>
-							<?php $wp_no_rp = $wp_rp["wp_no_rp"]; ?>
-							<select name="wp_no_rp_option" >
-								<option value="text" <?php if($wp_no_rp == 'text') echo 'selected' ?> ><?php _e("Text: 'No Related Posts'",'wp_related_posts'); ?></option>
-								<option value="random" <?php if($wp_no_rp == 'random') echo 'selected' ?>><?php _e("Random Posts",'wp_related_posts'); ?></option>
-								<option value="commented" <?php if($wp_no_rp == 'commented') echo 'selected' ?>><?php _e("Most Commented Posts",'wp_related_posts'); ?></option>
-								<?php if (function_exists('akpc_most_popular')){ ?>
-								<option value="popularity" <?php if($wp_no_rp == 'popularity') echo 'selected' ?>><?php _e("Most Popular Posts",'wp_related_posts'); ?></option>
-								<?php } ?> 
-        					</select>
-						</td>
-                    </tr>
-                    <tr>
-                        <th><?php _e("No Related Post's Title or Text:",'wp_related_posts'); ?></th>
-                        <td>
-							<input type="text" name="wp_no_rp_text_option" value="<?php echo $wp_rp["wp_no_rp_text"]; ?>" />
-						</td>
-                    </tr>
-                    <tr>
-                        <th><?php _e("Limit:",'wp_related_posts');?></th>
-                        <td>
-							<input type="text" name="wp_rp_limit_option" value="<?php echo $wp_rp["wp_rp_limit"]; ?>" />
-						</td>
-                    </tr>
-                    <tr>
-                        <th><?php _e("Exclude(category IDs):",'wp_related_posts');?></th>
-                        <td>
-							<input type="text" name="wp_rp_exclude_option" value="<?php echo $wp_rp["wp_rp_exclude"]; ?>" />
-						</td>
-                    </tr>
-					<tr>
-						<th><?php _e("Other Setting:",'wp_related_posts');?></th>
-						<td>
-						<label>
-						<?php
-							if ( $wp_rp["wp_rp_auto"] == 'yes' ) {
-								echo '<input name="wp_rp_auto_option" type="checkbox" value="yes" checked>';
-							} else {
-								echo '<input name="wp_rp_auto_option" type="checkbox" value="yes">';
-							}
-						?>
-						<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
-						</label>
-						<br />
-						<label>
-						<?php
-							if ( $wp_rp["wp_rp_rss"] == 'yes' ) {
-								echo '<input name="wp_rp_rss_option" type="checkbox" value="yes" checked>';
-							} else {
-								echo '<input name="wp_rp_rss_option" type="checkbox" value="yes">';
-							}
-						?>
-						<?php _e("Related Posts for RSS",'wp_related_posts');?>
-						</label>
-						<br />
-						<label>
-						<?php
-							if ( $wp_rp["wp_rp_comments"] == 'yes' ) {
-								echo '<input name="wp_rp_comments_option" type="checkbox" value="yes" checked>';
-							} else {
-								echo '<input name="wp_rp_comments_option" type="checkbox" value="yes">';
-							}
-						?>
-						<?php _e("Display Comments Count",'wp_related_posts');?>
-						</label>
-						<br />
-						<label>
-						<?php
-							if ( $wp_rp["wp_rp_date"] == 'yes' ) {
-								echo '<input name="wp_rp_date_option" type="checkbox" value="yes" checked>';
-							} else {
-								echo '<input name="wp_rp_date_option" type="checkbox" value="yes">';
-							}
-						?>
-						<?php _e("Display Post Date",'wp_related_posts');?>
-						</label>
-						<br />
-						</td>
-					</tr>
-				</table>
-            
-           <p class="submit"><input type="submit" value="<?php _e("Update Preferences &raquo;",'wp_related_posts');?>" name="wp_rp_Submit" /></p>
+        <div style="float:right;">
+          <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+          <input type="hidden" name="cmd" value="_donations">
+          <input type="hidden" name="business" value="honghua.deng@gmail.com">
+          <input type="hidden" name="item_name" value="Donate to fairyfish.net">
+          <input type="hidden" name="no_shipping" value="0">
+          <input type="hidden" name="no_note" value="1">
+          <input type="hidden" name="currency_code" value="USD">
+          <input type="hidden" name="tax" value="0">
+          <input type="hidden" name="lc" value="US">
+          <input type="hidden" name="bn" value="PP-DonationsBF">
+          <input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+          <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1"><br />
+          </form>
+        </div>
+        <h3><?php _e("Related Posts Preference",'wp_related_posts');?></h3>
+        <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=<?php echo basename(__FILE__); ?>">
+        
+        <table class="form-table">
+          <tr>
+            <th><?php _e("Related Posts Title:",'wp_related_posts'); ?></th>
+            <td>
+              <input type="text" name="wp_rp_title_option" value="<?php echo $wp_rp["wp_rp_title"]; ?>" />
+            </td>
+          </tr>
+          <tr>
+            <th><?php _e("When No Related Posts, Dispaly:",'wp_related_posts'); ?></th>
+            <td>
+              <?php $wp_no_rp = $wp_rp["wp_no_rp"]; ?>
+              <select name="wp_no_rp_option" >
+              <option value="text" <?php if($wp_no_rp == 'text') echo 'selected' ?> ><?php _e("Text: 'No Related Posts'",'wp_related_posts'); ?></option>
+              <option value="random" <?php if($wp_no_rp == 'random') echo 'selected' ?>><?php _e("Random Posts",'wp_related_posts'); ?></option>
+              <option value="commented" <?php if($wp_no_rp == 'commented') echo 'selected' ?>><?php _e("Most Commented Posts",'wp_related_posts'); ?></option>
+              <?php if (function_exists('akpc_most_popular')){ ?>
+              <option value="popularity" <?php if($wp_no_rp == 'popularity') echo 'selected' ?>><?php _e("Most Popular Posts",'wp_related_posts'); ?></option>
+              <?php } ?> 
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th><?php _e("No Related Post's Title or Text:",'wp_related_posts'); ?></th>
+            <td>
+              <input type="text" name="wp_no_rp_text_option" value="<?php echo $wp_rp["wp_no_rp_text"]; ?>" />
+            </td>
+          </tr>
+          <tr>
+            <th><?php _e("Limit:",'wp_related_posts');?></th>
+            <td>
+              <input type="text" name="wp_rp_limit_option" value="<?php echo $wp_rp["wp_rp_limit"]; ?>" />
+            </td>
+          </tr>
+          <tr>
+            <th><?php _e("Exclude(category IDs):",'wp_related_posts');?></th>
+            <td>
+              <input type="text" name="wp_rp_exclude_option" value="<?php echo $wp_rp["wp_rp_exclude"]; ?>" />
+            </td>
+          </tr>
+          <tr>
+            <th><?php _e("Other Setting:",'wp_related_posts');?></th>
+            <td>
+              <label>
+              <?php
+              if ( $wp_rp["wp_rp_auto"] == 'yes' ) {
+              echo '<input name="wp_rp_auto_option" type="checkbox" value="yes" checked>';
+              } else {
+              echo '<input name="wp_rp_auto_option" type="checkbox" value="yes">';
+              }
+              ?>
+              <?php _e("Auto Insert Related Posts",'wp_related_posts');?>
+              </label>
+              <br />
+              <label>
+              <?php
+              if ( $wp_rp["wp_rp_rss"] == 'yes' ) {
+                echo '<input name="wp_rp_rss_option" type="checkbox" value="yes" checked>';
+              } else {
+                echo '<input name="wp_rp_rss_option" type="checkbox" value="yes">';
+              }
+              ?>
+              <?php _e("Related Posts for RSS",'wp_related_posts');?>
+              </label>
+              <br />
+              <label>
+              <?php
+              if ( $wp_rp["wp_rp_comments"] == 'yes' ) {
+                echo '<input name="wp_rp_comments_option" type="checkbox" value="yes" checked>';
+              } else {
+                echo '<input name="wp_rp_comments_option" type="checkbox" value="yes">';
+              }
+              ?>
+              <?php _e("Display Comments Count",'wp_related_posts');?>
+              </label>
+              <br />
+              <label>
+              <?php
+              if ( $wp_rp["wp_rp_date"] == 'yes' ) {
+                echo '<input name="wp_rp_date_option" type="checkbox" value="yes" checked>';
+              } else {
+                echo '<input name="wp_rp_date_option" type="checkbox" value="yes">';
+              }
+              ?>
+              <?php _e("Display Post Date",'wp_related_posts');?>
+              </label>
+              <br />
+            </td>
+          </tr>
+        </table>
+        <p class="submit"><input type="submit" value="<?php _e("Update Preferences &raquo;",'wp_related_posts');?>" name="wp_rp_Submit" /></p>
         </form>
-    </div>
+      </div>
 <?php }?>
