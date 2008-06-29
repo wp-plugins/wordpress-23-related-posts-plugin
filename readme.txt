@@ -4,7 +4,7 @@ Tags: Related,Posts
 Donate link: http://fairyfish.net/donate/
 Requires at least: 2.3
 Tested up to: 2.5
-Stable tag: 0.8
+Stable tag: 0.9
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
