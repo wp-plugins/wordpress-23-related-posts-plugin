@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 0.9
+Version: 1.0
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Denis
@@ -80,7 +80,7 @@ function wp_get_related_posts() {
 		$limitclause = "LIMIT 10";
 	}
 	
-	$q = "SELECT DISTINCT p.ID, p.post_title, p.post_date, p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID != $post->ID AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC $limitclause;";
+	$q = "SELECT p.ID, p.post_title, p.post_date, p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID != $post->ID AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC $limitclause;";
 
 	//echo $q;
 
@@ -136,31 +136,8 @@ function wp_get_related_posts() {
 }
 
 function wp_related_posts(){
-
-    global $id;
-    
-    $preview = $_GET['preview'];
-    
-    $output_old = get_post_meta($id, "related_posts", $single = true);
-    
-    if($output_old){
-      $time = time();
-      if(($time - $output_old["time"])<600){
-        echo $output_old["related_posts"];
-        return;
-      }
-    }
 		
 	$output = wp_get_related_posts() ;
-	
-  $output_new = array("time"=>time(),"related_posts"=>$output);
-    if($output_old){
-      update_post_meta($id, 'related_posts', $output_new);
-    }else{
-      if(!add_post_meta($id, 'related_posts', $output_new, true)){
-        update_post_meta($id, 'related_posts', $output_new);
-      }
-    }
 
 	echo $output;
 }
