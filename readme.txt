@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: denishua
 Tags: Related,Posts
-Donate link: http://fairyfish.net/donate/
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8490579
 Requires at least: 2.3
-Tested up to: 2.6.2
-Stable tag: 1.0
+Tested up to: 2.8.4
+Stable tag: 1.1
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
@@ -21,11 +21,16 @@ Please search and submit your transaltion here: <a href="http://fairyfish.net/20
 1. Place `<?php wp_related_posts(); ?>` in your templates
 1. Navigate to Manage > Option > WordPress Related Posts to configure plugin output.
 
+== Screenshots ==
+1. WordPress Related Posts setting.
 
-== Upgrade ==
 
-1. Delete the old plugin folder `WP23RP`.
-1. Upload the folder WPRP to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php wp_related_posts(); ?>` in your templates
-1. Navigate to Manage > Option > WordPress Related Posts to configure plugin output.
+== Changelog ==
+
+= 1.1 =
+* Post Except
+* Thumbnail
+* Widget
+
+= 1.0 =
+* first version
