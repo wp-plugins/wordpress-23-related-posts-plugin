@@ -1,0 +1,199 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WordPress 2.3 Related Posts Plugin v0.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-29 17:04+0800\n"
+"PO-Revision-Date: 2009-09-29 17:28+0800\n"
+"Last-Translator: Denis <honghua.deng@gmail.com>\n"
+"Language-Team: WordPress 中文团队 <team@wp-cn.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _e;__\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../wp_related_posts.php:70
+msgid "No Related Post"
+msgstr "暂无相关日志"
+
+#: ../wp_related_posts.php:74
+#: ../wp_related_posts.php:306
+#: ../wp_related_posts.php:432
+msgid "Random Posts"
+msgstr "随机日志"
+
+#: ../wp_related_posts.php:77
+#: ../wp_related_posts.php:310
+#: ../wp_related_posts.php:433
+msgid "Most Commented Posts"
+msgstr "最多留言日志"
+
+#: ../wp_related_posts.php:80
+#: ../wp_related_posts.php:314
+#: ../wp_related_posts.php:435
+msgid "Most Popular Posts"
+msgstr "最流行日志"
+
+#: ../wp_related_posts.php:252
+msgid "Related Posts"
+msgstr "相关日志"
+
+#: ../wp_related_posts.php:258
+msgid "WordPress Related Posts Setting Updated"
+msgstr "WordPress 相关日志设置已被更新"
+
+#: ../wp_related_posts.php:301
+#: ../wp_related_posts.php:445
+msgid "No Related Posts Text:"
+msgstr "无相关日志时的文本："
+
+#: ../wp_related_posts.php:302
+msgid "No Related Posts"
+msgstr "暂无相关日志"
+
+#: ../wp_related_posts.php:305
+#: ../wp_related_posts.php:448
+msgid "Random Posts Title:"
+msgstr "随机日志列表标题："
+
+#: ../wp_related_posts.php:309
+#: ../wp_related_posts.php:451
+msgid "Most Commented Posts Title:"
+msgstr "最多留言日志标题："
+
+#: ../wp_related_posts.php:313
+#: ../wp_related_posts.php:454
+msgid "Most Popular Posts Title:"
+msgstr "最流行日志标题："
+
+#: ../wp_related_posts.php:343
+msgid "Related Posts Settings"
+msgstr "相关日志设置"
+
+#: ../wp_related_posts.php:344
+msgid "<a href=\"http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/\">WordPress Related Posts </a>Plugin can generate a related posts list via WordPress tags, and add the related posts to feed."
+msgstr "<a href=\"http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/\">WordPress 相关日志插件</a>可以通过 WordPress 的标签系统产生一个相关日志列表，并可以添加相关日志至 RSS 中。"
+
+#: ../wp_related_posts.php:345
+msgid "Any problem or need help, please contact "
+msgstr "你在使用这个插件的时候如果有任何问题或者需要帮助，请联系 "
+
+#: ../wp_related_posts.php:348
+msgid "Do you like this Plugin? Consider to donate!"
+msgstr "喜欢这个插件吗？你可以考虑捐赠支持我继续开发。"
+
+#: ../wp_related_posts.php:352
+msgid "Basic Setting"
+msgstr "基本设置"
+
+#: ../wp_related_posts.php:355
+msgid "Related Posts Title:"
+msgstr "相关日志列表标题："
+
+#: ../wp_related_posts.php:361
+msgid "Related Posts Title Tag:"
+msgstr "相关日志标题标签："
+
+#: ../wp_related_posts.php:376
+msgid "Maximum Number:"
+msgstr "最多显示："
+
+#: ../wp_related_posts.php:382
+msgid "Exclude(category IDs):"
+msgstr "不包括（分类ID）："
+
+#: ../wp_related_posts.php:384
+msgid "Enter category IDs of the posts which you don't want to display related posts for them. "
+msgstr "输入你不想显示相关日志的这类日志的分类 ID"
+
+#: ../wp_related_posts.php:388
+msgid "Other Setting:"
+msgstr "其他设置："
+
+#: ../wp_related_posts.php:392
+msgid "Display Comments Count?"
+msgstr "显示留言数？"
+
+#: ../wp_related_posts.php:397
+msgid "Display Pubilsh Date?"
+msgstr "显示日志发布日期？"
+
+#: ../wp_related_posts.php:402
+msgid "Auto Insert Related Posts?"
+msgstr "自动插入相关日志？"
+
+#: ../wp_related_posts.php:407
+msgid "Display Related Posts on Feed?"
+msgstr "在RSS中添加相关日志？"
+
+#: ../wp_related_posts.php:412
+msgid "Except Setting:"
+msgstr "摘要设置："
+
+#: ../wp_related_posts.php:416
+msgid "Display Post Except?"
+msgstr "显示日志摘要？"
+
+#: ../wp_related_posts.php:420
+msgid "Maximum Charaters of Except."
+msgstr "摘要的最大文本。"
+
+#: ../wp_related_posts.php:425
+msgid "No Related Post Setting"
+msgstr "无相关日志时的设置"
+
+#: ../wp_related_posts.php:428
+msgid "Display:"
+msgstr "显示："
+
+#: ../wp_related_posts.php:431
+msgid "Text: 'No Related Posts'"
+msgstr "文本：“无相关日志”"
+
+#: ../wp_related_posts.php:464
+msgid "Related Posts with Thumbnail"
+msgstr "给相关日志显示缩略图"
+
+#: ../wp_related_posts.php:468
+msgid "Befor usting Related Posts with Thumbnail, you must set thumbnail image for your every post."
+msgstr "在使用给相关日志显示缩略图这个功能之前，你要确保你每篇日志都有缩略图。"
+
+#: ../wp_related_posts.php:472
+msgid "Thumbnail Setting:"
+msgstr "缩略图设置："
+
+#: ../wp_related_posts.php:475
+msgid "Display Thumbnails For Related Posts?"
+msgstr "给相关日志显示缩略图？"
+
+#: ../wp_related_posts.php:479
+msgid "Do you still want to display text when display thumbnails for related posts?"
+msgstr "在使用给相关日志显示缩略图的同时还显示相关日志的标题等文本？"
+
+#: ../wp_related_posts.php:481
+msgid "Which custom field is used for thumbnail?"
+msgstr "那个自定义字段是用于缩略图的？"
+
+#: ../wp_related_posts.php:499
+msgid "Save changes"
+msgstr "保存修改"
+
+#~ msgid ""
+#~ "Any problem, please contact <a href=\"http://twitter.com/denishua/"
+#~ "\">denishua</a>."
+#~ msgstr ""
+#~ "有任何问题，请联系 <a href=\"http://twitter.com/denishua/\">denishua</a>。"
+#~ msgid "Something wrong"
+#~ msgstr "发生错误了"
+#~ msgid "Related Posts Options&hellip;"
+#~ msgstr "相关日志选项 &hellip;"
+#~ msgid "Related Posts Preference"
+#~ msgstr "相关日志设置"
+#~ msgid "When No Related Posts, Dispaly:"
+#~ msgstr "当没有相关日志时，显示："
+#~ msgid "Limit:"
+#~ msgstr "显示的项数："
+#~ msgid "Update Preferences &raquo;"
+#~ msgstr "更新选项 &raquo;"
+

@@ -28,8 +28,8 @@ Please search and submit your transaltion here: <a href="http://fairyfish.net/20
 == Changelog ==
 
 = 1.1 =
-* Post Except
 * Thumbnail
+* Post Except
 * Widget
 
 = 1.0 =
