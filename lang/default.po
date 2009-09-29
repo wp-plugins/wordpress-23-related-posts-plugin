@@ -1,0 +1,181 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: wp_related_post\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-29 17:09+0800\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Denis <honghua.deng@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../wp_related_posts.php:70
+msgid "No Related Post"
+msgstr ""
+
+#: ../wp_related_posts.php:74
+#: ../wp_related_posts.php:306
+#: ../wp_related_posts.php:432
+msgid "Random Posts"
+msgstr ""
+
+#: ../wp_related_posts.php:77
+#: ../wp_related_posts.php:310
+#: ../wp_related_posts.php:433
+msgid "Most Commented Posts"
+msgstr ""
+
+#: ../wp_related_posts.php:80
+#: ../wp_related_posts.php:314
+#: ../wp_related_posts.php:435
+msgid "Most Popular Posts"
+msgstr ""
+
+#: ../wp_related_posts.php:252
+msgid "Related Posts"
+msgstr ""
+
+#: ../wp_related_posts.php:258
+msgid "WordPress Related Posts Setting Updated"
+msgstr ""
+
+#: ../wp_related_posts.php:301
+#: ../wp_related_posts.php:445
+msgid "No Related Posts Text:"
+msgstr ""
+
+#: ../wp_related_posts.php:302
+msgid "No Related Posts"
+msgstr ""
+
+#: ../wp_related_posts.php:305
+#: ../wp_related_posts.php:448
+msgid "Random Posts Title:"
+msgstr ""
+
+#: ../wp_related_posts.php:309
+#: ../wp_related_posts.php:451
+msgid "Most Commented Posts Title:"
+msgstr ""
+
+#: ../wp_related_posts.php:313
+#: ../wp_related_posts.php:454
+msgid "Most Popular Posts Title:"
+msgstr ""
+
+#: ../wp_related_posts.php:343
+msgid "Related Posts Settings"
+msgstr ""
+
+#: ../wp_related_posts.php:344
+msgid "<a href=\"http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/\">WordPress Related Posts </a>Plugin can generate a related posts list via WordPress tags, and add the related posts to feed."
+msgstr ""
+
+#: ../wp_related_posts.php:345
+msgid "Any problem or need help, please contact "
+msgstr ""
+
+#: ../wp_related_posts.php:348
+msgid "Do you like this Plugin? Consider to donate!"
+msgstr ""
+
+#: ../wp_related_posts.php:352
+msgid "Basic Setting"
+msgstr ""
+
+#: ../wp_related_posts.php:355
+msgid "Related Posts Title:"
+msgstr ""
+
+#: ../wp_related_posts.php:361
+msgid "Related Posts Title Tag:"
+msgstr ""
+
+#: ../wp_related_posts.php:376
+msgid "Maximum Number:"
+msgstr ""
+
+#: ../wp_related_posts.php:382
+msgid "Exclude(category IDs):"
+msgstr ""
+
+#: ../wp_related_posts.php:384
+msgid "Enter category IDs of the posts which you don't want to display related posts for them. "
+msgstr ""
+
+#: ../wp_related_posts.php:388
+msgid "Other Setting:"
+msgstr ""
+
+#: ../wp_related_posts.php:392
+msgid "Display Comments Count?"
+msgstr ""
+
+#: ../wp_related_posts.php:397
+msgid "Display Pubilsh Date?"
+msgstr ""
+
+#: ../wp_related_posts.php:402
+msgid "Auto Insert Related Posts?"
+msgstr ""
+
+#: ../wp_related_posts.php:407
+msgid "Display Related Posts on Feed?"
+msgstr ""
+
+#: ../wp_related_posts.php:412
+msgid "Except Setting:"
+msgstr ""
+
+#: ../wp_related_posts.php:416
+msgid "Display Post Except?"
+msgstr ""
+
+#: ../wp_related_posts.php:420
+msgid "Maximum Charaters of Except."
+msgstr ""
+
+#: ../wp_related_posts.php:425
+msgid "No Related Post Setting"
+msgstr ""
+
+#: ../wp_related_posts.php:428
+msgid "Display:"
+msgstr ""
+
+#: ../wp_related_posts.php:431
+msgid "Text: 'No Related Posts'"
+msgstr ""
+
+#: ../wp_related_posts.php:464
+msgid "Related Posts with Thumbnail"
+msgstr ""
+
+#: ../wp_related_posts.php:468
+msgid "Befor usting Related Posts with Thumbnail, you must set thumbnail image for your every post."
+msgstr ""
+
+#: ../wp_related_posts.php:472
+msgid "Thumbnail Setting:"
+msgstr ""
+
+#: ../wp_related_posts.php:475
+msgid "Display Thumbnails For Related Posts?"
+msgstr ""
+
+#: ../wp_related_posts.php:479
+msgid "Do you still want to display text when display thumbnails for related posts?"
+msgstr ""
+
+#: ../wp_related_posts.php:481
+msgid "Which custom field is used for thumbnail?"
+msgstr ""
+
+#: ../wp_related_posts.php:499
+msgid "Save changes"
+msgstr ""
+
