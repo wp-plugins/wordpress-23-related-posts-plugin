@@ -115,17 +115,16 @@ function wp_get_related_posts($before_title="",$after_title="") {
 		$output .=  '</li>';
 	}
 	
-	$output = '<ul>' . $output . '</ul>';
+	$output = '<ul class="related_post">' . $output . '</ul>';
 		
 	$wp_rp_title_tag = $wp_rp["wp_rp_title_tag"];
 	if($before_title){
 		if($wp_rp_title != '') $output = $before_title.$wp_rp_title .$after_title. $output;
 	}else{
 		if(!$wp_rp_title_tag) $wp_rp_title_tag ='h3';
-		if($wp_rp_title != '') $output =  '<'.$wp_rp_title_tag.'>'.$wp_rp_title .'</'.$wp_rp_title_tag.'>'. $output;
+		if($wp_rp_title != '') $output =  '<'.$wp_rp_title_tag.'  class="related_post_title">'.$wp_rp_title .'</'.$wp_rp_title_tag.'>'. $output;
 	}
 	
-	$output ='<div class="related_post">'.$output.'</div>';
 	return $output;
 }
 
