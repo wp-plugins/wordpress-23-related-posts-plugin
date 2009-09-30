@@ -28,6 +28,9 @@ Please search and submit your transaltion here: <a href="http://fairyfish.net/20
 == Changelog ==
 
 = 1.1 =
+* fix don't display in Feed problem
+
+= 1.1 =
 * Thumbnail
 * Post Except
 * Widget

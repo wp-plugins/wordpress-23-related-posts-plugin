@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.1
+Version: 1.1.1
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Denis
@@ -13,9 +13,7 @@ function init_textdomain(){
   load_plugin_textdomain('wp_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) . '/lang');
 }
 
-function wp_get_related_posts($before_title="",$after_title="") {
-	if(!is_single())	return;
-	
+function wp_get_related_posts($before_title="",$after_title="") {	
 	global $wpdb, $post,$table_prefix;
 	$wp_rp = get_option("wp_rp");
 	
@@ -42,7 +40,7 @@ function wp_get_related_posts($before_title="",$after_title="") {
 	
 	$tagcount = count($tags);
 	if ($tagcount > 1) {
-		for ($i = 1; $i <= $tagcount; $i++) {
+		for ($i = 1; $i < $tagcount; $i++) {
 			$taglist = $taglist . ", '" . $tags[$i]->term_id . "'";
 		}
 	}
@@ -142,20 +140,9 @@ function wp23_related_posts() {
 	wp_related_posts();
 }
 
-function wp_related_posts_for_feed($content=""){
+function wp_related_posts_auto($content){
 	$wp_rp = get_option("wp_rp");
-	if(is_feed() && $wp_rp["wp_rp_rss"] == 'yes'){
-		$output = wp_get_related_posts();
-		$content = $content . $output;
-	}	
-	return $content;
-}
-
-add_filter('the_content', 'wp_related_posts_for_feed',1);
-
-function wp_related_posts_auto($content=""){
-	$wp_rp = get_option("wp_rp");
-	if ( (is_single()) && $wp_rp["wp_rp_auto"]) {
+	if ((is_single() && $wp_rp["wp_rp_auto"])||(is_feed() && $wp_rp["wp_rp_rss"])) {
 		$output = wp_get_related_posts();
 		$content = $content . $output;
 	}
