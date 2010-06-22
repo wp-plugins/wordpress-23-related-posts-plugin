@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.1.1
+Version: 1.2
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Denis
@@ -14,14 +14,14 @@ function init_textdomain(){
 }
 
 function wp_get_related_posts($before_title="",$after_title="") {	
-	global $wpdb, $post,$table_prefix;
+	global $wpdb, $post;
 	$wp_rp = get_option("wp_rp");
 	
 	$wp_rp_title = $wp_rp["wp_rp_title"];
 	
 	$exclude = explode(",",$wp_rp["wp_rp_exclude"]);	
 	if ( $exclude != '' ) {
-		$q = 'SELECT tt.term_id FROM '. $table_prefix .'term_taxonomy tt, ' . $table_prefix . 'term_relationships tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID;
+		$q = 'SELECT tt.term_id FROM '. $wpdb->term_taxonomy.'  tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID;
 
 		$cats = $wpdb->get_results($q);
 		
@@ -152,9 +152,9 @@ function wp_related_posts_auto($content){
 add_filter('the_content', 'wp_related_posts_auto',99);
 
 function wp_get_random_posts ($limitclause="") {
-    global $wpdb, $tableposts, $post;
+    global $wpdb, $post;
 		
-	$q = "SELECT ID, post_title, post_content,post_excerpt, post_date, comment_count FROM $tableposts WHERE post_status = 'publish' AND post_type = 'post' AND ID != $post->ID ORDER BY RAND() $limitclause";
+	$q = "SELECT ID, post_title, post_content,post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID != $post->ID ORDER BY RAND() $limitclause";
     return $wpdb->get_results($q);
 }
 

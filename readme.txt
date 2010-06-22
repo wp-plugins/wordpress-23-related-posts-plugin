@@ -1,10 +1,10 @@
-=== Plugin Name ===
+﻿=== Plugin Name ===
 Contributors: denishua
 Tags: Related,Posts
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8490579
 Requires at least: 2.3
 Tested up to: 2.8.4
-Stable tag: 1.1.1
+Stable tag: 1.2
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
@@ -26,6 +26,9 @@ Please search and submit your transaltion here: <a href="http://fairyfish.net/20
 
 
 == Changelog ==
+
+= 1.2 = 
+* Compatible with WordPress 3.0
 
 = 1.1 =
 * fix don't display in Feed problem
