@@ -13,6 +13,34 @@ function init_textdomain(){
   load_plugin_textdomain('wp_related_posts',PLUGINDIR . '/' . dirname(plugin_basename (__FILE__)) . '/lang');
 }
 
+register_activation_hook( __FILE__, 'activate_wp_related_posts' );
+function activate_wp_related_posts() {
+	$wp_rp = get_option("wp_rp");
+	if (!isset($wp_rp['wp_rp_auto'])) {
+		$wp_rp['wp_rp_auto'] = 'yes';
+	}
+	if (!isset($wp_rp['wp_rp_title'])) {
+		$wp_rp['wp_rp_title'] = 'Related posts';
+	}
+	if (!isset($wp_rp['wp_rp_limit'])) {
+		$wp_rp['wp_rp_limit'] = 5;
+	}
+	if (!isset($wp_rp['wp_rp_rss'])) {
+		$wp_rp['wp_rp_rss'] = true;
+	}
+	if (!isset($wp_rp['wp_no_rp'])) {
+		$wp_rp['wp_no_rp'] = 'random';
+		if (!isset($wp_rp['wp_no_rp_text'])) {
+			$wp_rp['wp_no_rp_text'] = 'Random posts';
+		}
+	}
+	update_option( "wp_rp", $wp_rp );
+
+}
+
+global $WP_RP_TITLE_TAG_DEFAULT;
+$WP_RP_TITLE_TAG_DEFAULT = 'h3';
+
 function wp_get_related_posts($before_title="",$after_title="") {	
 	global $wpdb, $post;
 	$wp_rp = get_option("wp_rp");
@@ -121,7 +149,8 @@ function wp_get_related_posts($before_title="",$after_title="") {
 	if($before_title){
 		if($wp_rp_title != '') $output = $before_title.$wp_rp_title .$after_title. $output;
 	}else{
-		if(!$wp_rp_title_tag) $wp_rp_title_tag ='h3';
+		global $WP_RP_TITLE_TAG_DEFAULT;
+		if(!$wp_rp_title_tag) $wp_rp_title_tag = $WP_RP_TITLE_TAG_DEFAULT;
 		if($wp_rp_title != '') $output =  '<'.$wp_rp_title_tag.'  class="related_post_title">'.$wp_rp_title .'</'.$wp_rp_title_tag.'>'. $output;
 	}
 	
@@ -349,6 +378,10 @@ function wp_related_posts_options_subpanel() {
 				<select name="wp_rp_title_tag_option" id="wp_rp_title_tag" class="postform">
 				<?php
 				$wp_rp_title_tag_array = array('h2','h3','h4','p','div');
+				if (!isset($wp_rp_title_tag) || $wp_rp_title_tag == 0 ) {
+					global $WP_RP_TITLE_TAG_DEFAULT;
+					$wp_rp_title_tag = $WP_RP_TITLE_TAG_DEFAULT;
+				}
 				foreach ($wp_rp_title_tag_array as $wp_rp_title_tag_a){
 				?>
 					<option value="<?php echo $wp_rp_title_tag_a; ?>" <?php if($wp_rp_title_tag == $wp_rp_title_tag_a) echo 'selected' ?> >&lt;<?php echo $wp_rp_title_tag_a; ?>&gt;</option>
@@ -395,11 +428,11 @@ function wp_related_posts_options_subpanel() {
             </td>
           </tr>
 		  <tr valign="top">
-			<th scope="row"><label for="wp_rp_except"><?php _e("Except Setting:",'wp_related_posts'); ?></label></th>
+			<th scope="row"><label for="wp_rp_except"><?php _e("Excerpt Setting:",'wp_related_posts'); ?></label></th>
 			<td>
 				<label>
 				<input name="wp_rp_except_option" type="checkbox" id="wp_rp_except" value="yes" <?php echo ($wp_rp["wp_rp_except"] == 'yes') ? 'checked' : ''; ?> onclick="wp_rp_except_onclick();" >
-				<?php _e("Display Post Except?",'wp_related_posts');?>
+				<?php _e("Display Post Excerpt?",'wp_related_posts');?>
 				</label>
 				<br />
 				<label id="wp_rp_except_number_label" style="<?php echo ($wp_rp["wp_rp_except"] == 'yes') ? '' : 'display:none;'; ?>">
