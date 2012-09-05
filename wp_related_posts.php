@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.2
+Version: 1.2.1
 Plugin URI: http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Denis
