@@ -76,7 +76,19 @@ msgid "<a href=\"http://fairyfish.net/2007/09/12/wordpress-23-related-posts-plug
 msgstr ""
 
 #: ../wp_related_posts.php:332
-msgid "Any problem or need help, please contact "
+msgid "If you need assistance please contact"
+msgstr ""
+
+#: ../wp_related_posts.php:332
+msgid "support"
+msgstr ""
+
+#: ../wp_related_posts.php:332
+msgid "Please fill out"
+msgstr ""
+
+#: ../wp_related_posts.php:332
+msgid "a quick survey"
 msgstr ""
 
 #: ../wp_related_posts.php:335
@@ -128,15 +140,15 @@ msgid "Display Related Posts on Feed?"
 msgstr ""
 
 #: ../wp_related_posts.php:399
-msgid "Except Setting:"
+msgid "Excerpt Setting:"
 msgstr ""
 
 #: ../wp_related_posts.php:403
-msgid "Display Post Except?"
+msgid "Display Post Excerpt?"
 msgstr ""
 
 #: ../wp_related_posts.php:407
-msgid "Maximum Charaters of Except."
+msgid "Maximum Charaters of Excerpt."
 msgstr ""
 
 #: ../wp_related_posts.php:412
@@ -156,7 +168,7 @@ msgid "Related Posts with Thumbnail"
 msgstr ""
 
 #: ../wp_related_posts.php:455
-msgid "Befor usting Related Posts with Thumbnail, you must set thumbnail image for your every post."
+msgid "Before using Related Posts with Thumbnail, you must set thumbnail image for your every post."
 msgstr ""
 
 #: ../wp_related_posts.php:459
@@ -172,10 +184,13 @@ msgid "Do you still want to display text when display thumbnails for related pos
 msgstr ""
 
 #: ../wp_related_posts.php:468
-msgid "Which custom field is used for thumbnail?"
+msgid "Which field is used for thumbnail?"
+msgstr ""
+
+#: ../wp_related_posts.php:468
+msgid "Use Featured Image"
 msgstr ""
 
 #: ../wp_related_posts.php:486
 msgid "Save changes"
 msgstr ""
-
