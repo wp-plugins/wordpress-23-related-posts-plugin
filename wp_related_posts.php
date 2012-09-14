@@ -8,10 +8,10 @@ Author: Denis
 Author URI: http://fairyfish.net/
 */
 
-include_once 'defaults.php';
-include_once 'utils.php';
-include_once 'widget.php';
-include_once 'settings.php';
+include_once dirname(__FILE__) . '/defaults.php';
+include_once dirname(__FILE__) . '/utils.php';
+include_once dirname(__FILE__) . '/widget.php';
+include_once dirname(__FILE__) . '/settings.php';
 
 add_action('init', 'init_textdomain');
 function init_textdomain(){
