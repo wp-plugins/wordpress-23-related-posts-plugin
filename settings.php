@@ -56,7 +56,7 @@ function wp_related_posts_options_subpanel() {
 
 		$wp_rp_theme = isset($wp_rp['wp_rp_theme']) ? $wp_rp['wp_rp_theme'] : WP_RP_THEME_DEFAULT;
 
-		include "static/settings.js.php"
+		include dirname(__FILE__) . "/static/settings.js.php"
 	?>
 
 		<input type="hidden" id="wp_rp_theme_url" value="<?=WP_RP_STATIC_BASE_URL . WP_RP_THEMES_PATH?>" />
