@@ -125,11 +125,11 @@ function wp_fetch_content() {
 
 	if (!$related_posts) {
 		$wp_no_rp = isset($wp_rp["wp_no_rp"]) ? $wp_rp["wp_no_rp"] : "random";
-		$wp_no_rp_text = isset($wp_rp["wp_no_rp_text"]) ? $wp_rp["wp_no_rp_text"] : "";
+		$wp_no_rp_text = isset($wp_rp["wp_no_rp_text"]) ? $wp_rp["wp_no_rp_text"] : false;
 
 		if ($wp_no_rp_text) {
 			$wp_rp_title = $wp_no_rp_text;
-		} else if (isset($default_wp_no_rp_text[$wp_no_rp])) {
+		} else if ($wp_no_rp_text === false && isset($default_wp_no_rp_text[$wp_no_rp])) {
 			$wp_rp_title = $default_wp_no_rp_text[$wp_no_rp];
 		} else {
 			$wp_rp_title = "";
