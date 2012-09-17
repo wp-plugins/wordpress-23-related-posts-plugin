@@ -118,6 +118,8 @@ function wp_fetch_content() {
 
 	if (isset($wp_rp["wp_rp_limit"]) && $wp_rp["wp_rp_limit"]) {
 		$limitclause = "LIMIT " . $wp_rp["wp_rp_limit"];
+	} else {
+		$limitclause = "LIMIT " . WP_RP_POST_LIMIT;
 	}
 
 	$wp_rp_title = isset($wp_rp["wp_rp_title"]) ? $wp_rp["wp_rp_title"] : "";
