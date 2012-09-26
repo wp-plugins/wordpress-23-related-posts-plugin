@@ -176,11 +176,11 @@ msgid "Thumbnail Setting:"
 msgstr "缩略图设置："
 
 #: ../wp_related_posts.php:462
-msgid "Display Thumbnails For Related Posts?"
+msgid "Display Thumbnails For Related Posts"
 msgstr "给相关日志显示缩略图？"
 
 #: ../wp_related_posts.php:466
-msgid "Do you still want to display text when display thumbnails for related posts?"
+msgid "Display Post Titles"
 msgstr "在使用给相关日志显示缩略图的同时还显示相关日志的标题等文本？"
 
 #: ../wp_related_posts.php:468

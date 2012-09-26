@@ -41,6 +41,10 @@
 		var wp_rp_thumbnail_span = document.getElementById('wp_rp_thumbnail_span');
 		if(wp_rp_thumbnail.checked){
 			wp_rp_thumbnail_span.style.display = '';
+			jQuery('#wp-rp-thumbnails-info').fadeOut();
+			if (window.localStorage) {
+				window.localStorage.wp_rp_thumbnails_info = "close";
+			}
 		} else {
 			wp_rp_thumbnail_span.style.display = 'none';
 		}
@@ -52,7 +56,9 @@
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-34712447-1']);
   _gaq.push(['_trackPageview']);
-
+<?php if(isset($wp_rp['wp_rp_log_new_user']) && $wp_rp['wp_rp_log_new_user']) { ?>
+  _gaq.push(['_trackEvent', 'wp_related_posts', 'new_user', 'new_user', 0, true]);
+<?php } ?>
   _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_version', '<?=get_bloginfo('version');?>', 0, true]);
   _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_language', '<?=get_bloginfo('language');?>', 0, true]);
   _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_plugin_version', '<?php $plugin_data = get_plugin_data(__FILE__); echo $plugin_data['Version'];?>', 0, true]);

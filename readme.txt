@@ -1,18 +1,16 @@
 ﻿=== Plugin Name ===
-Contributors: denishua
+Contributors: jureham
 Tags: Related,Posts
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8490579
-Requires at least: 2.3
-Tested up to: 3.4.1
-Stable tag: 1.3
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
+Requires at least: 3.0
+Tested up to: 3.4.2
+Stable tag: 1.4
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
 == Description ==
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
-
-Please search and submit your transaltion here: <a href="http://fairyfish.net/2008/06/06/wordpress-related-posts-plugin-translation/">http://fairyfish.net/2008/06/06/wordpress-related-posts-plugin-translation/</a> 
 
 == Installation ==
 
@@ -26,6 +24,11 @@ Please search and submit your transaltion here: <a href="http://fairyfish.net/20
 
 
 == Changelog ==
+
+= 1.4 =
+* Improved thumbnail support
+* Optimized random posts generation
+* Drop support for WordPress 2.x
 
 = 1.3 =
 * Code cleanup

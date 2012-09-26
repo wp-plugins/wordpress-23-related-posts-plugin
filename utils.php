@@ -50,7 +50,10 @@ if ( ! defined( 'WPMU_PLUGIN_DIR' ) )
 	define( 'WPMU_PLUGIN_DIR', WP_CONTENT_DIR . '/mu-plugins' );
 
 
+/* ***************************** */
 /* WP RP backwards compatibility */
+/* ***************************** */
+
 function wp_random_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
 	$random_posts = wp_get_random_posts ($limitclause);
@@ -58,7 +61,7 @@ function wp_random_posts ($number = 10){
 	foreach ($random_posts as $random_post ){
 		$output .= '<li>';
 
-		$output .=  '<a href="'.get_permalink($random_post->ID).'" title="'.wptexturize($random_post->post_title).'">'.wptexturize($random_post->post_title).'</a></li>';
+		$output .=  '<a href="' . get_permalink($random_post->ID) . '" title="' . esc_attr(wptexturize($random_post->post_title)) . '">' . wptexturize($random_post->post_title) . '</a></li>';
 	}
 
 	$output = '<ul class="randome_post">' . $output . '</ul>';
@@ -70,10 +73,8 @@ function wp_most_popular_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
 	$most_popular_posts = wp_get_most_popular_posts ($limitclause);
 
-	foreach ($most_popular_posts as $most_popular_post ){
-		$output .= '<li>';
-
-		$output .=  '<a href="'.get_permalink($most_popular_post->ID).'" title="'.wptexturize($most_popular_post->post_title).'">'.wptexturize($most_popular_post->post_title).'</a></li>';
+	foreach($most_popular_posts as $most_popular_post) {
+		$output .=  '<li><a href="' . get_permalink($most_popular_post->ID) . '" title="' . esc_attr(wptexturize($most_popular_post->post_title)) . '">' . wptexturize($most_popular_post->post_title) . '</a></li>';
 	}
 
 	$output = '<ul class="most_popular_post">' . $output . '</ul>';
@@ -85,10 +86,8 @@ function wp_most_commented_posts ($number = 10){
 	$limitclause="LIMIT " . $number;
 	$most_commented_posts = wp_get_most_commented_posts ($limitclause);
 
-	foreach ($most_commented_posts as $most_commented_post ){
-		$output .= '<li>';
-
-		$output .=  '<a href="'.get_permalink($most_commented_post->ID).'" title="'.wptexturize($most_commented_post->post_title).'">'.wptexturize($most_commented_post->post_title).'</a></li>';
+	foreach($most_commented_posts as $most_commented_post) {
+		$output .=  '<li><a href="'.get_permalink($most_commented_post->ID).'" title="' . esc_attr(wptexturize($most_commented_post->post_title)) . '">' . wptexturize($most_commented_post->post_title) . '</a></li>';
 	}
 
 	$output = '<ul class="most_commented_post">' . $output . '</ul>';

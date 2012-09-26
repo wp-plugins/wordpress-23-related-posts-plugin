@@ -176,11 +176,11 @@ msgid "Thumbnail Setting:"
 msgstr ""
 
 #: ../wp_related_posts.php:462
-msgid "Display Thumbnails For Related Posts?"
+msgid "Display Thumbnails For Related Posts"
 msgstr ""
 
 #: ../wp_related_posts.php:466
-msgid "Do you still want to display text when display thumbnails for related posts?"
+msgid "Display Post Titles"
 msgstr ""
 
 #: ../wp_related_posts.php:468
