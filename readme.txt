@@ -4,7 +4,7 @@ Tags: Related,Posts
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 1.4
+Stable tag: 1.5
 
 WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
 
@@ -20,10 +20,16 @@ WordPress Related Posts Plugin will generate a related posts via WordPress tags,
 
 == Screenshots ==
 1. WordPress Related Posts default theme.
-2. WordPress Related Posts setting.
+2. WordPress Related Posts statistics.
+3. WordPress Related Posts setting.
 
 
 == Changelog ==
+
+= 1.5 =
+* Pageview statistics in settings
+* Custom CSS
+* Bugfixes
 
 = 1.4 =
 * Improved thumbnail support
