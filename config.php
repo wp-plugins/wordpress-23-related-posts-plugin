@@ -74,7 +74,7 @@ function wp_rp_fetch_blog_credentials() {
 	}
 
 	$options = array(
-		'timeout' => 2
+		'timeout' => 4
 	);
 	$response = wp_remote_get(WP_RP_CTR_BASE_URL . 'register/?blog_url=' . get_bloginfo('wpurl'), $options);
 	if (wp_remote_retrieve_response_code($response) == 200) {
