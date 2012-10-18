@@ -30,3 +30,10 @@
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.enable {color: #82c1cb;}
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.unavailable {color: #848484; display: none; padding-top: 20px;}
 #wp_rp_wrap div#wp_rp_statistics_wrap div.option-enable img.arrow {width: 83px; height: 51px; margin-bottom: -40px; margin-right: 1em;}
+
+#wp_rp_blogger_network_form { background: #f7f7f7; padding: 20px; margin: 30px 0px; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+#wp_rp_blogger_network_form h2 { font-size: 19px; line-height: 20px; padding-top: 0px; }
+#wp_rp_blogger_network_submit { background-color: #8ac6d0; border-color: #57aab8; -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; color: white; padding: 7px 25px; font-size: 14px; text-shadow: 1px 1px 1px #666; }
+#wp_rp_blogger_network_submit.disabled { background-color: #ddd; border-color: #bababa; }
+#wp_rp_blogger_network_thankyou { font-size: 14px; display: none; }
+#wp_rp_blogger_network_thankyou img { float: left; margin: 10px; }

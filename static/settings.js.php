@@ -50,23 +50,3 @@
 		}
 	}
 </script>
-
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-34712447-1']);
-  _gaq.push(['_trackPageview']);
-<?php if($meta['new_user']) : ?>
-  _gaq.push(['_trackEvent', 'wp_related_posts', 'new_user', 'new_user', 0, true]);
-<?php endif; ?>
-  _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_version', '<?php bloginfo('version'); ?>', 0, true]);
-  _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_language', '<?php bloginfo('language'); ?>', 0, true]);
-  _gaq.push(['_trackEvent', 'wp_related_posts', 'settings_loaded_wp_plugin_version', '<?php $plugin_data = get_plugin_data(__FILE__); echo $plugin_data['Version'];?>', 0, true]);
-
-  (function() {
-	var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-	var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
