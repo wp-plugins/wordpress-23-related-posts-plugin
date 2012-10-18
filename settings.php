@@ -378,7 +378,7 @@ jQuery(function($) {
 					<td>
 						<label>
 							<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
-							<?php _e("Enable Themes",'wp_related_posts'); ?>
+							<?php _e("Enable Themes (Loaded from external service)",'wp_related_posts'); ?>
 						</label>
 						<div class="theme-list"></div>
 					</td>
