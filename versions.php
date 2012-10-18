@@ -1,4 +1,19 @@
 <?php
+/* ************************* */
+/*        Version 1.5.1      */
+/* ************************* */
+
+/* Settings: 
+
+	ctr_dashboard_enabled						bool : show CTR statistics in dashboard
+
+*/
+
+/* Meta options:
+
+	+ show_blogger_network						bool : show a banner for submitting email and blogger network
+
+*/
 
 /* ************************* */
 /*        Version 1.5        */
@@ -27,6 +42,7 @@
 	wp_rp_thumbnail_featured -> thumbnail_use_custom		bool : `true` -> use image from custom field, `false` -> use featured image
 
 	+ wp_rp_theme_custom_css -> theme_custom_css			string : user defined custom css for related posts
+	+ ctr_dashboard_enabled						"yes" | false : whether to show CTR statistics in dashboard or not. We fucked up here, we must normalize this in the next version.
 
 	- wp_rp_version -> meta.version
 	- wp_rp_log_new_user -> meta.new_user

@@ -99,6 +99,19 @@ function wp_rp_settings_styles() {
 	wp_enqueue_style("wp_rp_dashaboard_style", plugins_url("static/css/dashboard.css", __FILE__));
 }
 
+function wp_rp_ajax_blogger_network_submit_callback() {
+	$meta = wp_rp_get_meta();
+
+	$meta['show_blogger_network'] = false;
+	update_option('wp_rp_meta', $meta);
+
+	echo 'ok';
+
+	die();
+}
+
+add_action('wp_ajax_blogger_network_submit', 'wp_rp_ajax_blogger_network_submit_callback');
+
 function wp_rp_settings_page()
 {
 	global $wp_rp_empty_options;
@@ -129,7 +142,9 @@ function wp_rp_settings_page()
 			'related_posts_title_tag' => isset($postdata['wp_rp_related_posts_title_tag']) ? $postdata['wp_rp_related_posts_title_tag'] : 'h3',
 			'thumbnail_use_attached' => isset($postdata['wp_rp_thumbnail_use_attached']),
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
-			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']) ? $postdata['wp_rp_ctr_dashboard_enabled'] : false
+			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
+			'include_promotionail_link' => isset($postdata['wp_rp_include_promotionail_link']),
+			'enable_themes' => isset($postdata['wp_rp_enable_themes'])
 		);
 
 		if(!isset($postdata['wp_rp_not_on_categories'])) {
@@ -228,6 +243,73 @@ function wp_rp_settings_page()
 		<div id="message" class="updated fade"><p><?php echo $message ?>.</p></div>
 		<?php endif; ?>
 
+		<?php if ($meta['show_blogger_network']): ?>
+		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dDEyTlhraEd0dnRwVVFMX19LRW8wbWc6MQ&amp;ifq" method="POST" id="wp_rp_blogger_network_form" target="wp_rp_blogger_network_hidden_iframe">
+			<input type="hidden" name="pageNumber" value="0" />
+			<input type="hidden" name="backupCache" />
+			<input type="hidden" name="entry.2.single" value="<?php echo get_bloginfo('wpurl'); ?>">
+
+			<h2>Blogger networks</h2>
+
+			<table class="form-table"><tbody>
+				<tr valign="top">
+					<th scope="row"><label for="wp_rp_blogger_network_kind">I want to exchange traffic with</label></th>
+					<td width="1%">
+						<select name="entry.0.group" id="wp_rp_blogger_network_kind">
+							<option value="Automotive" />Automotive bloggers</option>
+							<option value="Beauty &amp; Style" />Beauty &amp; Style bloggers</option>
+							<option value="Business" />Business bloggers</option>
+							<option value="Consumer Tech" />Consumer Tech bloggers</option>
+							<option value="Enterprise Tech" />Enterprise Tech bloggers</option>
+							<option value="Entertainment" />Entertainment bloggers</option>
+							<option value="Family &amp; Parenting" />Family &amp; Parenting bloggers</option>
+							<option value="Food &amp; Drink" />Food &amp; Drink bloggers</option>
+							<option value="Graphic Arts" />Graphic Arts bloggers</option>
+							<option value="Healthy Living" />Healthy Living bloggers</option>
+							<option value="Home &amp; Shelter" />Home &amp; Shelter bloggers</option>
+							<option value="Lifestyle &amp; Hobby" />Lifestyle &amp; Hobby bloggers</option>
+							<option value="Men's Lifestyle" />Men's Lifestyle bloggers</option>
+							<option value="Personal Finance" />Personal Finance bloggers</option>
+							<option value="Women's Lifestyle" />Women's Lifestyle bloggers</option>
+						</select>
+					</td>
+					<td rowspan="2" valign="middle"><div id="wp_rp_blogger_network_thankyou"><img src="<?php echo plugins_url("static/img/check.png", __FILE__); ?>" width="30" height="22" />Thanks for showing interest.<br/>We'll contact you by email soon.</div></td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"><label for="wp_rp_blogger_network_email">My email is:</label></th>
+					<td><input type="email" name="entry.1.single" value="" id="wp_rp_blogger_network_email" required="required" /></td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"></th>
+					<td><input type="submit" name="submit" value="Submit" id="wp_rp_blogger_network_submit" /></td>
+			</tbody></table>
+
+			<script type="text/javascript">
+jQuery(function($) {
+	var submit = $('#wp_rp_blogger_network_submit'),
+		email_input = $('#wp_rp_blogger_network_email'),
+		email_regex = /^[^@]+@[^@]+$/;
+	$('#wp_rp_blogger_network_form').submit(function(event) {
+			if(!email_regex.test(email_input.val())) {
+				event.preventDefault();
+				email_input.animate({backgroundColor: '#faa'}).focus();
+				return;
+			}
+			email_input.css({backgroundColor: ''});
+			submit.addClass('disabled');
+			setTimeout(function() { submit.attr('disabled', true); }, 0);
+			$('#wp_rp_blogger_network_hidden_iframe').load(function() {
+					submit.attr('disabled', false).removeClass('disabled');
+					$('#wp_rp_blogger_network_thankyou').fadeIn('slow');
+					$.post(ajaxurl, {action: 'blogger_network_submit'});
+				});
+		});
+});
+			</script>
+		</form>
+		<iframe id="wp_rp_blogger_network_hidden_iframe" name="wp_rp_blogger_network_hidden_iframe" style="display: none"></iframe>
+		<?php endif; ?>
+
 		<form method="post" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=wordpress-related-posts">
 			<?php if (wp_rp_statistics_supported()): ?>
 			<h2><?php _e("Statistics",'wp_related_posts');?></h2>
@@ -237,7 +319,7 @@ function wp_rp_settings_page()
 					<img src="<?php echo plugins_url("static/img/arrow.png", __FILE__); ?>" class="arrow" />
 				<?php endif; ?>
 					<label>
-						<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" value="yes" <?php echo $options['ctr_dashboard_enabled'] ? "checked=\"checked\"" : ""; ?> />
+						<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
 						<span><?php _e("Turn statistics on",'wp_related_posts');?> </span>
 					</label>
 				</div>
@@ -291,9 +373,15 @@ function wp_rp_settings_page()
 
 			<h3>Theme Settings <small style="color: #c33;">(new)</small></h3>
 			<table class="form-table">
-				<tr id="wp_rp_theme_options_wrap" style="display: none;">
+				<tr id="wp_rp_theme_options_wrap">
 					<th scope="row">Select Theme:</th>
-					<td class="theme-list"></td>
+					<td>
+						<label>
+							<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
+							<?php _e("Enable Themes",'wp_related_posts'); ?>
+						</label>
+						<div class="theme-list"></div>
+					</td>
 				</tr>
 				<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
 					<th scope="row"></th>
@@ -439,14 +527,19 @@ function wp_rp_settings_page()
 				<tr valign="top">
 					<td>
 						<label>
-						<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
-						<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
+							<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
+							<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
 						</label>
 						(or add `&lt;?php wp_related_posts()?&gt;` to your single post template)
 						<br />
 						<label>
-						<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
-						<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
+							<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
+							<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
+						</label>
+						<br />
+						<label>
+							<input name="wp_rp_include_promotionail_link" type="checkbox" id="wp_rp_include_promotionail_link" value="yes"<?php checked($options['include_promotionail_link']); ?> />
+							<?php _e('Help Promote This Plugin', 'wp_related_posts'); ?>
 						</label>
 					</td>
 				</tr>
