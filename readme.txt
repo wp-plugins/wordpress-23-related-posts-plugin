@@ -45,7 +45,7 @@ WordPress Related Posts Plugin will generate a related posts via WordPress tags,
 = 1.2.1 =
 * Sane defaults
 
-= 1.2 = 
+= 1.2 =
 * Compatible with WordPress 3.0
 
 = 1.1 =
