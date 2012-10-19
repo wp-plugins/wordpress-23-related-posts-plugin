@@ -78,7 +78,8 @@ function wp_rp_fetch_blog_credentials() {
 	$options = array(
 		'timeout' => 10
 	);
-	$response = wp_remote_get(WP_RP_CTR_BASE_URL . 'register/?blog_url=' . get_bloginfo('wpurl'), $options);
+
+	$response = wp_remote_get(WP_RP_CTR_BASE_URL . 'register/?blog_url=' . get_bloginfo('wpurl') . ($wp_rp_meta['new_user'] ? '&new' : ''), $options);
 	if (wp_remote_retrieve_response_code($response) == 200) {
 		$body = wp_remote_retrieve_body($response);
 		if ($body) {
@@ -86,6 +87,7 @@ function wp_rp_fetch_blog_credentials() {
 			if ($doc && $doc->status === 'ok') {
 				$wp_rp_meta['blog_id'] = $doc->data->blog_id;
 				$wp_rp_meta['auth_key'] = $doc->data->auth_key;
+				$wp_rp_meta['new_user'] = false;
 				update_option('wp_rp_meta', $wp_rp_meta);
 			}
 		}
@@ -126,7 +128,7 @@ function wp_rp_install() {
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
 		'show_upgrade_tooltip' => false,
-		'show_ctr_banner' => false,
+		'show_ctr_banner' => true,
 		'show_blogger_network' => true
 	);
 
