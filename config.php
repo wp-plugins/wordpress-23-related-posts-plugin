@@ -128,6 +128,7 @@ function wp_rp_install() {
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
 		'show_upgrade_tooltip' => false,
+		'show_install_tooltip' => true,
 		'show_ctr_banner' => true,
 		'show_blogger_network' => true
 	);
@@ -162,6 +163,14 @@ function wp_rp_install() {
 	update_option('wp_rp_options', $wp_rp_options);
 }
 
+function wp_rp_migrate_1_5_2() { # Silent release
+	$wp_rp_meta = get_option('wp_rp_meta');
+
+	$wp_rp_meta['show_install_tooltip'] = false;
+	$wp_rp_meta['version'] = '1.5.2.1';
+
+	update_option('wp_rp_meta', $wp_rp_meta);
+}
 function wp_rp_migrate_1_5_1() {
 	$wp_rp_options = get_option('wp_rp_options');
 	$wp_rp_meta = get_option('wp_rp_meta');
