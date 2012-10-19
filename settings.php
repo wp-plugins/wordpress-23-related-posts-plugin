@@ -210,11 +210,6 @@ function wp_rp_settings_page()
 		$theme_custom_css = $options['theme_custom_css'];
 
 		include(dirname(__FILE__) . '/static/settings.js.php');
-
-		if ($meta['new_user']) {
-			$meta['new_user'] = false;
-			update_option('wp_rp_meta', $meta);
-		}
 	?>
 
 		<input type="hidden" id="wp_rp_json_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL . WP_RP_STATIC_JSON_PATH); ?>" />
