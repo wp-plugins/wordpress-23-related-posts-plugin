@@ -1,26 +1,61 @@
 ﻿=== Plugin Name ===
 Contributors: jureham
-Tags: Related,Posts
+Tags: Related,Posts,Post,Related Posts,Plugin
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
-Requires at least: 3.0
+License: GPLv2
+Requires at least: 3.3
 Tested up to: 3.4.2
-Stable tag: 1.5.2
+Stable tag: 1.6
 
-WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
+WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
 == Description ==
 
-WordPress Related Posts Plugin will generate a related posts via WordPress tags, and add the related posts to feed.
+Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. The plugin also delivers statistics about Pageviews and Clicks\*. It supports different styles, thumbnails and is fully customizable.
 
-Quickly increase engagement with your posts by adding Related Posts at the bottom of your content. This plugin also delivers statistics about Pageviews and Clicks*. Supports different styles, thumbnails and is fully customizable.
+After installation, go to Settings -> Related Posts in your plugins list and turn on Thumbnails & Statistics!
 
-* Real time traffic analytics are provided via third party service.
+\* Real time traffic analytics are provided via third party service.
+
+== Frequently Asked Questions ==
+
+= Why should I use this plugin and not any other? =
+
+WordPress Related Posts is constantly improved to bring you the highest rates of audience engagement with your content. Our highest Click-Through rates speak for themselves.
+What does this plugin do?
+
+It places a list of links with thumbnails at the bottom of your posts. It increases pageviews and engages readers to stay on your site longer and discover more of your content.
+
+= Are there any settings? =
+
+Plenty.
+
+* thumbnail size, style
+* number of posts
+* display post excerpt, publish date, number of comments
+* fallback if there are no related posts
+* categories to exclude
+* set default image
+
+= Does it support mobile themes? =
+
+Yes, related posts are responsive so they adapt to the screen size to ensure maximum click-through rates.
 
 == Installation ==
 
-1. Upload the folder WPRP to the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Navigate to Manage > Option > WordPress Related Posts to configure plugin output.
+= Via upload: =
+1. Download the plugin .zip file
+2. Log in to yourdomain.com/wp-admin
+3. Click Plugins -> Add New -> Upload
+4. After installation, you must go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
+5. You're finished!
+
+= Via admin: =
+1. Go to Plugins -> Add New
+2. Search for WordPress Related Posts
+3. Install and activate the first result
+4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
+5. Done!
 
 == Screenshots ==
 1. WordPress Related Posts default theme.
@@ -29,6 +64,11 @@ Quickly increase engagement with your posts by adding Related Posts at the botto
 
 
 == Changelog ==
+
+= 1.6 =
+* Bugfixes
+* Settings page update
+* Scroll up related posts experiment
 
 = 1.5.2 =
 * Opt-in remote assets

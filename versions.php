@@ -1,11 +1,45 @@
 <?php
 /* ************************* */
+/*         Version 1.6       */
+/* ************************* */
+
+/* Settings: 
+
+	+ scroll_up_related_posts					bool : display scroll up related posts
+
+*/
+
+/* Meta options:
+
+	+ show_install_tooltip						bool : show a tooltip for new users, telling them to go to settings and enable features
+	+ remote_recommendations					bool : query sre for recommendations
+	+ show_turn_on_button						bool : show "Turn on statistics & thumbnails" button in settings
+	+ name								string : the user's name ('' means not set)
+	+ email								string : the user's email ('' means not set)
+	+ show_invite_friends_form					bool : show the Invite Friends form in settings
+	- show_ctr_banner
+	- show_blogger_network
+
+*/
+
+/* ************************* */
+/*        Version 1.5.2      */
+/* ************************* */
+
+/* Settings: 
+
+	+ enable_themes							bool : themes are now disabled by default (to avoid tracking users)
+
+*/
+
+/* ************************* */
 /*        Version 1.5.1      */
 /* ************************* */
 
 /* Settings: 
 
 	ctr_dashboard_enabled						bool : show CTR statistics in dashboard
+	+ include_promotionail_link					bool : show promotional link next to related articles
 
 */
 
@@ -46,6 +80,7 @@
 
 	- wp_rp_version -> meta.version
 	- wp_rp_log_new_user -> meta.new_user
+
 */
 
 /* Meta options:
@@ -57,6 +92,8 @@
 	access_token							`false` | string : if the user has registered, the assigned access token
 	show_upgrade_tooltip						bool : show a tooltip for upgrades, informing the user of new features
 	show_ctr_banner							bool : show a banner for the new CTR tracking option, until the user has first enable the CTR tracking
+
+*/
 
 /* ************************* */
 /*        Version 1.4        */

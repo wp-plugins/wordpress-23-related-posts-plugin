@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.5.2
+Version: 1.6
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Jure Ham
 Author URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 */
 
-define('WP_RP_VERSION', '1.5.2');
+define('WP_RP_VERSION', '1.6');
 
 include_once(dirname(__FILE__) . '/config.php');
 
@@ -176,7 +176,7 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 				$output .= mysql2date($dateformat, $related_post->post_date) . " -- ";
 			}
 
-			$output .=  '<a href="' . get_permalink($related_post->ID) . '">' . wptexturize($related_post->post_title) . '</a>';
+			$output .= '<a href="' . get_permalink($related_post->ID) . '">' . wptexturize($related_post->post_title) . '</a>';
 
 			if ($options["display_comment_count"]){
 				$output .=  " (" . $related_post->comment_count . ")";
@@ -219,31 +219,37 @@ function wp_rp_should_exclude() {
 function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	global $wpdb, $post;
 
-	if (wp_rp_should_exclude())
+	if (wp_rp_should_exclude()) {
 		return;
+	}
 
 	$options = wp_rp_get_options();
 	$meta = wp_rp_get_meta();
 
 	$output = "";
 	$output_script = "";
+
 	$promotional_link = '';
 
 	$posts_and_title = wp_rp_fetch_posts_and_title();
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
 
+	$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
+	$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
+
+
+	$output_script .= "window._wp_rp_static_base_url = \"" . WP_RP_STATIC_BASE_URL . "\";\n";
 
 	if ($related_posts) {
 		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = '<ul class="related_post wp_rp">' . $output . '</ul>';
+		$output = "<ul class=\"related_post wp_rp\" style=\"visibility:" . ($remote_recommendations ? 'hidden' : 'visible') . ";\">" . $output . "</ul>\n";
 
 		if ($options['include_promotionail_link']) {
 			$promotional_link = ' <a target="_blank" rel="nofollow" title="WordPress Related Posts" href="http://related-posts.com/welcome2/" class="wp_rp_welcome" onclick="return window._wp_rp_show_banner && window._wp_rp_show_banner(event)">[?]</a>';
-			$output .= '<div id="wp_rp_popup_holder"></div>';
-			$output .= '<script async type="text/javascript" src="' . esc_attr(WP_RP_STATIC_BASE_URL . WP_RP_BANNER_FILE) . '"></script>';
+			$output .= "<div id=\"wp_rp_popup_holder\"></div>\n";
 
-			$output_script .= 'window._wp_rp_static_base_url = "' . WP_RP_STATIC_BASE_URL . '";';
+			wp_enqueue_script('wp_rp_welcome', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_BANNER_FILE);
 		}
 	}
 
@@ -260,9 +266,9 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 		$theme_name = $options['theme_name'];
 
 		if ($options["display_thumbnail"]) {
-			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH . $theme_name;
+			wp_enqueue_style('wp_rp_theme', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH . $theme_name);
 		} else {
-			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_PATH . $theme_name;
+			wp_enqueue_style('wp_rp_theme', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_PATH . $theme_name);
 		}
 
 		if ($theme_name === 'custom.css') {
@@ -270,28 +276,34 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 
 			$output .= '<style>' . $theme_custom_css . '</style>';
 		}
-
-		$output_script .= 'setTimeout(function () {
-				var link = document.createElement("link");
-				link.rel = "stylesheet";
-				link.href = "' . esc_js($theme_url) . '";
-				link.type = "text/css";
-				document.getElementsByTagName("body")[0].appendChild(link);
-			}, 1);';
 	}
 
-	if ($options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key']) {
-		$output_script .= 'window._wp_rp_blog_id = "' . esc_js($meta['blog_id']) . '";
-			window._wp_rp_ajax_img_src_url = "' . esc_js(WP_RP_CTR_REPORT_URL) . '";
-			window._wp_rp_post_id = ' . esc_js($post->ID) . ';
-			window._wp_rp_thumbnails = ' . ($options["display_thumbnail"] ? 'true' : 'false') . ';';
+	if ($statistics_enabled) {
+		$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode($v) . "\'";'), wp_get_post_tags($post->ID, array('fields' => 'names')))) . ']';
 
-		$output .= '<script type="text/javascript" src="' . esc_attr(WP_RP_STATIC_BASE_URL . WP_RP_CTR_PAGEVIEW_FILE) . '"></script>';
+		$output_script .= 'window._wp_rp_blog_id = \'' . esc_js($meta['blog_id']) . '\';
+			window._wp_rp_ajax_img_src_url = "' . esc_js(WP_RP_CTR_REPORT_URL) . '";
+			window._wp_rp_post_id = \'' . esc_js($post->ID) . '\';
+			window._wp_rp_thumbnails = ' . ($options["display_thumbnail"] ? 'true' : 'false') . ';
+			window._wp_rp_post_title = \'' . urlencode($post->post_title) . '\';
+			window._wp_rp_post_tags = ' . $post_tags . ';';
+
+		wp_enqueue_script('wp_rp_pageview', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_CTR_PAGEVIEW_FILE);
+	}
+
+	if ($remote_recommendations) {
+		wp_enqueue_script('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE);
+		wp_enqueue_style('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE);
+	}
+
+	if ($options['scroll_up_related_posts']) {
+		wp_enqueue_script('wp_rp_scrollup', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_SCROLLUP_JS_FILE, array('jquery'));
+		wp_enqueue_style('wp_rp_scrollup', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_SCROLLUP_CSS_FILE);
 	}
 
 	if ($output_script) {
-		$output_script = '<script type="text/javascript">' . $output_script . '</script>';
+		$output_script = "<script type=\"text/javascript\">\n" . $output_script . "\n</script>";
 	}
 
-	return $output . $output_script;
+	return "\n" . $output_script  . "\n" . $output . "\n";
 }
