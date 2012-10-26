@@ -21,17 +21,24 @@ define('WP_RP_THUMBNAILS_WIDTH', 150);
 define('WP_RP_THUMBNAILS_HEIGHT', 150);
 define('WP_RP_THUMBNAILS_DEFAULTS_COUNT', 15);
 
-define("WP_RP_CTR_BASE_URL", "http://d.related-posts.com/");
+define("WP_RP_CTR_DASHBOARD_URL", "http://d.related-posts.com/");
 define("WP_RP_CTR_REPORT_URL", "http://t.related-posts.com/pageview/?");
-define("WP_RP_CTR_PAGEVIEW_FILE", "js/pageview.js");
+define("WP_RP_STATIC_CTR_PAGEVIEW_FILE", "js/pageview.js");
+
+define("WP_RP_STATIC_RECOMMENDATIONS_JS_FILE", "js/recommendations.js");
+define("WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE", "css-img/recommendations.css");
+
+define("WP_RP_STATIC_SCROLLUP_JS_FILE", "js/scrollup.js");
+define("WP_RP_STATIC_SCROLLUP_CSS_FILE", "css-img/scrollup.css");
+
+define("WP_RP_STATIC_BANNER_FILE", "js/welcome.js");
 
 
 global $wp_rp_options, $wp_rp_meta;
 $wp_rp_options = false;
 $wp_rp_meta = false;
 
-function wp_rp_get_options()
-{
+function wp_rp_get_options() {
 	global $wp_rp_options, $wp_rp_meta;
 	if($wp_rp_options) {
 		return $wp_rp_options;
@@ -42,12 +49,9 @@ function wp_rp_get_options()
 		wp_rp_upgrade();
 		$wp_rp_meta = get_option('wp_rp_meta');
 	}
+	$wp_rp_meta = new ArrayObject($wp_rp_meta);
 
-	$wp_rp_options = get_option('wp_rp_options');
-
-	if ($wp_rp_options['ctr_dashboard_enabled'] && !$wp_rp_meta['blog_id']) {
-		wp_rp_fetch_blog_credentials();
-	}
+	$wp_rp_options = new ArrayObject(get_option('wp_rp_options'));
 
 	return $wp_rp_options;
 }
@@ -62,35 +66,36 @@ function wp_rp_get_meta() {
 	return $wp_rp_meta;
 }
 
-function wp_rp_activate_hook() {
-	wp_rp_get_options();
-}
-
-function wp_rp_fetch_blog_credentials() {
+function wp_rp_update_meta($new_meta) {
 	global $wp_rp_meta;
 
-	if (!wp_rp_statistics_supported()) {
-		return;
+	$new_meta = (array) $new_meta;
+
+	$r = update_option('wp_rp_meta', $new_meta);
+
+	if($r && $wp_rp_meta !== false) {
+		$wp_rp_meta->exchangeArray($new_meta);
 	}
 
-	$options = array(
-		'timeout' => 10
-	);
-	$response = wp_remote_get(WP_RP_CTR_BASE_URL . 'register/?blog_url=' . get_bloginfo('wpurl'), $options);
-	if (wp_remote_retrieve_response_code($response) == 200) {
-		$body = wp_remote_retrieve_body($response);
-		if ($body) {
-			$doc = json_decode($body);
-			if ($doc && $doc->status === 'ok') {
-				$wp_rp_meta['blog_id'] = $doc->data->blog_id;
-				$wp_rp_meta['auth_key'] = $doc->data->auth_key;
-				update_option('wp_rp_meta', $wp_rp_meta);
-			}
-		}
-	}
+	return $r;
 }
-function wp_rp_statistics_supported() {
-	return function_exists('json_decode');  // PHP < 5.2.0
+
+function wp_rp_update_options($new_options) {
+	global $wp_rp_options;
+
+	$new_options = (array) $new_options;
+
+	$r = update_option('wp_rp_options', $new_options);
+
+	if($r && $wp_rp_options !== false) {
+		$wp_rp_options->exchangeArray($new_options);
+	}
+
+	return $r;
+}
+
+function wp_rp_activate_hook() {
+	wp_rp_get_options();
 }
 
 function wp_rp_upgrade() {
@@ -124,14 +129,19 @@ function wp_rp_install() {
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
 		'show_upgrade_tooltip' => false,
-		'show_ctr_banner' => false
+		'show_install_tooltip' => true,
+		'remote_recommendations' => false,
+		'show_turn_on_button' => true,
+		'name' => '',
+		'email' => '',
+		'show_invite_friends_form' => true
 	);
 
 	$wp_rp_options = array(
 		'related_posts_title'			=> __('Related Posts', 'wp_related_posts'),
 		'related_posts_title_tag'		=> 'h3',
 		'missing_rp_algorithm'			=> 'random',
-		'missing_rp_title'			=> __('Random Posts', 'wp_related_posts'),
+		'missing_rp_title'			=> __('Other Posts', 'wp_related_posts'),
 		'display_excerpt'			=> false,
 		'excerpt_max_length'			=> 200,
 		'max_related_posts'			=> 5,
@@ -140,7 +150,7 @@ function wp_rp_install() {
 		'on_rss'				=> false,
 		'display_comment_count'			=> false,
 		'display_publish_date'			=> false,
-		'display_thumbnail'			=> true,
+		'display_thumbnail'			=> false,
 		'thumbnail_display_title'		=> true,
 		'thumbnail_custom_field'		=> false,
 		'thumbnail_use_attached'		=> true,
@@ -148,11 +158,67 @@ function wp_rp_install() {
 		'default_thumbnail_path'		=> false,
 		'theme_name' 				=> 'vertical-m.css',
 		'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
-		'ctr_dashboard_enabled' => wp_rp_statistics_supported()
+		'ctr_dashboard_enabled'		=> false,
+		'include_promotionail_link'	=> false,
+		'enable_themes'				=> false,
+		'scroll_up_related_posts'	=> true
 	);
 
 	update_option('wp_rp_meta', $wp_rp_meta);
 	update_option('wp_rp_options', $wp_rp_options);
+}
+
+function wp_rp_migrate_1_5_2_1() { # This was a silent release, but WP_RP_VERSION was not properly updated, so we don't know exactly what happened...
+	$wp_rp_meta = get_option('wp_rp_meta');
+
+	$wp_rp_meta['version'] = '1.5.2';
+
+	update_option('wp_rp_meta', $wp_rp_meta);
+}
+
+function wp_rp_migrate_1_5_2() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '1.6';
+
+	$wp_rp_meta['show_install_tooltip'] = false;
+	$wp_rp_meta['remote_recommendations'] = false;
+	$wp_rp_meta['show_turn_on_button'] = !($wp_rp_options['ctr_dashboard_enabled'] && $wp_rp_options['display_thumbnail']);
+	$wp_rp_meta['name'] = '';
+	$wp_rp_meta['email'] = '';
+	$wp_rp_meta['show_invite_friends_form'] = false;
+
+	unset($wp_rp_meta['show_ctr_banner']);
+	unset($wp_rp_meta['show_blogger_network']);
+
+	$wp_rp_options['scroll_up_related_posts'] = false;
+
+	update_option('wp_rp_meta', $wp_rp_meta);
+	update_option('wp_rp_options', $wp_rp_options);
+}
+function wp_rp_migrate_1_5_1() {
+	$wp_rp_options = get_option('wp_rp_options');
+	$wp_rp_meta = get_option('wp_rp_meta');
+
+	$wp_rp_options['enable_themes'] = true;
+	$wp_rp_meta['version'] = '1.5.2';
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
+}
+function wp_rp_migrate_1_5() {
+	$wp_rp_options = get_option('wp_rp_options');
+	$wp_rp_meta = get_option('wp_rp_meta');
+
+	$wp_rp_meta['show_blogger_network'] = false;
+	$wp_rp_meta['version'] = '1.5.1';
+
+	$wp_rp_options['include_promotionail_link'] = false;
+	$wp_rp_options['ctr_dashboard_enabled'] = !!$wp_rp_options['ctr_dashboard_enabled'];
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_1_4() {

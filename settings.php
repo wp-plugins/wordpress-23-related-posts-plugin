@@ -8,12 +8,15 @@ function wp_rp_display_tooltips() {
 	$meta = wp_rp_get_meta();
 
 	if ($meta['show_upgrade_tooltip']) {
-		global $wp_rp_meta;
 		$meta['show_upgrade_tooltip'] = false;
-		update_option('wp_rp_meta', $meta);
-		$wp_rp_meta = $meta;
+		wp_rp_update_meta($meta);
 
 		add_action('admin_enqueue_scripts', 'wp_rp_load_upgrade_tooltip');
+	} else if ($meta['show_install_tooltip']) {
+		$meta['show_install_tooltip'] = false;
+		wp_rp_update_meta($meta);
+
+		add_action('admin_enqueue_scripts', 'wp_rp_load_install_tooltip');
 	}
 }
 function wp_rp_load_upgrade_tooltip() {
@@ -27,6 +30,20 @@ function wp_rp_load_upgrade_tooltip() {
 }
 function wp_rp_print_upgrade_tooltip() {
 	$content = "<h3>Thanks for updating Related Posts plugin!</h3><p>We've added some new stuff to the Settings, go check them out. Let us know what you think.</p>";
+	wp_rp_print_tooltip($content);
+}
+
+function wp_rp_load_install_tooltip() {
+	if (version_compare(get_bloginfo('version'), '3.3', '<')) {
+		return;
+	}
+
+    wp_enqueue_style('wp-pointer');
+    wp_enqueue_script('wp-pointer');
+    add_action('admin_print_footer_scripts', 'wp_rp_print_install_tooltip');
+}
+function wp_rp_print_install_tooltip() {
+	$content = "<h3>Thanks for installing Related Posts plugin!</h3><p>To experience the full power of Related Posts, go to settings and turn Statistics on!</p>";
 	wp_rp_print_tooltip($content);
 }
 
@@ -99,11 +116,67 @@ function wp_rp_settings_styles() {
 	wp_enqueue_style("wp_rp_dashaboard_style", plugins_url("static/css/dashboard.css", __FILE__));
 }
 
+function wp_rp_register_blog() {
+	$meta = wp_rp_get_meta();
+
+	$req_options = array(
+		'timeout' => 10
+	);
+
+	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') . ($meta['new_user'] ? '&new' : ''), $req_options);
+	if (wp_remote_retrieve_response_code($response) == 200) {
+		$body = wp_remote_retrieve_body($response);
+		if ($body) {
+			$doc = json_decode($body);
+			if ($doc && $doc->status === 'ok') {
+				$meta['blog_id'] = $doc->data->blog_id;
+				$meta['auth_key'] = $doc->data->auth_key;
+				$meta['new_user'] = false;
+				wp_rp_update_meta($meta);
+
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function wp_rp_ajax_invite_friends_callback() {
+	$postdata = stripslashes_deep($_POST);
+
+	$meta = wp_rp_get_meta();
+
+	if(isset($postdata['name'])) {
+		$meta['name'] = $postdata['name'];
+	}
+	if(isset($postdata['email'])) {
+		$meta['email'] = $postdata['email'];
+	}
+	if(isset($postdata['show'])) {
+		$meta['show_invite_friends_form'] = true;
+	}
+	if(isset($postdata['hide'])) {
+		$meta['show_invite_friends_form'] = false;
+	}
+	if(isset($postdata['recommend'])) {
+		$meta['remote_recommendations'] = true;
+	}
+
+	wp_rp_update_meta($meta);
+
+
+	echo 'ok';
+	die();
+}
+
+add_action('wp_ajax_rp_invite_friends', 'wp_rp_ajax_invite_friends_callback');
+
 function wp_rp_settings_page()
 {
-	global $wp_rp_empty_options;
-
 	$title_tags = array('h2', 'h3', 'h4', 'p', 'div');
+
+	$options = wp_rp_get_options();
+	$meta = wp_rp_get_meta();
 
 	$postdata = stripslashes_deep($_POST);
 
@@ -111,7 +184,7 @@ function wp_rp_settings_page()
 	{
 		$message = __('WordPress Related Posts Setting Updated', 'wp_related_posts');
 
-		$old_options = wp_rp_get_options();
+		$old_options = $options;
 		$new_options = array(
 			'missing_rp_algorithm' => isset($postdata['wp_rp_missing_rp_algorithm']) ? trim($postdata['wp_rp_missing_rp_algorithm']) : 'random',
 			'missing_rp_title' => isset($postdata['wp_rp_missing_rp_title']) ? ($postdata['wp_rp_missing_rp_title']) : __('Random Posts', 'wp_related_posts'),
@@ -129,7 +202,10 @@ function wp_rp_settings_page()
 			'related_posts_title_tag' => isset($postdata['wp_rp_related_posts_title_tag']) ? $postdata['wp_rp_related_posts_title_tag'] : 'h3',
 			'thumbnail_use_attached' => isset($postdata['wp_rp_thumbnail_use_attached']),
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
-			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']) ? $postdata['wp_rp_ctr_dashboard_enabled'] : false
+			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
+			'include_promotionail_link' => isset($postdata['wp_rp_include_promotionail_link']),
+			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
+			'scroll_up_related_posts' => isset($postdata['wp_rp_scroll_up_related_posts'])
 		);
 
 		if(!isset($postdata['wp_rp_not_on_categories'])) {
@@ -164,26 +240,21 @@ function wp_rp_settings_page()
 			}
 		}
 
-		if ($old_options != $new_options) {
-			if($new_options['ctr_dashboard_enabled'] && !$old_options['ctr_dashboard_enabled']) {
-				$meta = wp_rp_get_meta();
-				if($meta['show_ctr_banner']) {
-					$meta['show_ctr_banner'] = false;
-					update_option('wp_rp_meta', $meta);
-				}
+		if (((array) $old_options) != $new_options) {
+			if($new_options['ctr_dashboard_enabled'] && $new_options['display_thumbnail'] && $meta['show_turn_on_button']) {
+				$meta['show_turn_on_button'] = false;
+				wp_rp_update_meta($meta);
 			}
 
-			global $wp_rp_options;
-			$wp_rp_options = null; // clear options cache to execute wp_rp_get_options again
-
-			if(!update_option('wp_rp_options', $new_options)) {
+			if(!wp_rp_update_options($new_options)) {
 				$message = __('Update Failed', 'wp_related_posts');
 			}
 		}
 	}
 
-	$options = wp_rp_get_options();
-	$meta = wp_rp_get_meta();
+	if($options['ctr_dashboard_enabled'] && (!$meta['blog_id'] || !$meta['auth_key'])) {
+		wp_rp_register_blog();
+	}
 
 ?>
 
@@ -195,19 +266,14 @@ function wp_rp_settings_page()
 		$theme_custom_css = $options['theme_custom_css'];
 
 		include(dirname(__FILE__) . '/static/settings.js.php');
-
-		if ($meta['new_user']) {
-			$meta['new_user'] = false;
-			update_option('wp_rp_meta', $meta);
-		}
 	?>
 
 		<input type="hidden" id="wp_rp_json_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL . WP_RP_STATIC_JSON_PATH); ?>" />
 		<input type="hidden" id="wp_rp_version" value="<?php esc_attr_e(WP_RP_VERSION); ?>" />
 		<input type="hidden" id="wp_rp_theme_selected" value="<?php esc_attr_e($theme_name); ?>" />
+		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_DASHBOARD_URL); ?>" />
 
-		<?php if (wp_rp_statistics_supported() && $options['ctr_dashboard_enabled']):?>
-		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_BASE_URL); ?>" />
+		<?php if ($options['ctr_dashboard_enabled']):?>
 		<input type="hidden" id="wp_rp_blog_id" value="<?php esc_attr_e($meta['blog_id']); ?>" />
 		<input type="hidden" id="wp_rp_auth_key" value="<?php esc_attr_e($meta['auth_key']); ?>" />
 		<?php endif; ?>
@@ -228,27 +294,155 @@ function wp_rp_settings_page()
 		<div id="message" class="updated fade"><p><?php echo $message ?>.</p></div>
 		<?php endif; ?>
 
-		<form method="post" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=wordpress-related-posts">
-			<?php if (wp_rp_statistics_supported()): ?>
+		<?php if(!$meta['show_turn_on_button']): ?>
+		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dHhqdWtyZHIwN0Z5R2ZEel9oZVBidEE6MQ&amp;ifq" method="POST" id="wp_rp_invite_friends_form" target="wp_rp_invite_friends_hidden_iframe" <?php if(!$meta['show_invite_friends_form']) { ?>class="up"<?php } ?>>
+			<input type="hidden" name="pageNumber" value="0">
+			<input type="hidden" name="backupCache" value="">
+			<input type="hidden" name="entry.6.single" value="<?php echo get_bloginfo('wpurl'); ?>">
+
+			<a href="#" id="wp_rp_invite_friends_slide"><img src="<?php echo plugins_url('/static/img/up.png', __FILE__); ?>" width="17" height="6" border="0" class="up" /><img src="<?php echo plugins_url('/static/img/down.png', __FILE__); ?>" width="17" height="6" border="0" class="down" /></a>
+			<h2>Invite friends</h2>
+
+			<div class="slide-down" <?php if(!$meta['show_invite_friends_form']) { ?>style="display: none"<?php } ?>>
+				<p>Get your friends to use WordPress Related Posts and instantly exchange traffic with them. Your posts will appear on their site and vice versa.</p>
+
+				<?php if(!$meta['name'] || !$meta['email']): ?>
+				<table class="form-table" id="wp_rp_invite_friends_name_table"><tbody>
+					<tr valign="top">
+						<th scope="row"><label for="wp_rp_invite_friends_blogger_name">Your name</label></th>
+						<td width="1%"><input type="text" name="entry.0.single" value="" id="wp_rp_invite_friends_blogger_name" tabindex="1" /></td>
+						<td rowspan="2"></td>
+					</tr><tr valign="top">
+						<th scope="row"><label for="wp_rp_invite_friends_blogger_email">Your email</label></th>
+						<td><input type="email" name="entry.1.single" value="" id="wp_rp_invite_friends_blogger_email" tabindex="2" /><br/></td>
+					</tr>
+				</tbody></table>
+				<div class="hr" id="wp_rp_confirmation_hr"></div>
+				<? else: ?>
+				<input type="hidden" name="entry.0.single" value="<?php echo $meta['name']; ?>">
+				<input type="hidden" name="entry.1.single" value="<?php echo $meta['email']; ?>">
+				<div class="hr" id="wp_rp_confirmation_hr" style="display: none;"></div>
+				<?php endif; ?>
+
+				<table class="form-table"><tbody>
+					<tr valign="top">
+						<th scope="row"><label for="wp_rp_invite_friends_friend_url">Your friend's blog</label></th>
+						<td width="1%"><input type="text" name="entry.2.single" value="" id="wp_rp_invite_friends_friend_url" tabindex="3" required="required" /></td>
+						<td rowspan="2" valign="middle"><input type="submit" name="submit" value="Invite" id="wp_rp_invite_friends_submit" tabindex="5" /></td>
+					</tr><tr valign="top">
+						<th scope="row"><label for="wp_rp_invite_friends_friend_email">Your friend's email</label></th>
+						<td><input type="email" name="entry.4.single" value="" id="wp_rp_invite_friends_friend_email" tabindex="4" required="required" /></td>
+					</tr>
+				</tbody></table>
+			</div>
+
+			<script type="text/javascript">
+jQuery(function($) {
+	var submit = $('#wp_rp_invite_friends_submit'),
+		form = $('#wp_rp_invite_friends_form'),
+		blogger_name = $('#wp_rp_invite_friends_blogger_name'),
+		blogger_email = $('#wp_rp_invite_friends_blogger_email'),
+		friend_url = $('#wp_rp_invite_friends_friend_url'),
+		friend_email = $('#wp_rp_invite_friends_friend_email'),
+		slide_div = form.find('.slide-down'),
+		email_regex = /^[^@]+@[^@]+$/;
+	$('#wp_rp_invite_friends_form').submit(function(event) {
+			var valid = true;
+			if(!email_regex.test(friend_email.val())) {
+				valid = false;
+				friend_email.animate({backgroundColor: '#faa'}).focus();
+			} else {
+				friend_email.css({backgroundColor: ''});
+			}
+			if(!friend_url.val()) {
+				valid = false;
+				friend_url.animate({backgroundColor: '#faa'}).focus();
+			} else {
+				friend_url.css({backgroundColor: ''});
+			}
+			if(blogger_email.length && !email_regex.test(blogger_email.val())) {
+				valid = false;
+				blogger_email.animate({backgroundColor: '#faa'}).focus();
+			} else {
+				blogger_email.css({backgroundColor: ''});
+			}
+			if(blogger_name.length && !blogger_name.val()) {
+				valid = false;
+				blogger_name.animate({backgroundColor: '#faa'}).focus();
+			} else {
+				blogger_name.css({backgroundColor: ''});
+			}
+			if(!valid) {
+				event.preventDefault();
+				return;
+			}
+
+			submit.addClass('disabled');
+			setTimeout(function() { submit.attr('disabled', true); }, 0);
+		});
+
+	setTimeout(function () {
+		$('#wp_rp_invite_friends_hidden_iframe').load(function() {
+			submit.attr('disabled', false).removeClass('disabled');
+			var confirmation = $('<div class="confirmation">An invitation was sent to <span>' + friend_email.val() + '</span>.</div>');
+			var hr = form.find('#wp_rp_confirmation_hr');
+			var name_table = $('#wp_rp_invite_friends_name_table');
+
+			name_table.hide();
+			hr.fadeIn();
+			confirmation.hide().insertBefore(hr).fadeIn();
+			friend_url.val('');
+			friend_email.val('');
+
+			var data = {	action: 'rp_invite_friends',
+					recommend: true };
+
+			if(blogger_name.length && blogger_email.length) {
+				data['name'] = blogger_name.val();
+				data['email'] = blogger_email.val();
+			}
+			$.post(ajaxurl, data);
+		});
+	}, 1);
+
+	$('#wp_rp_invite_friends_slide').click(function (event) {
+			event.preventDefault();
+			if(form.hasClass('up')) {
+				slide_div.slideDown();
+				form.removeClass('up');
+				$.post(ajaxurl, { action: 'rp_invite_friends', show: true });
+			} else {
+				slide_div.slideUp();
+				form.addClass('up');
+				$.post(ajaxurl, { action: 'rp_invite_friends', hide: true });
+			}
+		});
+});
+			</script>
+		</form>
+		<iframe id="wp_rp_invite_friends_hidden_iframe" name="wp_rp_invite_friends_hidden_iframe" style="display: none"></iframe>
+		<?php endif; ?>
+
+		<?php if($meta['show_turn_on_button']): ?>
+		<div id="wp_rp_turn_on_statistics">
+			<table cellspacing="0" cellpadding="0"><tbody><tr>
+				<td>
+					<h2>Turn on Statistics & Thumbnails</h2>
+					<p>Real time traffic analytics are provided via third party service.</p>
+				</td><td>
+					<a href="#">Turn on</a>
+				</td>
+			</tr></tbody></table>
+		</div>
+		<?php endif; ?>
+
+		<form method="post" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=wordpress-related-posts" id="wp_rp_settings_form">
+		<?php if ($options['ctr_dashboard_enabled']): ?>
 			<h2><?php _e("Statistics",'wp_related_posts');?></h2>
 			<div id="wp_rp_statistics_wrap">
-				<div class="option-enable">
-				<?php if ($meta['show_ctr_banner']):?>
-					<img src="<?php echo plugins_url("static/img/arrow.png", __FILE__); ?>" class="arrow" />
-				<?php endif; ?>
-					<label>
-						<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" value="yes" <?php echo $options['ctr_dashboard_enabled'] ? "checked=\"checked\"" : ""; ?> />
-						<span><?php _e("Turn statistics on",'wp_related_posts');?> </span>
-					</label>
-				</div>
-				<?php if ($meta['show_ctr_banner']):?>
-				<div class="message enable">
-					<?php _e("Curious about the Click-Through Statistics on your blog?",'wp_related_posts');?>
-				</div>
-				<?php endif; ?>
 				<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts');?></div>
 			</div>
-			<?php endif; ?>
+		<?php endif; ?>
 
 			<h2><?php _e("Settings",'wp_related_posts');?></h2>
 			<h3><?php _e("Basic Settings",'wp_related_posts');?></h3>
@@ -289,11 +483,17 @@ function wp_rp_settings_page()
 			</tr>
 			</table>
 
-			<h3>Theme Settings <small style="color: #c33;">(new)</small></h3>
+			<h3>Theme Settings</h3>
 			<table class="form-table">
-				<tr id="wp_rp_theme_options_wrap" style="display: none;">
+				<tr id="wp_rp_theme_options_wrap">
 					<th scope="row">Select Theme:</th>
-					<td class="theme-list"></td>
+					<td>
+						<label>
+							<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
+							<?php _e("Enable Themes",'wp_related_posts'); ?>*
+						</label>
+						<div class="theme-list"></div>
+					</td>
 				</tr>
 				<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
 					<th scope="row"></th>
@@ -392,6 +592,15 @@ function wp_rp_settings_page()
 						</label>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row"><?php _e("Experimental:",'wp_related_posts'); ?></th>
+					<td>
+						<label>
+						<input name="wp_rp_scroll_up_related_posts" type="checkbox" id="wp_rp_scroll_up_related_posts" value="yes" <?php checked($options["scroll_up_related_posts"]); ?>>
+						<?php _e("Scroll Up Related Posts",'wp_related_posts');?>*
+						</label><br />
+					</td>
+				</tr>
 			</table>
 
 			<h3><?php _e("If there are no related posts",'wp_related_posts');?></h3>
@@ -439,14 +648,24 @@ function wp_rp_settings_page()
 				<tr valign="top">
 					<td>
 						<label>
-						<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
-						<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
+							<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
+							<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
 						</label>
-						(or add `&lt;?php wp_related_posts()?&gt;` to your single post template)
+						(or add <pre style="display: inline">&lt;?php wp_related_posts()?&gt;</pre> to your single post template)
 						<br />
 						<label>
-						<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
-						<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
+							<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
+							<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
+						</label>
+						<br />
+						<label>
+							<input name="wp_rp_include_promotionail_link" type="checkbox" id="wp_rp_include_promotionail_link" value="yes"<?php checked($options['include_promotionail_link']); ?> />
+							<?php _e('Help Promote This Plugin', 'wp_related_posts'); ?>*
+						</label>
+						<br />
+						<label>
+							<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
+							<?php _e("Turn statistics on",'wp_related_posts');?>*
 						</label>
 					</td>
 				</tr>
@@ -454,5 +673,8 @@ function wp_rp_settings_page()
 			<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>
 
 		</form>
+		<div>
+			* Provided via third party service.
+		</div>
 	</div>
 <?php }
