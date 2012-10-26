@@ -1,6 +1,6 @@
 ﻿=== Plugin Name ===
 Contributors: jureham
-Tags: Related,Posts,Post,Related Posts,Plugin
+Tags: related,posts,post,related posts,plugin
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 License: GPLv2
 Requires at least: 3.3
