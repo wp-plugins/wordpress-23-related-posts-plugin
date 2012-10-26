@@ -22,13 +22,12 @@ After installation, go to Settings -> Related Posts in your plugins list and tur
 = Why should I use this plugin and not any other? =
 
 WordPress Related Posts is constantly improved to bring you the highest rates of audience engagement with your content. Our highest Click-Through rates speak for themselves.
-What does this plugin do?
+
+= What does this plugin do? =
 
 It places a list of links with thumbnails at the bottom of your posts. It increases pageviews and engages readers to stay on your site longer and discover more of your content.
 
-= Are there any settings? =
-
-Plenty.
+= Are there any settings? Plenty! =
 
 * thumbnail size, style
 * number of posts
@@ -47,7 +46,7 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 1. Download the plugin .zip file
 2. Log in to yourdomain.com/wp-admin
 3. Click Plugins -> Add New -> Upload
-4. After installation, you must go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
+4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
 5. You're finished!
 
 = Via admin: =
@@ -60,7 +59,7 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 == Screenshots ==
 1. WordPress Related Posts default theme.
 2. WordPress Related Posts statistics.
-3. WordPress Related Posts setting.
+3. WordPress Related Posts settings.
 
 
 == Changelog ==
