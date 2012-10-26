@@ -57,9 +57,8 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 5. Done!
 
 == Screenshots ==
-1. WordPress Related Posts default theme.
-2. WordPress Related Posts statistics.
-3. WordPress Related Posts settings.
+1. WordPress Related Posts Default Theme.
+2. WordPress Related Posts Settings and Statistics.
 
 
 == Changelog ==
