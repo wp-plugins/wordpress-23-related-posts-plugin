@@ -50,47 +50,56 @@ function wp_rp_print_install_tooltip() {
 function wp_rp_print_tooltip($content) {
 	?>
 	<script type="text/javascript">
-		jQuery(function () {
-			var body = jQuery(document.body),
-				collapse = jQuery('#collapse-menu'),
-				menu = jQuery('#menu-settings'),
-				wprpp = menu.find("a[href='options-general.php?page=wordpress-related-posts']"),
+		jQuery(function ($) {
+			var body = $(document.body),
+				collapse = $('#collapse-menu'),
+				target = $("#toplevel_page_wordpress-related-posts"),
+				collapse_handler = function (e) {
+					body.pointer('reposition');
+				},
 				options = {
 					content: "<?php echo $content; ?>",
 					position: {
 						edge: 'left',
 						align: 'center',
-						of: menu.is('.wp-menu-open') && !menu.is('.folded *') ? wprpp : menu
+						of: target
+					},
+					open: function () {
+						collapse.bind('click', collapse_handler);
 					},
 					close: function() {
-						menu.unbind('mouseenter mouseleave', wprpp_pointer);
-						collapse.unbind('mouseenter mouseleave', wprpp_pointer);
+						collapse.unbind('click', collapse_handler);
 					}
-				},
-				wprpp_pointer = function (e) {
-					setTimeout(function() {
-						if (wprpp.is(':visible')) {
-							options.position.of = wprpp;
-						} else {
-							options.position.of = menu;
-						}
-						body.pointer(options);
-					}, 200);
 				};
 
-			if (!wprpp.length) {
-				return;
-			}
-
-			body.pointer(options).pointer('open');
-
-			if (menu.is('.folded *') || !menu.is('.wp-menu-open')) {
-				menu.bind('mouseenter mouseleave', wprpp_pointer);
-				collapse.bind('mouseenter mouseleave', wprpp_pointer);
+			if (target.length) {
+				body.pointer(options).pointer('open');
 			}
 		});
 	</script>
 	<?php
+}
+
+/**
+* Place menu icons at admin head
+**/
+add_action('admin_head', 'wp_rp_admin_head');
+function wp_rp_admin_head() {
+	$menu_icon = plugins_url('static/img/menu_icon.png', __FILE__);
+	$menu_icon_retina = plugins_url('static/img/menu_icon_2x.png', __FILE__);
+?>
+<style type="text/css">
+#toplevel_page_wordpress-related-posts .wp-menu-image {
+	background: url('<?php echo $menu_icon; ?>') 7px 6px no-repeat;
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
+	#toplevel_page_wordpress-related-posts .wp-menu-image {
+		background-image: url('<?php echo $menu_icon_retina; ?>');
+		background-size: 16px 16px;
+	}
+}
+</style>
+<?php
 }
 
 /**
@@ -100,8 +109,9 @@ function wp_rp_print_tooltip($content) {
 add_action('admin_menu', 'wp_rp_settings_admin_menu');
 
 function wp_rp_settings_admin_menu() {
-	$page = add_options_page(__('Related Posts', 'wp_related_posts'), __('Related Posts', 'wp_related_posts'), 'manage_options', 'wordpress-related-posts', 'wp_rp_settings_page');
-
+	$page = add_menu_page(__('Related Posts', 'wp_related_posts'), __('Related Posts', 'wp_related_posts'), 
+						'manage_options', 'wordpress-related-posts', 'wp_rp_settings_page', 'div');
+	
 	add_action('admin_print_styles-' . $page, 'wp_rp_settings_styles');
 	add_action('admin_print_scripts-' . $page, 'wp_rp_settings_scripts');
 
@@ -279,14 +289,14 @@ function wp_rp_settings_page()
 		<?php endif; ?>
 
 		<div class="header">
-			<h2 class="title"><?php _e("Related Posts",'wp_related_posts');?></h2>
-			<p class="desc"><?php _e("WordPress Related Posts Plugin places a list of related articles via WordPress tags at the bottom of your post.",'wp_related_posts');?></p>
 			<div class="support">
 				<h4><?php _e("Awesome support", 'wp_related_posts'); ?></h4>
 				<p>
 					<?php _e("If you have any questions please contact us at",'wp_related_posts');?> <a target="_blank" href="mailto:relatedpostsplugin@gmail.com"><?php _e("support", 'wp_related_posts');?></a>.
 				</p>
 			</div>
+			<h2 class="title"><?php _e("Related Posts",'wp_related_posts');?></h2>
+			<p class="desc"><?php _e("WordPress Related Posts Plugin places a list of related articles via WordPress tags at the bottom of your post.",'wp_related_posts');?></p>
 		</div>
 		<div id="wp-rp-survey" class="updated highlight" style="display:none;"><p><?php _e("Please fill out",'wp_related_posts');?> <a class="link" target="_blank" href="http://wprelatedposts.polldaddy.com/s/new-features"><?php _e("a quick survey", 'wp_related_posts');?></a>.<a href="#" class="close" style="float: right;">x</a></p></div>
 
@@ -310,11 +320,11 @@ function wp_rp_settings_page()
 				<table class="form-table" id="wp_rp_invite_friends_name_table"><tbody>
 					<tr valign="top">
 						<th scope="row"><label for="wp_rp_invite_friends_blogger_name">Your name</label></th>
-						<td width="1%"><input type="text" name="entry.0.single" value="" id="wp_rp_invite_friends_blogger_name" tabindex="1" /></td>
+						<td width="1%"><input type="text" name="entry.0.single" value="" id="wp_rp_invite_friends_blogger_name" tabindex="1" requred="required" /></td>
 						<td rowspan="2"></td>
 					</tr><tr valign="top">
 						<th scope="row"><label for="wp_rp_invite_friends_blogger_email">Your email</label></th>
-						<td><input type="email" name="entry.1.single" value="" id="wp_rp_invite_friends_blogger_email" tabindex="2" /><br/></td>
+						<td><input type="email" name="entry.1.single" value="" id="wp_rp_invite_friends_blogger_email" tabindex="2" requred="required" /><br/></td>
 					</tr>
 				</tbody></table>
 				<div class="hr" id="wp_rp_confirmation_hr"></div>
@@ -345,6 +355,7 @@ jQuery(function($) {
 		friend_url = $('#wp_rp_invite_friends_friend_url'),
 		friend_email = $('#wp_rp_invite_friends_friend_email'),
 		slide_div = form.find('.slide-down'),
+		submitted = false;
 		email_regex = /^[^@]+@[^@]+$/;
 	$('#wp_rp_invite_friends_form').submit(function(event) {
 			var valid = true;
@@ -377,33 +388,42 @@ jQuery(function($) {
 				return;
 			}
 
+			submitted = true;
 			submit.addClass('disabled');
 			setTimeout(function() { submit.attr('disabled', true); }, 0);
 		});
 
-	setTimeout(function () {
-		$('#wp_rp_invite_friends_hidden_iframe').load(function() {
-			submit.attr('disabled', false).removeClass('disabled');
-			var confirmation = $('<div class="confirmation">An invitation was sent to <span>' + friend_email.val() + '</span>.</div>');
-			var hr = form.find('#wp_rp_confirmation_hr');
-			var name_table = $('#wp_rp_invite_friends_name_table');
+	$('#wp_rp_invite_friends_hidden_iframe').load(function() {
+			if(!submitted) { return; } else { submitted = false; }
 
-			name_table.hide();
-			hr.fadeIn();
-			confirmation.hide().insertBefore(hr).fadeIn();
-			friend_url.val('');
-			friend_email.val('');
+			setTimeout(function() {
+				submit.attr('disabled', false).removeClass('disabled');
+				var confirmation = $('<div class="confirmation">An invitation was sent to <span>' + friend_email.val() + '</span>.</div>'),
+					hr = form.find('#wp_rp_confirmation_hr'),
+					name_table = $('#wp_rp_invite_friends_name_table');
 
-			var data = {	action: 'rp_invite_friends',
-					recommend: true };
+				name_table.hide();
+				hr.fadeIn();
+				confirmation.hide().insertBefore(hr).fadeIn();
 
-			if(blogger_name.length && blogger_email.length) {
-				data['name'] = blogger_name.val();
-				data['email'] = blogger_email.val();
-			}
-			$.post(ajaxurl, data);
+				var data = {	action: 'rp_invite_friends',
+						recommend: true };
+
+				if(blogger_name.length && blogger_email.length) {
+					form.append('<input type="hidden" name="entry.0.single" value="' + blogger_name.val() + '">');
+					form.append('<input type="hidden" name="entry.1.single" value="' + blogger_email.val() + '">');
+
+					data['name'] = blogger_name.val();
+					data['email'] = blogger_email.val();
+
+					blogger_name.remove();
+					blogger_email.remove();
+				}
+				$.post(ajaxurl, data);
+
+				form[0].reset();
+			}, 100);
 		});
-	}, 1);
 
 	$('#wp_rp_invite_friends_slide').click(function (event) {
 			event.preventDefault();
