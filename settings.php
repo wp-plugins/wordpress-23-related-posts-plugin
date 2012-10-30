@@ -456,7 +456,7 @@ jQuery(function($) {
 		</div>
 		<?php endif; ?>
 
-		<form method="post" enctype="multipart/form-data" action="<?php echo $_SERVER['PHP_SELF']; ?>?page=wordpress-related-posts" id="wp_rp_settings_form">
+		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
 		<?php if ($options['ctr_dashboard_enabled']): ?>
 			<h2><?php _e("Statistics",'wp_related_posts');?></h2>
 			<div id="wp_rp_statistics_wrap">
