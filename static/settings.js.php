@@ -10,15 +10,15 @@
 			break;
 		case 'random':
 			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Random Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Random Posts", 'wp_related_posts'); ?>';
+			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
 			break;
 		case 'commented':
 			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Most Commented Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Most Commented Posts", 'wp_related_posts'); ?>';
+			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
 			break;
 		case 'popularity':
 			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Most Popular Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Most Popular Posts", 'wp_related_posts'); ?>';
+			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
 			break;
 		default:
 			wp_rp_missing_rp_title_th.innerHTML = '';

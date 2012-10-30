@@ -37,7 +37,7 @@ function wp_rp_add_related_posts_hook($content) {
 	return $content;
 }
 
-function wp_rp_fetch_related_posts($limitclause = '') {
+function wp_rp_fetch_related_posts($limit = 10) {
 	global $wpdb, $post;
 	$options = wp_rp_get_options();
 
@@ -56,7 +56,7 @@ function wp_rp_fetch_related_posts($limitclause = '') {
 
 	$related_posts = false;
 	if ($taglist) {
-		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date,  p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID != $post->ID AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC $limitclause;";
+		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date,  p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID != $post->ID AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
 
 		$related_posts = $wpdb->get_results($q);
 	}
@@ -64,13 +64,22 @@ function wp_rp_fetch_related_posts($limitclause = '') {
 	return $related_posts;
 }
 
-function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids = array()) {
-	global $wpdb, $post;
+function wp_rp_get_exclude_ids_list_string($exclude_ids = array()) {
+	global $post;
 
 	array_push($exclude_ids, $post->ID);
 	$exclude_ids = array_map('intval', $exclude_ids);
+	$exclude_ids_str = implode(', ', $exclude_ids);
 
-	$q1 = "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN(" . implode(', ', $exclude_ids) . ")";
+	return $exclude_ids_str;
+}
+
+function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids) {
+	global $wpdb, $post;
+
+	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+
+	$q1 = "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN($exclude_ids_str)";
 	$ids = $wpdb->get_col($q1, 0);
 	$count = count($ids);
 	if($count <= 1) {
@@ -96,21 +105,25 @@ function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids = array()) {
 		}
 		srand($next_seed);
 	}
-
 	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN (" . implode(',', $ids) . ")";
 	return $wpdb->get_results($q2);
 }
 
-function wp_rp_fetch_most_commented_posts($limitclause = '') {
+function wp_rp_fetch_most_commented_posts($limit = 10, $exclude_ids) {
 	global $wpdb;
-	$q = "SELECT ID, post_title, post_content, post_excerpt, post_date, COUNT($wpdb->comments.comment_post_ID) AS 'comment_count' FROM $wpdb->posts, $wpdb->comments WHERE comment_approved = '1' AND $wpdb->posts.ID=$wpdb->comments.comment_post_ID AND post_status = 'publish' GROUP BY $wpdb->comments.comment_post_ID ORDER BY comment_count DESC $limitclause";
+
+	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+
+	$q = "SELECT ID, post_title, post_content, post_excerpt, post_date, COUNT($wpdb->comments.comment_post_ID) AS 'comment_count' FROM $wpdb->posts, $wpdb->comments WHERE comment_approved = '1' AND $wpdb->posts.ID=$wpdb->comments.comment_post_ID AND post_status = 'publish' AND ID NOT IN ($exclude_ids_str) GROUP BY $wpdb->comments.comment_post_ID ORDER BY comment_count DESC LIMIT $limit";
 	return $wpdb->get_results($q);
 }
 
-function wp_rp_fetch_most_popular_posts ($limitclause = '') {
+function wp_rp_fetch_most_popular_posts ($limit = 10, $exclude_ids) {
 	global $wpdb, $table_prefix;
 
-	$q = $sql = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date, p.comment_count FROM ". $table_prefix ."ak_popularity as akpc,".$table_prefix ."posts as p WHERE p.ID = akpc.post_id ORDER BY akpc.total DESC $limitclause";;
+	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+
+	$q = $sql = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date, p.comment_count FROM ". $table_prefix ."ak_popularity as akpc,".$table_prefix ."posts as p WHERE p.ID = akpc.post_id AND p.ID NOT IN ($exclude_ids_str) ORDER BY akpc.total DESC LIMIT $limit";;
 	return $wpdb->get_results($q);
 }
 
@@ -118,36 +131,34 @@ function wp_rp_fetch_posts_and_title() {
 	$options = wp_rp_get_options();
 
 	$limit = $options['max_related_posts'];
-	$limitclause = "LIMIT $limit";
 
 	$title = $options["related_posts_title"];
-	$related_posts = wp_rp_fetch_related_posts($limitclause);
+	$related_posts = wp_rp_fetch_related_posts($limit);
 	$missing_rp_algorithm = $options["missing_rp_algorithm"];
 
-	if (!$related_posts && $missing_rp_algorithm === "text") {
+	if (!$related_posts) {
 		$title = $options["missing_rp_title"];
-		$related_posts = false;
-	} else {
-		if (!$related_posts) {
-			$title = $options["missing_rp_title"];
+	}
 
-			if ($missing_rp_algorithm === "commented") {
-				$related_posts = wp_rp_fetch_most_commented_posts($limitclause);
-			} else if ($missing_rp_algorithm === "popularity" && function_exists('akpc_most_popular')) {
-				$related_posts = wp_rp_fetch_most_popular_posts($limitclause);
-			} else {
-				$related_posts = wp_rp_fetch_random_posts($limit);
-			}
+	if (!$related_posts && $missing_rp_algorithm === "text") {
+		$related_posts = false;
+	} else if (!$related_posts || sizeof($related_posts) < $limit) {
+		$related_posts = !is_array($related_posts) ? array() : $related_posts;
+		$exclude_ids = array_map(create_function('$p', 'return $p->ID;'), $related_posts);
+
+		$num_missing_posts = $limit - sizeof($related_posts);
+
+		$other_posts = false;
+		if ($missing_rp_algorithm === "commented") {
+			$other_posts = wp_rp_fetch_most_commented_posts($num_missing_posts, $exclude_ids);
+		} else if ($missing_rp_algorithm === "popularity" && function_exists('akpc_most_popular')) {
+			$other_posts = wp_rp_fetch_most_popular_posts($num_missing_posts, $exclude_ids);
+		} else if ($missing_rp_algorithm === "random") {
+			$other_posts = wp_rp_fetch_random_posts($num_missing_posts, $exclude_ids);
 		}
 
-		// fill related posts with random posts if there not enough posts found
-		if(empty($related_posts) || sizeof($related_posts) < $limit) {
-			$src_posts = !is_array($related_posts) ? array() : $related_posts;
-			$exclude_ids = array_map(create_function('$p', 'return $p->ID;'), $src_posts);
-			$random_posts = wp_rp_fetch_random_posts($limit - sizeof($src_posts), $exclude_ids);
-
-			if(!empty($random_posts))
-				$related_posts = array_merge($src_posts, $random_posts);
+		if ($other_posts) {
+			$related_posts = array_merge($related_posts, $other_posts);
 		}
 	}
 
