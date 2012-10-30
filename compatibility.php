@@ -5,8 +5,7 @@
 /* ***************************** */
 
 function wp_random_posts ($number = 10){
-	$limitclause="LIMIT " . $number;
-	$random_posts = wp_get_random_posts ($limitclause);
+	$random_posts = wp_get_random_posts ($number);
 
 	foreach ($random_posts as $random_post ){
 		$output .= '<li>';
@@ -20,8 +19,7 @@ function wp_random_posts ($number = 10){
 }
 
 function wp_most_popular_posts ($number = 10){
-	$limitclause="LIMIT " . $number;
-	$most_popular_posts = wp_get_most_popular_posts ($limitclause);
+	$most_popular_posts = wp_get_most_popular_posts ($number);
 
 	foreach($most_popular_posts as $most_popular_post) {
 		$output .=  '<li><a href="' . get_permalink($most_popular_post->ID) . '" title="' . esc_attr(wptexturize($most_popular_post->post_title)) . '">' . wptexturize($most_popular_post->post_title) . '</a></li>';
@@ -33,8 +31,7 @@ function wp_most_popular_posts ($number = 10){
 }
 
 function wp_most_commented_posts ($number = 10){
-	$limitclause="LIMIT " . $number;
-	$most_commented_posts = wp_get_most_commented_posts ($limitclause);
+	$most_commented_posts = wp_get_most_commented_posts ($number);
 
 	foreach($most_commented_posts as $most_commented_post) {
 		$output .=  '<li><a href="'.get_permalink($most_commented_post->ID).'" title="' . esc_attr(wptexturize($most_commented_post->post_title)) . '">' . wptexturize($most_commented_post->post_title) . '</a></li>';
@@ -55,19 +52,23 @@ function wp_related_posts() {
 }
 
 function wp_get_random_posts ($limitclause = '') {
-	return wp_rp_fetch_random_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_random_posts($limit);
 }
 
 function wp_get_most_commented_posts($limitclause = '') {
-	return wp_rp_fetch_most_commented_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_most_commented_posts($limit);
 }
 
 function wp_get_most_popular_posts ($limitclause = '') {
-	return wp_rp_fetch_most_popular_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_most_popular_posts($limit);
 }
 
 function wp_fetch_related_posts($limitclause = '') {
-	return wp_rp_fetch_related_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_related_posts($limit);
 }
 
 function wp_fetch_random_posts($limit = 10) {
@@ -75,11 +76,13 @@ function wp_fetch_random_posts($limit = 10) {
 }
 
 function wp_fetch_most_commented_posts($limitclause = '') {
-	return wp_rp_fetch_most_commented_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_most_commented_posts($limit);
 }
 
 function wp_fetch_most_popular_posts($limitclause = '') {
-	return wp_rp_fetch_most_popular_posts($limitclause);
+	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
+	return wp_rp_fetch_most_popular_posts($limit);
 }
 
 function wp_fetch_content() {
