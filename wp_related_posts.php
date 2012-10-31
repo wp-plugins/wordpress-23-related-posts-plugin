@@ -37,9 +37,11 @@ function wp_rp_add_related_posts_hook($content) {
 	return $content;
 }
 
-function wp_rp_fetch_related_posts($limit = 10) {
+function wp_rp_fetch_related_posts($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $post;
 	$options = wp_rp_get_options();
+
+	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
 
 	if(!$post->ID){return;}
 	$now = current_time('mysql', 1);
@@ -56,7 +58,7 @@ function wp_rp_fetch_related_posts($limit = 10) {
 
 	$related_posts = false;
 	if ($taglist) {
-		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date,  p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID != $post->ID AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
+		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date,  p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID NOT IN ($exclude_ids_str) AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
 
 		$related_posts = $wpdb->get_results($q);
 	}
@@ -74,7 +76,7 @@ function wp_rp_get_exclude_ids_list_string($exclude_ids = array()) {
 	return $exclude_ids_str;
 }
 
-function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids) {
+function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $post;
 
 	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
@@ -105,11 +107,11 @@ function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids) {
 		}
 		srand($next_seed);
 	}
-	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN (" . implode(',', $ids) . ")";
+	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN ($exclude_ids_str)";
 	return $wpdb->get_results($q2);
 }
 
-function wp_rp_fetch_most_commented_posts($limit = 10, $exclude_ids) {
+function wp_rp_fetch_most_commented_posts($limit = 10, $exclude_ids = array()) {
 	global $wpdb;
 
 	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
@@ -118,7 +120,7 @@ function wp_rp_fetch_most_commented_posts($limit = 10, $exclude_ids) {
 	return $wpdb->get_results($q);
 }
 
-function wp_rp_fetch_most_popular_posts ($limit = 10, $exclude_ids) {
+function wp_rp_fetch_most_popular_posts ($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $table_prefix;
 
 	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
