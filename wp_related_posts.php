@@ -76,12 +76,12 @@ function wp_rp_get_exclude_ids_list_string($exclude_ids = array()) {
 	return $exclude_ids_str;
 }
 
-function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids = array()) {
+function wp_rp_fetch_random_posts($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $post;
 
 	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
 
-	$q1 = "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN($exclude_ids_str)";
+	$q1 = "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN ($exclude_ids_str)";
 	$ids = $wpdb->get_col($q1, 0);
 	$count = count($ids);
 	if($count <= 1) {
@@ -107,7 +107,7 @@ function wp_rp_fetch_random_posts ($limit = 10, $exclude_ids = array()) {
 		}
 		srand($next_seed);
 	}
-	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN ($exclude_ids_str)";
+	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN (" . implode(',', $ids) . ")";
 	return $wpdb->get_results($q2);
 }
 
