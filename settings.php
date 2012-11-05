@@ -111,7 +111,7 @@ add_action('admin_menu', 'wp_rp_settings_admin_menu');
 function wp_rp_settings_admin_menu() {
 	$page = add_menu_page(__('Related Posts', 'wp_related_posts'), __('Related Posts', 'wp_related_posts'), 
 						'manage_options', 'wordpress-related-posts', 'wp_rp_settings_page', 'div');
-	
+
 	add_action('admin_print_styles-' . $page, 'wp_rp_settings_styles');
 	add_action('admin_print_scripts-' . $page, 'wp_rp_settings_scripts');
 
@@ -130,7 +130,7 @@ function wp_rp_register_blog() {
 	$meta = wp_rp_get_meta();
 
 	$req_options = array(
-		'timeout' => 10
+		'timeout' => 30
 	);
 
 	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') . ($meta['new_user'] ? '&new' : ''), $req_options);
