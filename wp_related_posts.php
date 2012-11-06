@@ -22,6 +22,20 @@ include_once(dirname(__FILE__) . '/compatibility.php');
 add_action('init', 'wp_rp_init_hook');
 add_filter('the_content', 'wp_rp_add_related_posts_hook', 99);
 
+add_action('wp_before_admin_bar_render', 'wp_rp_extend_adminbar');
+function wp_rp_extend_adminbar() {
+	global $wp_admin_bar;
+
+	if(!is_super_admin() || !is_admin_bar_showing())
+		return;
+
+	$wp_admin_bar->add_menu(array(
+		'id' => 'wp_rp_adminbar_menu',
+		'title' => __('Related Posts Statistics', 'wp_related_posts'),
+		'href' => admin_url('admin.php?page=wordpress-related-posts&ref=adminbar')
+	));
+}
+
 function wp_rp_init_hook() {
 	load_plugin_textdomain('wp_related_posts', false, dirname(plugin_basename (__FILE__)) . '/lang');
 }
