@@ -1,0 +1,50 @@
+#wp_rp_wrap, #wp_rp_wrap h2, #wp_rp_wrap h3, #wp_rp_wrap h4 {color: #464646;}
+
+#wp_rp_wrap h2 {font-size: 23px;}
+#wp_rp_wrap h3 {font-size: 14px;}
+#wp_rp_wrap label {user-select: none;-moz-user-select: none;-webkit-user-select: none;}
+#wp_rp_wrap p, #wp_rp_wrap h4 {font-size: 12px;}
+
+#wp_rp_wrap th {padding-left: 0; font-size: 14px;}
+
+#wp_rp_wrap div.header {border-bottom: 1px solid #ddd; position: relative; padding-bottom: 5px;}
+#wp_rp_wrap .updated, #wp_rp_wrap .error {max-width: 600px; margin-right: 254px; }
+#wp_rp_wrap div.header h2.title {font-size: 2.5em; line-height: 1em; font-weight: bold;}
+#wp_rp_wrap div.header p.desc {font-size: 1.2em; line-height: 1.5em; max-width: 430px;}
+#wp_rp_wrap div.header div.support {padding: 15px 15px 15px 67px; background: url(../img/icon_support.png) 15px 20px no-repeat; background-size: 37px 37px; border: 1px solid #ddd; float: right; clear: right; width: 150px;}
+#wp_rp_wrap div.header div.support h4 {text-transform: uppercase; font-weight: bold; margin: 0; font-size: 11px;}
+#wp_rp_wrap div.header div.support p {margin: 0; font-size: 11px;}
+#wp_rp_wrap div.header div.support p a {color: #82c1cb; font-weight: bold; text-decoration: none;}
+
+#wp_rp_wrap div#wp_rp_statistics_wrap {padding: 5px 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li {display: inline-block; zoom: 1; *display: inline; width: 250px; margin: 0 20px 0 0; padding: 0; position: relative;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay {display: none; position: absolute; top: 0; left: 0; width: 240px; padding: 100px 10px 10px 10px; margin: -5px 0 0 -5px; border: 1px solid #ccc; box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay p {background: #fff; margin: -10px; padding: 10px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li:hover div.overlay {display: block;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h4 {border-bottom: 2px solid #ccc; text-transform: uppercase; font-weight: normal; padding: 5px 0; margin: 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h4 span {text-transform: lowercase; font-size: 11px; color: #999; float: right;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li p.num {font-size: 40px; line-height: 40px; color: #82c1cb; font-weight: bold; margin: 15px 0;}
+
+#wp_rp_wrap div#wp_rp_statistics_wrap div.message {font-size: 25px; line-height: 1em; padding-top: 50px; margin-bottom: 15px; position: relative; font-weight: bold;}
+#wp_rp_wrap div#wp_rp_statistics_wrap div.message.enable {color: #82c1cb;}
+#wp_rp_wrap div#wp_rp_statistics_wrap div.message.unavailable {color: #848484; display: none; padding-top: 20px;}
+
+#wp_rp_invite_friends_form { background: #f7f7f7; padding: 15px; margin: 30px 0px; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+#wp_rp_invite_friends_form h2 { font-size: 19px; line-height: 20px; padding: 0px; }
+#wp_rp_invite_friends_submit { background: #8bc7d1; border-color: #57aab8; -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; color: white; padding: 8px 25px; font-size: 15px; text-shadow: 0px 1px 1px #888; font-weight: bold; box-shadow: 0px 1px 4px -2px black, 0px 1px 0px #a8d9e0 inset; }
+#wp_rp_invite_friends_submit.disabled { background-color: #ddd; border-color: #bababa; box-shadow: 0px 1px 4px -2px black, 0px 1px 0px #eaeaea inset; }
+#wp_rp_invite_friends_form .hr { margin: 20px 10px; border-top: 1px solid #ddd; }
+#wp_rp_invite_friends_form .confirmation { color: #222; margin: 12px 0px; }
+#wp_rp_invite_friends_form .confirmation span { font-style: italic; color: #57aab8; }
+#wp_rp_invite_friends_form .slide-down { overflow: hidden; }
+#wp_rp_invite_friends_slide { float: right; }
+#wp_rp_invite_friends_slide img { margin-top: 8px; }
+#wp_rp_invite_friends_form.up img.up { display: none; }
+#wp_rp_invite_friends_form img.down { display: none; }
+#wp_rp_invite_friends_form.up img.down { display: block; }
+
+#wp_rp_turn_on_statistics { margin: 20px 0px; padding: 20px; background: #f7f7f7; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+#wp_rp_turn_on_statistics table { margin: 0px auto; }
+#wp_rp_turn_on_statistics h2 { font-weight: bold; }
+#wp_rp_turn_on_statistics p { margin: 0px; color: #777; }
+#wp_rp_turn_on_statistics a { margin-left: 25px; background: #8bc7d1; border: 1px solid #57aab8; -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; color: white; padding: 8px 30px; text-shadow: 0px 1px 1px #888; font-weight: bold; font-size: 20px; line-height: 20px; text-decoration: none; text-transform: uppercase; box-shadow: 0px 1px 4px -2px black, 0px 1px 0px #a8d9e0 inset; }
