@@ -28,11 +28,6 @@ define("WP_RP_STATIC_CTR_PAGEVIEW_FILE", "js/pageview.js");
 define("WP_RP_STATIC_RECOMMENDATIONS_JS_FILE", "js/recommendations.js");
 define("WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE", "css-img/recommendations.css");
 
-define("WP_RP_STATIC_SCROLLUP_JS_FILE", "js/scrollup.js");
-define("WP_RP_STATIC_SCROLLUP_CSS_FILE", "css-img/scrollup.css");
-
-define("WP_RP_STATIC_BANNER_FILE", "js/welcome.js");
-
 
 global $wp_rp_options, $wp_rp_meta;
 $wp_rp_options = false;
@@ -134,7 +129,9 @@ function wp_rp_install() {
 		'show_turn_on_button' => true,
 		'name' => '',
 		'email' => '',
-		'show_invite_friends_form' => true
+		'show_blogger_network_form' => false,
+		'show_enable_ads_form' => true,
+		'remote_notifications' => array()
 	);
 
 	$wp_rp_options = array(
@@ -159,13 +156,29 @@ function wp_rp_install() {
 		'theme_name' 				=> 'vertical-m.css',
 		'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 		'ctr_dashboard_enabled'		=> false,
-		'include_promotionail_link'	=> false,
-		'enable_themes'				=> false,
-		'scroll_up_related_posts'	=> true
+		'enable_themes'				=> false
 	);
 
 	update_option('wp_rp_meta', $wp_rp_meta);
 	update_option('wp_rp_options', $wp_rp_options);
+}
+
+function wp_rp_migrate_1_6() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '1.7';
+
+	unset($wp_rp_options['scroll_up_related_posts']);
+	unset($wp_rp_options['include_promotionail_link']);
+	unset($wp_rp_options['show_invite_friends_form']);
+
+	$wp_rp_meta['show_blogger_network_form'] = false;
+	$wp_rp_meta['show_enable_ads_form'] = false;
+	$wp_rp_meta['remote_notifications'] = array();
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_1_5_2_1() { # This was a silent release, but WP_RP_VERSION was not properly updated, so we don't know exactly what happened...

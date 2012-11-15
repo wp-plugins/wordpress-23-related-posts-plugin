@@ -44,7 +44,59 @@
 #wp_rp_invite_friends_form.up img.down { display: block; }
 
 #wp_rp_turn_on_statistics { margin: 20px 0px; padding: 20px; background: #f7f7f7; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
-#wp_rp_turn_on_statistics table { margin: 0px auto; }
+#wp_rp_turn_on_statistics table {}
 #wp_rp_turn_on_statistics h2 { font-weight: bold; }
 #wp_rp_turn_on_statistics p { margin: 0px; color: #777; }
 #wp_rp_turn_on_statistics a { margin-left: 25px; background: #8bc7d1; border: 1px solid #57aab8; -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; color: white; padding: 8px 30px; text-shadow: 0px 1px 1px #888; font-weight: bold; font-size: 20px; line-height: 20px; text-decoration: none; text-transform: uppercase; box-shadow: 0px 1px 4px -2px black, 0px 1px 0px #a8d9e0 inset; }
+
+form.wp_rp_message_form { background: #f7f7f7; padding: 20px; margin: 30px 0px; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+form.wp_rp_message_form p {font-size: 14px;}
+form.wp_rp_message_form h2 { font-size: 19px; line-height: 20px; padding-top: 0px; }
+form.wp_rp_message_form .submit {cursor: pointer; background: #8bc7d1; border: 1px solid #57aab8; -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px; color: white; padding: 6px 24px; text-shadow: 0px 1px 1px #888; font-weight: bold; font-size: 18px; line-height: 20px; text-decoration: none; text-transform: uppercase; box-shadow: 0px 1px 4px -2px black, 0px 1px 0px #a8d9e0 inset; }
+form.wp_rp_message_form .submit.disabled { background-color: #ddd; border-color: #bababa; }
+form.wp_rp_message_form .thankyou { font-size: 14px; display: none; line-height: 42px;}
+form.wp_rp_message_form .thankyou img { float: left; margin: 10px; }
+form.wp_rp_message_form a.dismiss {float: right;}
+
+#wp_rp_enable_ads_form h2 {font-weight: bold;}
+
+#wp_rp_wrap .wp_rp_notification {
+	border: 1px solid #57aab8;
+	background: #f1f9fb;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	margin: 10px 0;
+	padding: 0;
+	position: relative;
+}
+#wp_rp_wrap .wp_rp_notification p {
+	color: #464646;
+	font-size: 18px;
+	padding: 30px 30px 30px 80px;
+	margin: 0;
+	background: url(../img/measure_icon.png) 20px 15px no-repeat;
+}
+#wp_rp_wrap .wp_rp_notification .close {
+	text-decoration: none;
+	overflow: hidden;
+	background: url(../img/cross.png) 50% 50% no-repeat;
+	text-indent: -9999px;
+	display: block;
+	width: 24px;
+	height: 24px;
+	position: absolute;
+	right: 8px;
+	top: 8px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
+	.wp_rp_notification p {
+		background-image: url(../img/measure_icon_2x.png);
+		background-size: 42px 42px;
+	}
+	.wp_rp_notification .close {
+		background-image: url(../img/cross_2x.png);
+		background-size: 12px 12px;
+	}
+}
