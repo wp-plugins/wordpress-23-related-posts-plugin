@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.6
+Version: 1.7
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Jure Ham
 Author URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 */
 
-define('WP_RP_VERSION', '1.6');
+define('WP_RP_VERSION', '1.7');
 
 include_once(dirname(__FILE__) . '/config.php');
 
@@ -194,7 +194,7 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 
 		$img = wp_rp_get_post_thumbnail_img($related_post);
 		if ($img) {
-			$output .=  '<a href="' . get_permalink($related_post->ID) . '">' . $img . '</a>';
+			$output .=  '<a href="' . get_permalink($related_post->ID) . '" class="wp_rp_thumbnail">' . $img . '</a>';
 		}
 
 		if (!$options["display_thumbnail"] || ($options["display_thumbnail"] && ($options["thumbnail_display_title"] || !$img))) {
@@ -203,7 +203,7 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 				$output .= mysql2date($dateformat, $related_post->post_date) . " -- ";
 			}
 
-			$output .= '<a href="' . get_permalink($related_post->ID) . '">' . wptexturize($related_post->post_title) . '</a>';
+			$output .= '<a href="' . get_permalink($related_post->ID) . '" class="wp_rp_title">' . wptexturize($related_post->post_title) . '</a>';
 
 			if ($options["display_comment_count"]){
 				$output .=  " (" . $related_post->comment_count . ")";
@@ -261,6 +261,10 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$posts_and_title = wp_rp_fetch_posts_and_title();
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
+	$theme_name = '';
+
+	if ($options['enable_themes'])
+		$theme_name = $options['theme_name'];
 
 	$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
 	$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
@@ -270,14 +274,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 
 	if ($related_posts) {
 		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = "<ul class=\"related_post wp_rp\" style=\"visibility:" . ($remote_recommendations ? 'hidden' : 'visible') . ";\">" . $output . "</ul>\n";
-
-		if ($options['include_promotionail_link']) {
-			$promotional_link = ' <a target="_blank" rel="nofollow" title="WordPress Related Posts" href="http://related-posts.com/welcome2/" class="wp_rp_welcome" onclick="return window._wp_rp_show_banner && window._wp_rp_show_banner(event)">[?]</a>';
-			$output .= "<div id=\"wp_rp_popup_holder\"></div>\n";
-
-			wp_enqueue_script('wp_rp_welcome', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_BANNER_FILE);
-		}
+		$output = "<ul class=\"related_post wp_rp " . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $theme_name)) . "\" style=\"visibility:" . ($remote_recommendations ? 'hidden' : 'visible') . ";\">" . $output . "</ul>\n";
 	}
 
 	if ($title != '') {
@@ -290,8 +287,6 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	}
 
 	if ($options['enable_themes']) {
-		$theme_name = $options['theme_name'];
-
 		if ($options["display_thumbnail"]) {
 			wp_enqueue_style('wp_rp_theme', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH . $theme_name);
 		} else {
@@ -321,11 +316,6 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	if ($remote_recommendations) {
 		wp_enqueue_script('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE);
 		wp_enqueue_style('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE);
-	}
-
-	if ($options['scroll_up_related_posts']) {
-		wp_enqueue_script('wp_rp_scrollup', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_SCROLLUP_JS_FILE, array('jquery'));
-		wp_enqueue_style('wp_rp_scrollup', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_SCROLLUP_CSS_FILE);
 	}
 
 	if ($output_script) {

@@ -45,50 +45,48 @@ function wp_rp_extract_post_image($post_id) {
 			'orderby' => 'id',
 			'order' => 'ASC',
 		);
-	$attachments = get_posts($args);
+
+
+    $attachments = get_posts($args);
 	$image_id = '-1';
 	if ( $attachments ) {
 		foreach ( $attachments as $attachment ) {
-			$img = wp_get_attachment_image($attachment->ID, 'thumbnail');
-			if($img) {
-				$image_id = $attachment->ID;
+            $img = wp_get_attachment_image($attachment->ID, 'thumbnail');
+            if($img) {
+                $image_id = $attachment->ID;
 				break;
 			}
 		}
 	}
-
-	add_post_meta($post_id, '_wp_rp_image_id', $image_id);
 	return $image_id;
 }
 
 function wp_rp_get_post_thumbnail_img($related_post) {
-	$options = wp_rp_get_options();
-
-	if (!$options["display_thumbnail"]) {
+    $options = wp_rp_get_options();
+    if (!$options["display_thumbnail"]) {
 		return false;
 	}
 
-	if ($options['thumbnail_use_custom']) {
-		$thumbnail_src = get_post_meta($related_post->ID, $options["thumbnail_custom_field"], true);
-		if ($thumbnail_src) {
+
+    if ($options['thumbnail_use_custom']) {
+        $thumbnail_src = get_post_meta($related_post->ID, $options["thumbnail_custom_field"], true);
+
+        if ($thumbnail_src) {
 			$img = '<img src="' . esc_attr($thumbnail_src) . '" alt="' . esc_attr(wptexturize($related_post->post_title)) . '" />';
 			return $img;
 		}
 	} else if (has_post_thumbnail($related_post->ID)) {
-		$attr = array(
+        $attr = array(
 			'alt' => esc_attr(wptexturize($related_post->post_title)),
 			'title' => false
 		);
 		$img = get_the_post_thumbnail($related_post->ID, 'thumbnail', $attr);
-		return $img;
+        return $img;
 	}
 
-	if($options["thumbnail_use_attached"]) {
-		$image_id = get_post_meta($related_post->ID, '_wp_rp_image_id', true);
-		if ($image_id === '') {
-			$image_id = wp_rp_extract_post_image($related_post->ID);
-		}
-		if ($image_id !== '-1') {
+    if($options["thumbnail_use_attached"]) {
+        $image_id = wp_rp_extract_post_image($related_post->ID);
+        if ($image_id !== '-1') {
 			$img = wp_get_attachment_image($image_id, 'thumbnail');
 			return $img;
 		}

@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 1.6
+Stable tag: 1.7
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -62,6 +62,12 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 
 
 == Changelog ==
+
+= 1.7 =
+* Improved thumbnail handling
+* Settings cleanup
+* Traffic exchange and revenue share options (beta)
+* Removed scroll up related posts experiment
 
 = 1.6 =
 * Bugfixes

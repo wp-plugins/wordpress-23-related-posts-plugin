@@ -114,6 +114,7 @@ function wp_rp_settings_admin_menu() {
 
 	add_action('admin_print_styles-' . $page, 'wp_rp_settings_styles');
 	add_action('admin_print_scripts-' . $page, 'wp_rp_settings_scripts');
+	add_action('load-' . $page, 'wp_rp_settings_onload');
 
 	wp_rp_display_tooltips();
 }
@@ -151,35 +152,127 @@ function wp_rp_register_blog() {
 	return false;
 }
 
-function wp_rp_ajax_invite_friends_callback() {
+function wp_rp_ajax_blogger_network_submit_callback() {
 	$postdata = stripslashes_deep($_POST);
 
 	$meta = wp_rp_get_meta();
 
-	if(isset($postdata['name'])) {
-		$meta['name'] = $postdata['name'];
-	}
-	if(isset($postdata['email'])) {
-		$meta['email'] = $postdata['email'];
-	}
-	if(isset($postdata['show'])) {
-		$meta['show_invite_friends_form'] = true;
-	}
-	if(isset($postdata['hide'])) {
-		$meta['show_invite_friends_form'] = false;
-	}
-	if(isset($postdata['recommend'])) {
+	$meta['show_blogger_network_form'] = false;
+	if(isset($postdata['join'])) {
 		$meta['remote_recommendations'] = true;
 	}
 
 	wp_rp_update_meta($meta);
 
+	die('ok');
+}
+add_action('wp_ajax_blogger_network_submit', 'wp_rp_ajax_blogger_network_submit_callback');
 
-	echo 'ok';
-	die();
+function wp_rp_ajax_enable_ads_submit_callback() {
+	$postdata = stripslashes_deep($_POST);
+	$meta = wp_rp_get_meta();
+
+	$meta['show_enable_ads_form'] = false;
+
+	wp_rp_update_meta($meta);
+
+	die('ok');
+}
+add_action('wp_ajax_enable_ads_submit', 'wp_rp_ajax_enable_ads_submit_callback');
+
+function wp_rp_settings_onload() {
+	// fetch notifications
+	$meta = wp_rp_get_meta();
+	$options = wp_rp_get_options();
+
+	$blog_id = $meta['blog_id'];
+	$auth_key = $meta['auth_key'];
+
+	$req_options = array(
+		'timeout' => 5
+	);
+
+	if(empty($blog_id) || empty($auth_key) || !$options['ctr_dashboard_enabled']) return;
+
+	// receive remote recommendations
+	$url = sprintf('%snotifications/?blog_id=%s&auth_key=%s', WP_RP_CTR_DASHBOARD_URL, $blog_id, $auth_key);
+	$response = wp_remote_get($url, $req_options);
+
+	if (wp_remote_retrieve_response_code($response) == 200) {
+		$body = wp_remote_retrieve_body($response);
+
+		if ($body) {
+			$json = json_decode($body);
+
+			if ($json && isset($json->status) && $json->status === 'ok' && isset($json->data) && is_object($json->data)) 
+			{
+				if(!isset($meta['remote_notifications']) || !is_array($meta['remote_notifications'])) {
+					$meta['remote_notifications'] = array();
+				}
+
+				$messages_ref =& $meta['remote_notifications'];
+				$data = $json->data;
+
+				if(isset($data->msgs) && is_array($data->msgs)) {
+					// add new messages from server and update old ones
+					foreach($data->msgs as $msg) {
+						$messages_ref[$msg->msg_id] = $msg->text;
+					}
+
+					// sort messages by identifier
+					ksort($messages_ref);
+				}
+
+				if(isset($data->turn_on_remote_recommendations) && $data->turn_on_remote_recommendations) {
+					$meta['remote_recommendations'] = true;
+				} else if(isset($data->turn_off_remote_recommendations) && $data->turn_off_remote_recommendations) {
+					$meta['remote_recommendations'] = false;
+				}
+
+				if(isset($data->show_blogger_network_form) && $data->show_blogger_network_form) {
+					$meta['show_blogger_network_form'] = true;
+				} else if(isset($data->hide_blogger_network_form) && $data->hide_blogger_network_form) {
+					$meta['show_blogger_network_form'] = false;
+				}
+
+				wp_rp_update_meta($meta);
+			}
+		}
+	}
 }
 
-add_action('wp_ajax_rp_invite_friends', 'wp_rp_ajax_invite_friends_callback');
+function wp_rp_print_notifications() {
+	$meta = wp_rp_get_meta();
+	$messages = $meta['remote_notifications'];
+
+	if(is_array($messages)) {
+		foreach($messages as $id => $text) {
+			echo '<div class="wp_rp_notification">
+				<a href="' . admin_url('admin-ajax.php?action=rp_dismiss_notification&id=' . $id) . '" class="close">x</a>
+				<p>' . $text . '</p>
+			</div>';
+		}
+	}
+}
+
+add_action('wp_ajax_rp_dismiss_notification', 'wp_rp_ajax_dismiss_notification');
+
+function wp_rp_ajax_dismiss_notification() {
+	$id = (int)$_REQUEST['id'];
+	$meta = wp_rp_get_meta();
+	$messages_ref =& $meta['remote_notifications'];
+
+	if(is_array($messages_ref) && array_key_exists($id, $messages_ref)) {
+		unset($messages_ref[$id]);
+		wp_rp_update_meta($meta);
+	}
+
+	if($_REQUEST['noredirect']) {
+		die('ok');
+	}
+
+	wp_redirect(admin_url('admin.php?page=wordpress-related-posts'));
+}
 
 function wp_rp_settings_page()
 {
@@ -213,9 +306,7 @@ function wp_rp_settings_page()
 			'thumbnail_use_attached' => isset($postdata['wp_rp_thumbnail_use_attached']),
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
 			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
-			'include_promotionail_link' => isset($postdata['wp_rp_include_promotionail_link']),
-			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
-			'scroll_up_related_posts' => isset($postdata['wp_rp_scroll_up_related_posts'])
+			'enable_themes' => isset($postdata['wp_rp_enable_themes'])
 		);
 
 		if(!isset($postdata['wp_rp_not_on_categories'])) {
@@ -282,6 +373,7 @@ function wp_rp_settings_page()
 		<input type="hidden" id="wp_rp_version" value="<?php esc_attr_e(WP_RP_VERSION); ?>" />
 		<input type="hidden" id="wp_rp_theme_selected" value="<?php esc_attr_e($theme_name); ?>" />
 		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_DASHBOARD_URL); ?>" />
+		<input type="hidden" id="wp_rp_static_base_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL); ?>" />
 
 		<?php if ($options['ctr_dashboard_enabled']):?>
 		<input type="hidden" id="wp_rp_blog_id" value="<?php esc_attr_e($meta['blog_id']); ?>" />
@@ -298,162 +390,136 @@ function wp_rp_settings_page()
 			<h2 class="title"><?php _e("Related Posts",'wp_related_posts');?></h2>
 			<p class="desc"><?php _e("WordPress Related Posts Plugin places a list of related articles via WordPress tags at the bottom of your post.",'wp_related_posts');?></p>
 		</div>
-		<div id="wp-rp-survey" class="updated highlight" style="display:none;"><p><?php _e("Please fill out",'wp_related_posts');?> <a class="link" target="_blank" href="http://wprelatedposts.polldaddy.com/s/new-features"><?php _e("a quick survey", 'wp_related_posts');?></a>.<a href="#" class="close" style="float: right;">x</a></p></div>
+		<div id="wp-rp-survey" class="updated highlight" style="display:none;"><p><?php _e("Please fill out",'wp_related_posts');?> <a class="link" target="_blank" href="http://wprelatedposts.polldaddy.com/s/quick-survey"><?php _e("a quick survey", 'wp_related_posts');?></a>.<a href="#" class="close" style="float: right;">x</a></p></div>
 
 		<?php if (isset($message)): ?>
 		<div id="message" class="updated fade"><p><?php echo $message ?>.</p></div>
 		<?php endif; ?>
 
-		<?php if(!$meta['show_turn_on_button']): ?>
-		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dHhqdWtyZHIwN0Z5R2ZEel9oZVBidEE6MQ&amp;ifq" method="POST" id="wp_rp_invite_friends_form" target="wp_rp_invite_friends_hidden_iframe" <?php if(!$meta['show_invite_friends_form']) { ?>class="up"<?php } ?>>
-			<input type="hidden" name="pageNumber" value="0">
-			<input type="hidden" name="backupCache" value="">
-			<input type="hidden" name="entry.6.single" value="<?php echo get_bloginfo('wpurl'); ?>">
-
-			<a href="#" id="wp_rp_invite_friends_slide"><img src="<?php echo plugins_url('/static/img/up.png', __FILE__); ?>" width="17" height="6" border="0" class="up" /><img src="<?php echo plugins_url('/static/img/down.png', __FILE__); ?>" width="17" height="6" border="0" class="down" /></a>
-			<h2>Invite friends</h2>
-
-			<div class="slide-down" <?php if(!$meta['show_invite_friends_form']) { ?>style="display: none"<?php } ?>>
-				<p>Get your friends to use WordPress Related Posts and instantly exchange traffic with them. Your posts will appear on their site and vice versa.</p>
-
-				<?php if(!$meta['name'] || !$meta['email']): ?>
-				<table class="form-table" id="wp_rp_invite_friends_name_table"><tbody>
-					<tr valign="top">
-						<th scope="row"><label for="wp_rp_invite_friends_blogger_name">Your name</label></th>
-						<td width="1%"><input type="text" name="entry.0.single" value="" id="wp_rp_invite_friends_blogger_name" tabindex="1" requred="required" /></td>
-						<td rowspan="2"></td>
-					</tr><tr valign="top">
-						<th scope="row"><label for="wp_rp_invite_friends_blogger_email">Your email</label></th>
-						<td><input type="email" name="entry.1.single" value="" id="wp_rp_invite_friends_blogger_email" tabindex="2" requred="required" /><br/></td>
-					</tr>
-				</tbody></table>
-				<div class="hr" id="wp_rp_confirmation_hr"></div>
-				<? else: ?>
-				<input type="hidden" name="entry.0.single" value="<?php echo $meta['name']; ?>">
-				<input type="hidden" name="entry.1.single" value="<?php echo $meta['email']; ?>">
-				<div class="hr" id="wp_rp_confirmation_hr" style="display: none;"></div>
-				<?php endif; ?>
-
-				<table class="form-table"><tbody>
-					<tr valign="top">
-						<th scope="row"><label for="wp_rp_invite_friends_friend_url">Your friend's blog</label></th>
-						<td width="1%"><input type="text" name="entry.2.single" value="" id="wp_rp_invite_friends_friend_url" tabindex="3" required="required" /></td>
-						<td rowspan="2" valign="middle"><input type="submit" name="submit" value="Invite" id="wp_rp_invite_friends_submit" tabindex="5" /></td>
-					</tr><tr valign="top">
-						<th scope="row"><label for="wp_rp_invite_friends_friend_email">Your friend's email</label></th>
-						<td><input type="email" name="entry.4.single" value="" id="wp_rp_invite_friends_friend_email" tabindex="4" required="required" /></td>
-					</tr>
-				</tbody></table>
-			</div>
-
-			<script type="text/javascript">
-jQuery(function($) {
-	var submit = $('#wp_rp_invite_friends_submit'),
-		form = $('#wp_rp_invite_friends_form'),
-		blogger_name = $('#wp_rp_invite_friends_blogger_name'),
-		blogger_email = $('#wp_rp_invite_friends_blogger_email'),
-		friend_url = $('#wp_rp_invite_friends_friend_url'),
-		friend_email = $('#wp_rp_invite_friends_friend_email'),
-		slide_div = form.find('.slide-down'),
-		submitted = false;
-		email_regex = /^[^@]+@[^@]+$/;
-	$('#wp_rp_invite_friends_form').submit(function(event) {
-			var valid = true;
-			if(!email_regex.test(friend_email.val())) {
-				valid = false;
-				friend_email.animate({backgroundColor: '#faa'}).focus();
-			} else {
-				friend_email.css({backgroundColor: ''});
-			}
-			if(!friend_url.val()) {
-				valid = false;
-				friend_url.animate({backgroundColor: '#faa'}).focus();
-			} else {
-				friend_url.css({backgroundColor: ''});
-			}
-			if(blogger_email.length && !email_regex.test(blogger_email.val())) {
-				valid = false;
-				blogger_email.animate({backgroundColor: '#faa'}).focus();
-			} else {
-				blogger_email.css({backgroundColor: ''});
-			}
-			if(blogger_name.length && !blogger_name.val()) {
-				valid = false;
-				blogger_name.animate({backgroundColor: '#faa'}).focus();
-			} else {
-				blogger_name.css({backgroundColor: ''});
-			}
-			if(!valid) {
-				event.preventDefault();
-				return;
-			}
-
-			submitted = true;
-			submit.addClass('disabled');
-			setTimeout(function() { submit.attr('disabled', true); }, 0);
-		});
-
-	$('#wp_rp_invite_friends_hidden_iframe').load(function() {
-			if(!submitted) { return; } else { submitted = false; }
-
-			setTimeout(function() {
-				submit.attr('disabled', false).removeClass('disabled');
-				var confirmation = $('<div class="confirmation">An invitation was sent to <span>' + friend_email.val() + '</span>.</div>'),
-					hr = form.find('#wp_rp_confirmation_hr'),
-					name_table = $('#wp_rp_invite_friends_name_table');
-
-				name_table.hide();
-				hr.fadeIn();
-				confirmation.hide().insertBefore(hr).fadeIn();
-
-				var data = {	action: 'rp_invite_friends',
-						recommend: true };
-
-				if(blogger_name.length && blogger_email.length) {
-					form.append('<input type="hidden" name="entry.0.single" value="' + blogger_name.val() + '">');
-					form.append('<input type="hidden" name="entry.1.single" value="' + blogger_email.val() + '">');
-
-					data['name'] = blogger_name.val();
-					data['email'] = blogger_email.val();
-
-					blogger_name.remove();
-					blogger_email.remove();
-				}
-				$.post(ajaxurl, data);
-
-				form[0].reset();
-			}, 100);
-		});
-
-	$('#wp_rp_invite_friends_slide').click(function (event) {
-			event.preventDefault();
-			if(form.hasClass('up')) {
-				slide_div.slideDown();
-				form.removeClass('up');
-				$.post(ajaxurl, { action: 'rp_invite_friends', show: true });
-			} else {
-				slide_div.slideUp();
-				form.addClass('up');
-				$.post(ajaxurl, { action: 'rp_invite_friends', hide: true });
-			}
-		});
-});
-			</script>
-		</form>
-		<iframe id="wp_rp_invite_friends_hidden_iframe" name="wp_rp_invite_friends_hidden_iframe" style="display: none"></iframe>
-		<?php endif; ?>
+		<?php wp_rp_print_notifications(); ?>
 
 		<?php if($meta['show_turn_on_button']): ?>
 		<div id="wp_rp_turn_on_statistics">
 			<table cellspacing="0" cellpadding="0"><tbody><tr>
 				<td>
-					<h2>Turn on Statistics & Thumbnails</h2>
-					<p>Real time traffic analytics are provided via third party service.</p>
+					<h2>
+						Turn on Statistics & Thumbnails
+					</h2>
+					<p>
+						Real time traffic analytics are provided via third party service.
+					</p>
 				</td><td>
 					<a href="#">Turn on</a>
 				</td>
 			</tr></tbody></table>
 		</div>
+		<?php endif; ?>
+
+		<?php if ($meta['show_enable_ads_form'] and $meta['blog_id'] and !$meta['show_turn_on_button']): ?>
+		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dGs4d0V0ek1ya2ViNEItZURFQU41b2c6MQ&embedded=true&ifq" method="POST" id="wp_rp_enable_ads_form" class="wp_rp_message_form" target="wp_rp_enable_ads_hidden_iframe">
+			<input type="hidden" name="pageNumber" value="0" />
+			<input type="hidden" name="backupCache" />
+			<input type="hidden" name="entry.0.single" value="<?php echo $meta['blog_id']; ?>" />
+			<input type="hidden" name="entry.2.single" value="<?php echo get_bloginfo('wpurl'); ?>" />
+			<a href="#" class="dismiss"><img width="12" src="<?php echo plugins_url("static/img/close.png", __FILE__); ?>" /></a>
+			<h2>Enable ads on mobile devices.</h2>
+			<p>We'll contact you in the case of revenue sharing opportunities.</p>
+			<table class="form-table"><tbody>
+				<tr valign="top">
+					<th scope="row"><label for="wp_rp_enable_ads_email">My email is:</label></th>
+					<td width="1%"><input type="email" name="entry.1.single" value="" id="wp_rp_blogger_network_email" required="required" /></td>
+
+					<td rowspan="2" valign="middle"><div id="wp_rp_enable_ads_thankyou" class="thankyou"><img src="<?php echo plugins_url("static/img/check.png", __FILE__); ?>" width="30" height="22" />Thanks for showing interest.</div></td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"></th>
+					<td><input type="submit" class="submit" name="submit" value="Submit" id="wp_rp_enable_ads_submit" /></td>
+			</tbody></table>
+			<script type="text/javascript">
+jQuery(function($) {
+	var submit = $('#wp_rp_enable_ads_submit');
+	$('#wp_rp_enable_ads_form')
+		.submit(function(event) {
+			submit.addClass('disabled');
+			setTimeout(function() { submit.attr('disabled', true); }, 0);
+			$('#wp_rp_enable_ads_hidden_iframe').load(function() {
+				submit.attr('disabled', false).removeClass('disabled');
+				$('#wp_rp_enable_ads_thankyou').fadeIn('slow');
+				$.post(ajaxurl, {action: 'enable_ads_submit', 'join': true});
+			});
+		})
+		.find('a.dismiss').click(function () {
+			$.post(ajaxurl, {action: 'enable_ads_submit'});
+			$('#wp_rp_enable_ads_form').slideUp();
+		});
+});
+			</script>
+		</form>
+		<iframe id="wp_rp_enable_ads_hidden_iframe" name="wp_rp_enable_ads_hidden_iframe" style="display: none"></iframe>
+		<?php endif; ?>
+
+		<?php if ($meta['show_blogger_network_form'] and $meta['blog_id'] and !$meta['show_turn_on_button']): ?>
+		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dDEyTlhraEd0dnRwVVFMX19LRW8wbWc6MQ&amp;ifq" method="POST" class="wp_rp_message_form" id="wp_rp_blogger_network_form" target="wp_rp_blogger_network_hidden_iframe">
+			<input type="hidden" name="pageNumber" value="0" />
+			<input type="hidden" name="backupCache" />
+			<input type="hidden" name="entry.2.single" value="<?php echo get_bloginfo('wpurl'); ?>" />
+			<input type="hidden" name="entry.3.single" value="<?php echo $meta['blog_id']; ?>" />
+			<a href="#" class="dismiss"><img width="12" src="<?php echo plugins_url("static/img/close.png", __FILE__); ?>" /></a>
+			<h2>Blogger networks</h2>
+			<p>Easily link out to similar bloggers to exchange traffic with them. One click out, one click in.</p>
+			<table class="form-table"><tbody>
+				<tr valign="top">
+					<th scope="row"><label for="wp_rp_blogger_network_kind">I want to exchange traffic with</label></th>
+					<td width="1%">
+						<select name="entry.0.group" id="wp_rp_blogger_network_kind">
+							<option value="Automotive" />Automotive bloggers</option>
+							<option value="Beauty &amp; Style" />Beauty &amp; Style bloggers</option>
+							<option value="Business" />Business bloggers</option>
+							<option value="Consumer Tech" />Consumer Tech bloggers</option>
+							<option value="Enterprise Tech" />Enterprise Tech bloggers</option>
+							<option value="Entertainment" />Entertainment bloggers</option>
+							<option value="Family &amp; Parenting" />Family &amp; Parenting bloggers</option>
+							<option value="Food &amp; Drink" />Food &amp; Drink bloggers</option>
+							<option value="Graphic Arts" />Graphic Arts bloggers</option>
+							<option value="Healthy Living" />Healthy Living bloggers</option>
+							<option value="Home &amp; Shelter" />Home &amp; Shelter bloggers</option>
+							<option value="Lifestyle &amp; Hobby" />Lifestyle &amp; Hobby bloggers</option>
+							<option value="Men's Lifestyle" />Men's Lifestyle bloggers</option>
+							<option value="Personal Finance" />Personal Finance bloggers</option>
+							<option value="Women's Lifestyle" />Women's Lifestyle bloggers</option>
+						</select>
+					</td>
+					<td rowspan="2" valign="middle"><div id="wp_rp_blogger_network_thankyou" class="thankyou"><img src="<?php echo plugins_url("static/img/check.png", __FILE__); ?>" width="30" height="22" />Thanks for showing interest.</div></td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"><label for="wp_rp_blogger_network_email">My email is:</label></th>
+					<td><input type="email" name="entry.1.single" value="" id="wp_rp_blogger_network_email" required="required" /></td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"></th>
+					<td><input type="submit" name="submit" value="Submit" class="submit" id="wp_rp_blogger_network_submit" /></td>
+			</tbody></table>
+			<script type="text/javascript">
+jQuery(function($) {
+	var submit = $('#wp_rp_blogger_network_submit');
+	$('#wp_rp_blogger_network_form')
+		.submit(function(event) {
+			submit.addClass('disabled');
+			setTimeout(function() { submit.attr('disabled', true); }, 0);
+			$('#wp_rp_blogger_network_hidden_iframe').load(function() {
+				submit.attr('disabled', false).removeClass('disabled');
+				$('#wp_rp_blogger_network_thankyou').fadeIn('slow');
+				$.post(ajaxurl, {action: 'blogger_network_submit', 'join': true});
+			});
+		})
+		.find('a.dismiss').click(function () {
+			$.post(ajaxurl, {action: 'blogger_network_submit'});
+			$('#wp_rp_blogger_network_form').slideUp();
+		});
+});
+			</script>
+		</form>
+		<iframe id="wp_rp_blogger_network_hidden_iframe" name="wp_rp_blogger_network_hidden_iframe" style="display: none"></iframe>
 		<?php endif; ?>
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
@@ -481,7 +547,7 @@ jQuery(function($) {
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><?php _e('Categories to Exclude:', 'wp_related_posts'); ?></th>
+				<th scope="row"><?php _e('Categories in which posts should not have Related Posts:', 'wp_related_posts'); ?></th>
 				<td>
 					<?php
 					$exclude = explode(',', $options['not_on_categories']);
@@ -612,15 +678,6 @@ jQuery(function($) {
 						</label>
 					</td>
 				</tr>
-				<tr>
-					<th scope="row"><?php _e("Experimental:",'wp_related_posts'); ?></th>
-					<td>
-						<label>
-						<input name="wp_rp_scroll_up_related_posts" type="checkbox" id="wp_rp_scroll_up_related_posts" value="yes" <?php checked($options["scroll_up_related_posts"]); ?>>
-						<?php _e("Scroll Up Related Posts",'wp_related_posts');?>*
-						</label><br />
-					</td>
-				</tr>
 			</table>
 
 			<h3><?php _e("If there are no related posts",'wp_related_posts');?></h3>
@@ -676,11 +733,6 @@ jQuery(function($) {
 						<label>
 							<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
 							<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
-						</label>
-						<br />
-						<label>
-							<input name="wp_rp_include_promotionail_link" type="checkbox" id="wp_rp_include_promotionail_link" value="yes"<?php checked($options['include_promotionail_link']); ?> />
-							<?php _e('Help Promote This Plugin', 'wp_related_posts'); ?>*
 						</label>
 						<br />
 						<label>

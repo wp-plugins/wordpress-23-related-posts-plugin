@@ -1,5 +1,25 @@
 <?php
 /* ************************* */
+/*         Version 1.7       */
+/* ************************* */
+
+/* Settings: 
+
+	- scroll_up_related_posts
+	- include_promotionail_link
+
+*/
+
+/* Meta options:
+
+	+ show_blogger_network_form
+	+ show_enable_ads_form
+	+ remote_notifications					array : Array of received remote notifications stored as (msg_id => text), keys sorted by msg_id
+	- show_invite_friends_form
+
+*/
+
+/* ************************* */
 /*         Version 1.6       */
 /* ************************* */
 
