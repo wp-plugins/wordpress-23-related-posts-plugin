@@ -130,15 +130,27 @@ function wp_rp_settings_styles() {
 function wp_rp_register_blog() {
 	$meta = wp_rp_get_meta();
 
+	if ($meta['blog_id'] && ($meta['blog_id'] + time() < 0)) {
+		return true;
+	}
+
+	$meta['blog_id'] = -1 * (time() + 60); // lock hack with timeout
+	wp_rp_update_meta($meta);
+
 	$req_options = array(
-		'timeout' => 30
+		'timeout' => 15
 	);
 
-	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') . ($meta['new_user'] ? '&new' : ''), $req_options);
+	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') .
+			($meta['new_user'] ? '&new' : '') .
+			($meta['turn_on_button_pressed'] ? ('&turn_on=' . $meta['turn_on_button_pressed']) : ''),
+		$req_options);
+
 	if (wp_remote_retrieve_response_code($response) == 200) {
 		$body = wp_remote_retrieve_body($response);
 		if ($body) {
 			$doc = json_decode($body);
+
 			if ($doc && $doc->status === 'ok') {
 				$meta['blog_id'] = $doc->data->blog_id;
 				$meta['auth_key'] = $doc->data->auth_key;
@@ -149,6 +161,10 @@ function wp_rp_register_blog() {
 			}
 		}
 	}
+
+	$meta['blog_id'] = false;
+	wp_rp_update_meta($meta);
+
 	return false;
 }
 
@@ -167,18 +183,6 @@ function wp_rp_ajax_blogger_network_submit_callback() {
 	die('ok');
 }
 add_action('wp_ajax_blogger_network_submit', 'wp_rp_ajax_blogger_network_submit_callback');
-
-function wp_rp_ajax_enable_ads_submit_callback() {
-	$postdata = stripslashes_deep($_POST);
-	$meta = wp_rp_get_meta();
-
-	$meta['show_enable_ads_form'] = false;
-
-	wp_rp_update_meta($meta);
-
-	die('ok');
-}
-add_action('wp_ajax_enable_ads_submit', 'wp_rp_ajax_enable_ads_submit_callback');
 
 function wp_rp_settings_onload() {
 	// fetch notifications
@@ -330,6 +334,10 @@ function wp_rp_settings_page()
 			$new_options['theme_custom_css'] = $old_options['theme_custom_css'];
 		}
 
+		if (isset($postdata['wp_rp_turn_on_button_pressed'])) {
+			$meta['turn_on_button_pressed'] = $postdata['wp_rp_turn_on_button_pressed'];
+		}
+
 		$default_thumbnail_path = wp_rp_upload_default_thumbnail_file();
 		if($default_thumbnail_path) {
 			$new_options['default_thumbnail_path'] = $default_thumbnail_path;
@@ -403,59 +411,18 @@ function wp_rp_settings_page()
 			<table cellspacing="0" cellpadding="0"><tbody><tr>
 				<td>
 					<h2>
-						Turn on Statistics & Thumbnails
+						Turn on Advanced Features
 					</h2>
-					<p>
-						Real time traffic analytics are provided via third party service.
-					</p>
+					<ul>
+						<li>Real-time Analytics provided by a <a target="_blank" href="http://www.zemanta.com/?ref=related-posts-a">3rd party service</a></li>
+						<li>Thumbnail Support</li>
+						<li>Promoted Content</li>
+					</ul>
 				</td><td>
-					<a href="#">Turn on</a>
+					<a class="turn-on" href="#">Turn on</a>
 				</td>
 			</tr></tbody></table>
 		</div>
-		<?php endif; ?>
-
-		<?php if ($meta['show_enable_ads_form'] and $meta['blog_id'] and !$meta['show_turn_on_button']): ?>
-		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dGs4d0V0ek1ya2ViNEItZURFQU41b2c6MQ&embedded=true&ifq" method="POST" id="wp_rp_enable_ads_form" class="wp_rp_message_form" target="wp_rp_enable_ads_hidden_iframe">
-			<input type="hidden" name="pageNumber" value="0" />
-			<input type="hidden" name="backupCache" />
-			<input type="hidden" name="entry.0.single" value="<?php echo $meta['blog_id']; ?>" />
-			<input type="hidden" name="entry.2.single" value="<?php echo get_bloginfo('wpurl'); ?>" />
-			<a href="#" class="dismiss"><img width="12" src="<?php echo plugins_url("static/img/close.png", __FILE__); ?>" /></a>
-			<h2>Enable ads on mobile devices.</h2>
-			<p>We'll contact you in the case of revenue sharing opportunities.</p>
-			<table class="form-table"><tbody>
-				<tr valign="top">
-					<th scope="row"><label for="wp_rp_enable_ads_email">My email is:</label></th>
-					<td width="1%"><input type="email" name="entry.1.single" value="" id="wp_rp_blogger_network_email" required="required" /></td>
-
-					<td rowspan="2" valign="middle"><div id="wp_rp_enable_ads_thankyou" class="thankyou"><img src="<?php echo plugins_url("static/img/check.png", __FILE__); ?>" width="30" height="22" />Thanks for showing interest.</div></td>
-				</tr>
-				<tr valign="top">
-					<th scope="row"></th>
-					<td><input type="submit" class="submit" name="submit" value="Submit" id="wp_rp_enable_ads_submit" /></td>
-			</tbody></table>
-			<script type="text/javascript">
-jQuery(function($) {
-	var submit = $('#wp_rp_enable_ads_submit');
-	$('#wp_rp_enable_ads_form')
-		.submit(function(event) {
-			submit.addClass('disabled');
-			setTimeout(function() { submit.attr('disabled', true); }, 0);
-			$('#wp_rp_enable_ads_hidden_iframe').load(function() {
-				submit.attr('disabled', false).removeClass('disabled');
-				$('#wp_rp_enable_ads_thankyou').fadeIn('slow');
-				$.post(ajaxurl, {action: 'enable_ads_submit', 'join': true});
-			});
-		})
-		.find('a.dismiss').click(function () {
-			$.post(ajaxurl, {action: 'enable_ads_submit'});
-			$('#wp_rp_enable_ads_form').slideUp();
-		});
-});
-			</script>
-		</form>
-		<iframe id="wp_rp_enable_ads_hidden_iframe" name="wp_rp_enable_ads_hidden_iframe" style="display: none"></iframe>
 		<?php endif; ?>
 
 		<?php if ($meta['show_blogger_network_form'] and $meta['blog_id'] and !$meta['show_turn_on_button']): ?>

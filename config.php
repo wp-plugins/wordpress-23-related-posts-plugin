@@ -130,8 +130,8 @@ function wp_rp_install() {
 		'name' => '',
 		'email' => '',
 		'show_blogger_network_form' => false,
-		'show_enable_ads_form' => true,
-		'remote_notifications' => array()
+		'remote_notifications' => array(),
+		'turn_on_button_pressed' => false
 	);
 
 	$wp_rp_options = array(
@@ -174,8 +174,9 @@ function wp_rp_migrate_1_6() {
 	unset($wp_rp_options['show_invite_friends_form']);
 
 	$wp_rp_meta['show_blogger_network_form'] = false;
-	$wp_rp_meta['show_enable_ads_form'] = false;
 	$wp_rp_meta['remote_notifications'] = array();
+
+	$wp_rp_meta['turn_on_button_pressed'] = false;
 
 	update_option('wp_rp_options', $wp_rp_options);
 	update_option('wp_rp_meta', $wp_rp_meta);
