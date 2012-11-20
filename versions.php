@@ -13,9 +13,10 @@
 /* Meta options:
 
 	+ show_blogger_network_form
-	+ show_enable_ads_form
+	+ show_enable_ads_form - removed in silent release
 	+ remote_notifications					array : Array of received remote notifications stored as (msg_id => text), keys sorted by msg_id
 	- show_invite_friends_form
+	+ turn_on_button_pressed - added in silent release
 
 */
 

@@ -22,7 +22,9 @@ include_once(dirname(__FILE__) . '/compatibility.php');
 add_action('init', 'wp_rp_init_hook');
 add_filter('the_content', 'wp_rp_add_related_posts_hook', 99);
 
+add_action('wp_head', 'wp_rp_head_resources');
 add_action('wp_before_admin_bar_render', 'wp_rp_extend_adminbar');
+
 function wp_rp_extend_adminbar() {
 	global $wp_admin_bar;
 
@@ -243,9 +245,63 @@ function wp_rp_should_exclude() {
 	return false;
 }
 
-function wp_rp_get_related_posts($before_title = '', $after_title = '') {
-	global $wpdb, $post;
+function wp_rp_head_resources() {
+	global $post;
 
+	if (wp_rp_should_exclude()) {
+		return;
+	}
+
+	$meta = wp_rp_get_meta();
+	$options = wp_rp_get_options();
+	$statistics_enabled = false;
+	$remote_recommendations = false;
+	$output = '';
+
+	// turn off statistics or recommendations on non-singular posts
+	if(is_single()) {
+		$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
+		$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
+	}
+
+	if ($statistics_enabled) {
+		$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode($v) . "\'";'), wp_get_post_tags($post->ID, array('fields' => 'names')))) . ']';
+
+		$output .= "<script type=\"text/javascript\">\n" . 
+			"\twindow._wp_rp_blog_id = '" . esc_js($meta['blog_id']) . "';\n" .
+			"\twindow._wp_rp_ajax_img_src_url = '" . esc_js(WP_RP_CTR_REPORT_URL) . "';\n" .
+			"\twindow._wp_rp_post_id = '" . esc_js($post->ID) . "';\n" .
+			"\twindow._wp_rp_thumbnails = " . ($options['display_thumbnail'] ? 'true' : 'false') . ";\n" .
+			"\twindow._wp_rp_post_title = '" . urlencode($post->post_title) . "';\n" .
+			"\twindow._wp_rp_post_tags = {$post_tags};\n" .
+			"\twindow._wp_rp_static_base_url = '" . esc_js(WP_RP_STATIC_BASE_URL) . "';\n" .
+			"</script>\n";
+
+		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_CTR_PAGEVIEW_FILE . '"></script>' . "\n";
+	}
+
+	if ($remote_recommendations) {
+		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '"></script>' . "\n";
+		$output .= '<link rel="stylesheet" href="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE . '" />' . "\n";
+	}
+
+	if ($options['enable_themes']) {	
+		if ($options["display_thumbnail"]) {
+			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH;
+		} else {
+			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_PATH;
+		}
+
+		$output .= '<link rel="stylesheet" href="' . $theme_url.  $options['theme_name'] . '" />' . "\n";
+		if ($options['theme_name'] === 'custom.css') {
+			$output .= '<style type="text/css">' . $options['theme_custom_css'] . "</style>\n";
+		}
+	}
+
+	echo $output;
+}
+
+function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	if (wp_rp_should_exclude()) {
 		return;
 	}
@@ -253,28 +309,24 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$options = wp_rp_get_options();
 	$meta = wp_rp_get_meta();
 
-	$output = "";
-	$output_script = "";
+	$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
+	$remote_recommendations = is_single() && $meta['remote_recommendations'] && $statistics_enabled;
 
+	$output = "";
 	$promotional_link = '';
 
 	$posts_and_title = wp_rp_fetch_posts_and_title();
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
-	$theme_name = '';
 
-	if ($options['enable_themes'])
-		$theme_name = $options['theme_name'];
-
-	$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
-	$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
-
-
-	$output_script .= "window._wp_rp_static_base_url = \"" . WP_RP_STATIC_BASE_URL . "\";\n";
+	$css_classes = 'related_post wp_rp';
+	if ($options['enable_themes']) {
+		$css_classes .= ' ' . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $options['theme_name']));
+	}
 
 	if ($related_posts) {
 		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = "<ul class=\"related_post wp_rp " . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $theme_name)) . "\" style=\"visibility:" . ($remote_recommendations ? 'hidden' : 'visible') . ";\">" . $output . "</ul>\n";
+		$output = '<ul class="' . $css_classes . '" style="visibility: "' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>' . "\n";
 	}
 
 	if ($title != '') {
@@ -286,41 +338,5 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 		}
 	}
 
-	if ($options['enable_themes']) {
-		if ($options["display_thumbnail"]) {
-			wp_enqueue_style('wp_rp_theme', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH . $theme_name);
-		} else {
-			wp_enqueue_style('wp_rp_theme', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_PATH . $theme_name);
-		}
-
-		if ($theme_name === 'custom.css') {
-			$theme_custom_css = $options['theme_custom_css'];
-
-			$output .= '<style>' . $theme_custom_css . '</style>';
-		}
-	}
-
-	if ($statistics_enabled) {
-		$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode($v) . "\'";'), wp_get_post_tags($post->ID, array('fields' => 'names')))) . ']';
-
-		$output_script .= 'window._wp_rp_blog_id = \'' . esc_js($meta['blog_id']) . '\';
-			window._wp_rp_ajax_img_src_url = "' . esc_js(WP_RP_CTR_REPORT_URL) . '";
-			window._wp_rp_post_id = \'' . esc_js($post->ID) . '\';
-			window._wp_rp_thumbnails = ' . ($options["display_thumbnail"] ? 'true' : 'false') . ';
-			window._wp_rp_post_title = \'' . urlencode($post->post_title) . '\';
-			window._wp_rp_post_tags = ' . $post_tags . ';';
-
-		wp_enqueue_script('wp_rp_pageview', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_CTR_PAGEVIEW_FILE);
-	}
-
-	if ($remote_recommendations) {
-		wp_enqueue_script('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE);
-		wp_enqueue_style('wp_rp_recommendations', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE);
-	}
-
-	if ($output_script) {
-		$output_script = "<script type=\"text/javascript\">\n" . $output_script . "\n</script>";
-	}
-
-	return "\n" . $output_script  . "\n" . $output . "\n";
+	return "\n" . $output . "\n";
 }
