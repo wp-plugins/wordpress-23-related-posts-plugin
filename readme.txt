@@ -59,8 +59,7 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 == Screenshots ==
 1. WordPress Related Posts Default Theme.
 2. WordPress Related Posts Settings and Statistics.
-3. WordPress Related Posts responsive theme on an iPhone 4s.
-4. WordPress Related Posts responsive theme on a Galaxy Nexus.
+3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
 
 == Changelog ==
 
