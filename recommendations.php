@@ -8,6 +8,10 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
+	if ($post->post_type === 'nav_menu_item' || $post->post_type === 'attachment') {
+		return;
+	}
+
 	$wpdb->query(
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
 	);
@@ -135,7 +139,7 @@ function wp_rp_generate_tags($post) {
 		}
 	}
 
-	if ($post->post_status == 'publish') {
+	if (count($all_tags) > 0 && $post->post_status == 'publish') {
 		$sql_tag_format_line = '(%d, %s, %f)';
 		$tags_insert_query = $wpdb->prepare('INSERT INTO ' . $wpdb->prefix . 'wp_rp_tags (post_id, label, weight)
 				VALUES ' . implode(', ', array_fill(0, count($all_tags), $sql_tag_format_line)) . ';',
