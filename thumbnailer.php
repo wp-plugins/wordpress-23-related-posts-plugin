@@ -2,15 +2,21 @@
 
 function wp_rp_upload_default_thumbnail_file() {
 	if (!empty($_FILES['wp_rp_default_thumbnail'])) {
-		$file   = $_FILES['wp_rp_default_thumbnail'];
-		$upload = wp_handle_upload($file, array('test_form' => false));
+		$file = $_FILES['wp_rp_default_thumbnail'];
+		if(isset($file['error']) && $file['error'] === UPLOAD_ERR_NO_FILE) {
+			return false;
+		}
 
-		if(!isset($upload['error']) && isset($upload['file'])) {
+		$upload = wp_handle_upload($file, array('test_form' => false));
+		if(isset($upload['error'])) {
+			return new WP_Error('upload_error', $upload['error']);
+		} else if(isset($upload['file'])) {
 			$path = image_resize($upload['file'], WP_RP_THUMBNAILS_WIDTH, WP_RP_THUMBNAILS_HEIGHT, true);
 			if (!is_wp_error($path)) {
 				$upload_dir = wp_upload_dir();
 				return $upload_dir['subdir'] . '/' . wp_basename($path);
 			}
+			return $path;
 		}
 	}
 	return false;
@@ -66,7 +72,6 @@ function wp_rp_get_post_thumbnail_img($related_post) {
     if (!$options["display_thumbnail"]) {
 		return false;
 	}
-
 
     if ($options['thumbnail_use_custom']) {
         $thumbnail_src = get_post_meta($related_post->ID, $options["thumbnail_custom_field"], true);
