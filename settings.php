@@ -441,12 +441,12 @@ jQuery(function($) {
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
 		<?php if ($options['ctr_dashboard_enabled']): ?>
-		<div id="wp_rp_statistics_collapsible" class="collapsible<?php if(!$meta['show_statistics']) { ?> collapsed<? } ?>">
+		<div id="wp_rp_statistics_collapsible" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
 			<a href="#" class="collapse-handle">Collapse</a>
-			<h2><?php _e('Statistics', 'wp_related_posts');?></h2>
-			<div class="container" <?php if(!$meta['show_statistics']) { ?> style="display: none;" <? } ?>>
+			<h2><?php _e('Statistics', 'wp_related_posts'); ?></h2>
+			<div class="container" <?php if(!$meta['show_statistics']) { echo ' style="display: none;" '; } ?>>
 				<div id="wp_rp_statistics_wrap">
-					<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts');?></div>
+					<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts'); ?></div>
 				</div>
 			</div>
 		</div>
