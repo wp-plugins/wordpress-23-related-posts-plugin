@@ -43,7 +43,7 @@ function wp_rp_load_install_tooltip() {
     add_action('admin_print_footer_scripts', 'wp_rp_print_install_tooltip');
 }
 function wp_rp_print_install_tooltip() {
-	$content = "<h3>Thanks for installing Related Posts plugin!</h3><p>To experience the full power of Related Posts, go to settings and turn Statistics on!</p>";
+	$content = "<h3>Thanks for installing Related Posts plugin!</h3><p>To experience the full power of Related Posts, go to settings and turn on advanced features!</p>";
 	wp_rp_print_tooltip($content);
 }
 
@@ -109,19 +109,25 @@ function wp_rp_admin_head() {
 add_action('admin_menu', 'wp_rp_settings_admin_menu');
 
 function wp_rp_settings_admin_menu() {
-	$page = add_menu_page(__('Related Posts', 'wp_related_posts'), __('Related Posts', 'wp_related_posts'), 
+	$title = __('Related Posts', 'wp_related_posts');
+	$count = wp_rp_number_of_available_notifications();
+
+	if($count) {
+		$title .= ' <span class="update-plugins count-' . $count . '"><span class="plugin-count">' . $count . '</span></span>';
+	}
+	
+	$page = add_menu_page(__('Related Posts', 'wp_related_posts'), $title, 
 						'manage_options', 'wordpress-related-posts', 'wp_rp_settings_page', 'div');
 
 	add_action('admin_print_styles-' . $page, 'wp_rp_settings_styles');
 	add_action('admin_print_scripts-' . $page, 'wp_rp_settings_scripts');
-	add_action('load-' . $page, 'wp_rp_settings_onload');
 
 	wp_rp_display_tooltips();
 }
 
 function wp_rp_settings_scripts() {
 	wp_enqueue_script('wp_rp_themes_script', plugins_url('static/js/themes.js', __FILE__), array('jquery'));
-	wp_enqueue_script("wp_rp_dashboard_script", plugins_url("static/js/dashboard.js", __FILE__), array( 'jquery' ) );
+	wp_enqueue_script("wp_rp_dashboard_script", plugins_url('static/js/dashboard.js', __FILE__), array('jquery') );
 }
 function wp_rp_settings_styles() {
 	wp_enqueue_style("wp_rp_dashaboard_style", plugins_url("static/css/dashboard.css", __FILE__));
@@ -130,15 +136,8 @@ function wp_rp_settings_styles() {
 function wp_rp_register_blog() {
 	$meta = wp_rp_get_meta();
 
-	if ($meta['blog_id'] && ($meta['blog_id'] + time() < 0)) {
-		return true;
-	}
-
-	$meta['blog_id'] = -1 * (time() + 60); // lock hack with timeout
-	wp_rp_update_meta($meta);
-
 	$req_options = array(
-		'timeout' => 15
+		'timeout' => 30
 	);
 
 	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') .
@@ -162,9 +161,6 @@ function wp_rp_register_blog() {
 		}
 	}
 
-	$meta['blog_id'] = false;
-	wp_rp_update_meta($meta);
-
 	return false;
 }
 
@@ -177,6 +173,15 @@ function wp_rp_ajax_blogger_network_submit_callback() {
 	if(isset($postdata['join'])) {
 		$meta['remote_recommendations'] = true;
 	}
+	else {
+		$blog_id = $meta['blog_id'];
+		$auth_key = $meta['auth_key'];
+		$req_options = array(
+			'timeout' => 5
+		);
+		$url = WP_RP_CTR_DASHBOARD_URL . "notifications/dismiss/?blog_id=$blog_id&auth_key=$auth_key&msg_id=blogger_network_form";
+		$response = wp_remote_get($url, $req_options);
+	}
 
 	wp_rp_update_meta($meta);
 
@@ -184,99 +189,35 @@ function wp_rp_ajax_blogger_network_submit_callback() {
 }
 add_action('wp_ajax_blogger_network_submit', 'wp_rp_ajax_blogger_network_submit_callback');
 
-function wp_rp_settings_onload() {
-	// fetch notifications
-	$meta = wp_rp_get_meta();
-	$options = wp_rp_get_options();
-
-	$blog_id = $meta['blog_id'];
-	$auth_key = $meta['auth_key'];
-
-	$req_options = array(
-		'timeout' => 5
-	);
-
-	if(empty($blog_id) || empty($auth_key) || !$options['ctr_dashboard_enabled']) return;
-
-	// receive remote recommendations
-	$url = sprintf('%snotifications/?blog_id=%s&auth_key=%s', WP_RP_CTR_DASHBOARD_URL, $blog_id, $auth_key);
-	$response = wp_remote_get($url, $req_options);
-
-	if (wp_remote_retrieve_response_code($response) == 200) {
-		$body = wp_remote_retrieve_body($response);
-
-		if ($body) {
-			$json = json_decode($body);
-
-			if ($json && isset($json->status) && $json->status === 'ok' && isset($json->data) && is_object($json->data)) 
-			{
-				if(!isset($meta['remote_notifications']) || !is_array($meta['remote_notifications'])) {
-					$meta['remote_notifications'] = array();
-				}
-
-				$messages_ref =& $meta['remote_notifications'];
-				$data = $json->data;
-
-				if(isset($data->msgs) && is_array($data->msgs)) {
-					// add new messages from server and update old ones
-					foreach($data->msgs as $msg) {
-						$messages_ref[$msg->msg_id] = $msg->text;
-					}
-
-					// sort messages by identifier
-					ksort($messages_ref);
-				}
-
-				if(isset($data->turn_on_remote_recommendations) && $data->turn_on_remote_recommendations) {
-					$meta['remote_recommendations'] = true;
-				} else if(isset($data->turn_off_remote_recommendations) && $data->turn_off_remote_recommendations) {
-					$meta['remote_recommendations'] = false;
-				}
-
-				if(isset($data->show_blogger_network_form) && $data->show_blogger_network_form) {
-					$meta['show_blogger_network_form'] = true;
-				} else if(isset($data->hide_blogger_network_form) && $data->hide_blogger_network_form) {
-					$meta['show_blogger_network_form'] = false;
-				}
-
-				wp_rp_update_meta($meta);
-			}
-		}
+function wp_rp_ajax_dismiss_notification_callback() {	
+	if(isset($_REQUEST['id'])) {
+		wp_rp_dismiss_notification((int)$_REQUEST['id']);
 	}
-}
-
-function wp_rp_print_notifications() {
-	$meta = wp_rp_get_meta();
-	$messages = $meta['remote_notifications'];
-
-	if(is_array($messages)) {
-		foreach($messages as $id => $text) {
-			echo '<div class="wp_rp_notification">
-				<a href="' . admin_url('admin-ajax.php?action=rp_dismiss_notification&id=' . $id) . '" class="close">x</a>
-				<p>' . $text . '</p>
-			</div>';
-		}
-	}
-}
-
-add_action('wp_ajax_rp_dismiss_notification', 'wp_rp_ajax_dismiss_notification');
-
-function wp_rp_ajax_dismiss_notification() {
-	$id = (int)$_REQUEST['id'];
-	$meta = wp_rp_get_meta();
-	$messages_ref =& $meta['remote_notifications'];
-
-	if(is_array($messages_ref) && array_key_exists($id, $messages_ref)) {
-		unset($messages_ref[$id]);
-		wp_rp_update_meta($meta);
-	}
-
-	if($_REQUEST['noredirect']) {
+	if(isset($_REQUEST['noredirect'])) {
 		die('ok');
 	}
-
 	wp_redirect(admin_url('admin.php?page=wordpress-related-posts'));
 }
+
+add_action('wp_ajax_rp_dismiss_notification', 'wp_rp_ajax_dismiss_notification_callback');
+
+function wp_rp_ajax_hide_show_statistics() {
+	$meta = wp_rp_get_meta();
+	$postdata = stripslashes_deep($_POST);
+
+	if(isset($postdata['show'])) {
+		$meta['show_statistics'] = true;
+	}
+	if(isset($postdata['hide'])) {
+		$meta['show_statistics'] = false;
+	}
+
+	wp_rp_update_meta($meta);
+
+	die('ok');
+}
+
+add_action('wp_ajax_rp_show_hide_statistics', 'wp_rp_ajax_hide_show_statistics');
 
 function wp_rp_settings_page()
 {
@@ -287,14 +228,13 @@ function wp_rp_settings_page()
 
 	$postdata = stripslashes_deep($_POST);
 
+	// load notifications every time user goes to settings page
+	wp_rp_load_remote_notifications();
+
 	if(sizeof($_POST))
 	{
-		$message = __('WordPress Related Posts Setting Updated', 'wp_related_posts');
-
 		$old_options = $options;
 		$new_options = array(
-			'missing_rp_algorithm' => isset($postdata['wp_rp_missing_rp_algorithm']) ? trim($postdata['wp_rp_missing_rp_algorithm']) : 'random',
-			'missing_rp_title' => isset($postdata['wp_rp_missing_rp_title']) ? ($postdata['wp_rp_missing_rp_title']) : __('Random Posts', 'wp_related_posts'),
 			'on_single_post' => isset($postdata['wp_rp_on_single_post']),
 			'display_comment_count' => isset($postdata['wp_rp_display_comment_count']),
 			'display_publish_date' => isset($postdata['wp_rp_display_publish_date']),
@@ -310,15 +250,16 @@ function wp_rp_settings_page()
 			'thumbnail_use_attached' => isset($postdata['wp_rp_thumbnail_use_attached']),
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
 			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
+			'promoted_content_enabled' => isset($postdata['wp_rp_promoted_content_enabled']),
 			'enable_themes' => isset($postdata['wp_rp_enable_themes'])
 		);
 
-		if(!isset($postdata['wp_rp_not_on_categories'])) {
-			$new_options['not_on_categories'] = '';
-		} else if(is_array($postdata['wp_rp_not_on_categories'])) {
-			$new_options['not_on_categories'] = join(',', $postdata['wp_rp_not_on_categories']);
+		if(!isset($postdata['wp_rp_exclude_categories'])) {
+			$new_options['exclude_categories'] = '';
+		} else if(is_array($postdata['wp_rp_exclude_categories'])) {
+			$new_options['exclude_categories'] = join(',', $postdata['wp_rp_exclude_categories']);
 		} else {
-			$new_options['not_on_categories'] = trim($postdata['wp_rp_not_on_categories']);
+			$new_options['exclude_categories'] = trim($postdata['wp_rp_exclude_categories']);
 		}
 
 		if(isset($postdata['wp_rp_theme_name'])) {		// If this isn't set, maybe the AJAX didn't load...
@@ -339,25 +280,39 @@ function wp_rp_settings_page()
 		}
 
 		$default_thumbnail_path = wp_rp_upload_default_thumbnail_file();
-		if($default_thumbnail_path) {
-			$new_options['default_thumbnail_path'] = $default_thumbnail_path;
-		} else {
+
+		if($default_thumbnail_path === false) { // no file uploaded
 			if(isset($postdata['wp_rp_default_thumbnail_remove'])) {
 				$new_options['default_thumbnail_path'] = false;
 			} else {
 				$new_options['default_thumbnail_path'] = $old_options['default_thumbnail_path'];
 			}
+		} else if(is_wp_error($default_thumbnail_path)) { // error while upload
+			$new_options['default_thumbnail_path'] = $old_options['default_thumbnail_path'];
+			wp_rp_add_admin_notice('error', $default_thumbnail_path->get_error_message());
+		} else { // file successfully uploaded
+			$new_options['default_thumbnail_path'] = $default_thumbnail_path;
 		}
 
 		if (((array) $old_options) != $new_options) {
-			if($new_options['ctr_dashboard_enabled'] && $new_options['display_thumbnail'] && $meta['show_turn_on_button']) {
-				$meta['show_turn_on_button'] = false;
+			if($new_options['ctr_dashboard_enabled']) {
+				$meta['show_statistics'] = true;
+
+				if($new_options['display_thumbnail']) {
+					$meta['show_turn_on_button'] = false;
+				}
+
 				wp_rp_update_meta($meta);
 			}
 
 			if(!wp_rp_update_options($new_options)) {
-				$message = __('Update Failed', 'wp_related_posts');
+				wp_rp_add_admin_notice('error', __('Failed to save settings.', 'wp_related_posts'));
+			} else {
+				wp_rp_add_admin_notice('updated', __('Settings saved.', 'wp_related_posts'));
 			}
+		} else {
+			// I should duplicate success message here
+			wp_rp_add_admin_notice('updated', __('Settings saved.', 'wp_related_posts'));
 		}
 	}
 
@@ -369,7 +324,6 @@ function wp_rp_settings_page()
 
 	<div class="wrap" id="wp_rp_wrap">
 	<?php
-		$missing_rp_algorithm = $options['missing_rp_algorithm'];
 		$related_posts_title_tag = $options['related_posts_title_tag'];
 		$theme_name = $options['theme_name'];
 		$theme_custom_css = $options['theme_custom_css'];
@@ -399,10 +353,6 @@ function wp_rp_settings_page()
 			<p class="desc"><?php _e("WordPress Related Posts Plugin places a list of related articles via WordPress tags at the bottom of your post.",'wp_related_posts');?></p>
 		</div>
 		<div id="wp-rp-survey" class="updated highlight" style="display:none;"><p><?php _e("Please fill out",'wp_related_posts');?> <a class="link" target="_blank" href="http://wprelatedposts.polldaddy.com/s/quick-survey"><?php _e("a quick survey", 'wp_related_posts');?></a>.<a href="#" class="close" style="float: right;">x</a></p></div>
-
-		<?php if (isset($message)): ?>
-		<div id="message" class="updated fade"><p><?php echo $message ?>.</p></div>
-		<?php endif; ?>
 
 		<?php wp_rp_print_notifications(); ?>
 
@@ -491,49 +441,36 @@ jQuery(function($) {
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
 		<?php if ($options['ctr_dashboard_enabled']): ?>
-			<h2><?php _e("Statistics",'wp_related_posts');?></h2>
-			<div id="wp_rp_statistics_wrap">
-				<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts');?></div>
+		<div id="wp_rp_statistics_collapsible" class="collapsible<?php if(!$meta['show_statistics']) { ?> collapsed<? } ?>">
+			<a href="#" class="collapse-handle">Collapse</a>
+			<h2><?php _e('Statistics', 'wp_related_posts');?></h2>
+			<div class="container" <?php if(!$meta['show_statistics']) { ?> style="display: none;" <? } ?>>
+				<div id="wp_rp_statistics_wrap">
+					<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts');?></div>
+				</div>
 			</div>
+		</div>
 		<?php endif; ?>
 
 			<h2><?php _e("Settings",'wp_related_posts');?></h2>
+
+			<?php do_action('wp_rp_admin_notices'); ?>
+			
 			<h3><?php _e("Basic Settings",'wp_related_posts');?></h3>
 
 			<table class="form-table">
-			  <tr valign="top">
-				<th scope="row"><?php _e('Related Posts Title:', 'wp_related_posts'); ?></th>
-				<td>
-				  <input name="wp_rp_related_posts_title" type="text" id="wp_rp_related_posts_title" value="<?php esc_attr_e($options['related_posts_title']); ?>" class="regular-text" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?php _e('Number of Posts:', 'wp_related_posts');?></th>
-				<td>
-				  <input name="wp_rp_max_related_posts" type="number" step="1" id="wp_rp_max_related_posts" class="small-text" min="1" value="<?php esc_attr_e($options['max_related_posts']); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?php _e('Categories in which posts should not have Related Posts:', 'wp_related_posts'); ?></th>
-				<td>
-					<?php
-					$exclude = explode(',', $options['not_on_categories']);
-					$args = array(
-						'orderby' => 'name',
-						'order' => 'ASC',
-						'hide_empty' => false
-						);
-
-					foreach (get_categories($args) as $category) :
-					?>
-					<label>
-						<input name="wp_rp_not_on_categories[]" type="checkbox" id="wp_rp_not_on_categories" value="<?php esc_attr_e($category->cat_ID); ?>"<?php checked(in_array($category->cat_ID, $exclude)); ?> />
-						<?php esc_html_e($category->cat_name); ?>
-						<br />
-					</label>
-					<?php endforeach; ?>
-				</td>
-			</tr>
+				<tr valign="top">
+					<th scope="row"><?php _e('Related Posts Title:', 'wp_related_posts'); ?></th>
+					<td>
+					  <input name="wp_rp_related_posts_title" type="text" id="wp_rp_related_posts_title" value="<?php esc_attr_e($options['related_posts_title']); ?>" class="regular-text" />
+					</td>
+				</tr>
+				<tr valign="top">
+					<th scope="row"><?php _e('Number of Posts:', 'wp_related_posts');?></th>
+					<td>
+					  <input name="wp_rp_max_related_posts" type="number" step="1" id="wp_rp_max_related_posts" class="small-text" min="1" value="<?php esc_attr_e($options['max_related_posts']); ?>" />
+					</td>
+				</tr>
 			</table>
 
 			<h3>Theme Settings</h3>
@@ -600,7 +537,7 @@ jQuery(function($) {
 						<label>
 							<?php _e('For posts without images, a default image will be shown.<br/>
 							You can upload your own default image here','wp_related_posts');?>
-							<input type="file" name="wp_rp_default_thumbnail"  />
+							<input type="file" name="wp_rp_default_thumbnail" />
 						</label>
 						<?php if($options['default_thumbnail_path']) : ?>
 							<span style="display: inline-block; vertical-align: top; *display: inline; zoom: 1;">
@@ -646,51 +583,33 @@ jQuery(function($) {
 					</td>
 				</tr>
 			</table>
-
-			<h3><?php _e("If there are no related posts",'wp_related_posts');?></h3>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php _e("Display:",'wp_related_posts'); ?></th>
-					<td>
-						<select name="wp_rp_missing_rp_algorithm" id="wp_rp_missing_rp_algorithm" onchange="wp_rp_missing_rp_algorithm_onchange();"  class="postform">
-							<option value="text"<?php selected($missing_rp_algorithm, 'text'); ?> ><?php _e("Text: 'No Related Posts'",'wp_related_posts'); ?></option>
-							<option value="random"<?php selected($missing_rp_algorithm, 'random'); ?>><?php _e("Random Posts",'wp_related_posts'); ?></option>
-							<option value="commented"<?php selected($missing_rp_algorithm, 'commented'); ?>><?php _e("Most Commented Posts",'wp_related_posts'); ?></option>
-							<?php if(function_exists('akpc_most_popular')) : ?>
-							<option value="popularity" <?php selected($missing_rp_algorithm, 'popularity'); ?>><?php _e("Most Popular Posts",'wp_related_posts'); ?></option>
-							<?php endif; ?> 
-						</select>
-					</td>
-				</tr>
-				<tr valign="top" scope="row">
-					<th id="wp_rp_missing_rp_title_th" scope="row">
-					<?php 
-					switch($missing_rp_algorithm) {
-						case 'text':
-							_e('No Related Posts Text:', 'wp_related_posts'); 
-							break;
-						case 'random':
-							_e('Random Posts Title:', 'wp_related_posts'); 
-							break;
-						case 'commented':
-							_e('Most Commented Posts Title:', 'wp_related_posts'); 
-							break;
-						case 'popularity':
-							_e('Most Popular Posts Title:', 'wp_related_posts'); 
-							break;
-					}
-					?>
-					</th>
-					<td>
-						<input name="wp_rp_missing_rp_title" type="text" id="wp_rp_missing_rp_title" value="<?php esc_attr_e($options['missing_rp_title']); ?>" class="regular-text" />
-					</td>
-				</tr>
-			</table>
-
 			<h3><?php _e("Other Settings:",'wp_related_posts'); ?></h3>
 			<table class="form-table">
 				<tr valign="top">
+					<th scope="row"><?php _e('Exclude these Categories:', 'wp_related_posts'); ?></th>
 					<td>
+						<div class="excluded-categories">
+							<?php
+							$exclude = explode(',', $options['exclude_categories']);
+							$args = array(
+								'orderby' => 'name',
+								'order' => 'ASC',
+								'hide_empty' => false
+								);
+
+							foreach (get_categories($args) as $category) :
+							?>
+							<label>
+								<input name="wp_rp_exclude_categories[]" type="checkbox" id="wp_rp_exclude_categories" value="<?php esc_attr_e($category->cat_ID); ?>"<?php checked(in_array($category->cat_ID, $exclude)); ?> />
+								<?php esc_html_e($category->cat_name); ?>
+								<br />
+							</label>
+							<?php endforeach; ?>
+						</div>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
 						<label>
 							<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
 							<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
@@ -705,6 +624,11 @@ jQuery(function($) {
 						<label>
 							<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
 							<?php _e("Turn statistics on",'wp_related_posts');?>*
+						</label>
+						<br />
+						<label>
+							<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
+							<?php _e('Promoted Content', 'wp_related_posts');?>
 						</label>
 					</td>
 				</tr>

@@ -1,4 +1,26 @@
 <?php
+
+/* ************************* */
+/*         Version 2.0       */
+/* ************************* */
+
+/* Settings:
+
+	+ exclude_categories						string (comma-separated list of categories) : exclude these categories from recommendations, do not show related posts in them (similar to the old not_on_categories setting, also copied from it)
+	(-) missing_rp_algorithm
+	(-) missing_rp_title
+	(-) not_on_categories
+
+	// In order to preserve backwards compatibility, we won't be deleting the settings in this release.
+
+*/
+
+/* Meta options:
+
+	+ show_statistics						bool : allow the user to show and hide the box with statistics on the Related Posts settings page
+
+*/
+
 /* ************************* */
 /*         Version 1.7       */
 /* ************************* */
@@ -12,11 +34,12 @@
 
 /* Meta options:
 
-	+ show_blogger_network_form
-	+ show_enable_ads_form - removed in silent release
-	+ remote_notifications					array : Array of received remote notifications stored as (msg_id => text), keys sorted by msg_id
+	+ show_blogger_network_form					bool : show a form for submitting email and blogger network
+	+ remote_notifications						array : array of received remote notifications stored as (msg_id => text), sorted by msg_id
+	+ turn_on_button_pressed					bool : whether the "Turn on advanced features" button has been pressed
 	- show_invite_friends_form
-	+ turn_on_button_pressed - added in silent release
+
+	(+&-) show_enable_ads_form					(silent release)
 
 */
 
