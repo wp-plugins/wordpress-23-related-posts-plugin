@@ -214,10 +214,11 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	$post_query = $wpdb->prepare("
 		SELECT post.ID, post.post_title, post.post_excerpt, post.post_content, post.post_date, post.comment_count
 		FROM $wpdb->posts as post
-		WHERE post.ID IN (" . implode(', ', array_fill(0, count($related_post_ids), '%s')) . ")
+		WHERE post.post_type = %s
+			AND post.ID IN (" . implode(', ', array_fill(0, count($related_post_ids), '%s')) . ")
 			AND post_status = 'publish'
 			AND post_date_gmt < %s",
-		array_merge($related_post_ids, array($now, $limit)));
+		array_merge(array($post->post_type), $related_post_ids, array($now, $limit)));
 
 	$related_posts = $wpdb->get_results($post_query);
 
