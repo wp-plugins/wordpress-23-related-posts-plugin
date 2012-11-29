@@ -135,6 +135,11 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 
 function wp_rp_should_exclude() {
 	global $wpdb, $post;
+
+	if ($post->post_type === 'page') {
+		return true;
+	}
+
 	$options = wp_rp_get_options();
 
 	if($options['exclude_categories'] === '') { return false; }
