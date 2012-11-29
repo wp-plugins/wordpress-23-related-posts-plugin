@@ -19,7 +19,7 @@ ul.related_post li img {
 
 define('WP_RP_THUMBNAILS_WIDTH', 150);
 define('WP_RP_THUMBNAILS_HEIGHT', 150);
-define('WP_RP_THUMBNAILS_DEFAULTS_COUNT', 15);
+define('WP_RP_THUMBNAILS_DEFAULTS_COUNT', 31);
 
 define("WP_RP_CTR_DASHBOARD_URL", "http://d.related-posts.com/");
 define("WP_RP_CTR_REPORT_URL", "http://t.related-posts.com/pageview/?");
@@ -28,6 +28,15 @@ define("WP_RP_STATIC_CTR_PAGEVIEW_FILE", "js/pageview.js");
 define("WP_RP_STATIC_RECOMMENDATIONS_JS_FILE", "js/recommendations.js");
 define("WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE", "css-img/recommendations.css");
 
+
+define("WP_RP_RECOMMENDATIONS_AUTO_TAGS_MAX_WORDS", 200);
+define("WP_RP_RECOMMENDATIONS_AUTO_TAGS_MAX_TAGS", 15);
+
+define("WP_RP_RECOMMENDATIONS_AUTO_TAGS_SCORE", 2);
+define("WP_RP_RECOMMENDATIONS_TAGS_SCORE", 10);
+define("WP_RP_RECOMMENDATIONS_CATEGORIES_SCORE", 5);
+
+define("WP_RP_RECOMMENDATIONS_NUM_PREGENERATED_POSTS", 50);
 
 global $wp_rp_options, $wp_rp_meta;
 $wp_rp_options = false;
@@ -91,6 +100,11 @@ function wp_rp_update_options($new_options) {
 
 function wp_rp_activate_hook() {
 	wp_rp_get_options();
+	wp_rp_schedule_notifications_cron();
+}
+
+function wp_rp_deactivate_hook() {
+	wp_rp_unschedule_notifications_cron();
 }
 
 function wp_rp_upgrade() {
@@ -116,6 +130,28 @@ function wp_rp_upgrade() {
 	}
 }
 
+function wp_rp_related_posts_db_table_install() {
+	global $wpdb;
+
+	$tags_table_name = $wpdb->prefix . "wp_rp_tags";
+	$sql_tags = "CREATE TABLE $tags_table_name (
+	  post_id mediumint(9),
+	  time timestamp DEFAULT CURRENT_TIMESTAMP,
+	  label VARCHAR(32) NOT NULL,
+	  weight float,
+	  INDEX post_id (post_id),
+	  INDEX label (label)
+	 );";
+
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+	dbDelta($sql_tags);
+
+	$latest_posts = get_posts(array('numberposts' => WP_RP_RECOMMENDATIONS_NUM_PREGENERATED_POSTS));
+	foreach ($latest_posts as $post) {
+		wp_rp_generate_tags($post);
+	}
+}
+
 function wp_rp_install() {
 	$wp_rp_meta = array(
 		'blog_id' => false,
@@ -131,18 +167,17 @@ function wp_rp_install() {
 		'email' => '',
 		'show_blogger_network_form' => false,
 		'remote_notifications' => array(),
-		'turn_on_button_pressed' => false
+		'turn_on_button_pressed' => false,
+		'show_statistics' => false
 	);
 
 	$wp_rp_options = array(
 		'related_posts_title'			=> __('Related Posts', 'wp_related_posts'),
 		'related_posts_title_tag'		=> 'h3',
-		'missing_rp_algorithm'			=> 'random',
-		'missing_rp_title'			=> __('Other Posts', 'wp_related_posts'),
 		'display_excerpt'			=> false,
 		'excerpt_max_length'			=> 200,
 		'max_related_posts'			=> 5,
-		'not_on_categories'			=> '',
+		'exclude_categories'			=> '',
 		'on_single_post'			=> true,
 		'on_rss'				=> false,
 		'display_comment_count'			=> false,
@@ -156,11 +191,40 @@ function wp_rp_install() {
 		'theme_name' 				=> 'vertical-m.css',
 		'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 		'ctr_dashboard_enabled'		=> false,
+		'promoted_content_enabled'	=> false,
 		'enable_themes'				=> false
 	);
 
 	update_option('wp_rp_meta', $wp_rp_meta);
 	update_option('wp_rp_options', $wp_rp_options);
+
+	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_1_7() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '2.0';
+
+	$wp_rp_options['promoted_content_enabled'] = $wp_rp_options['ctr_dashboard_enabled'];
+	$wp_rp_options['exclude_categories'] = $wp_rp_options['not_on_categories'];
+
+	$wp_rp_meta['show_statistics'] = $wp_rp_options['ctr_dashboard_enabled'];
+
+	// Commented out since we don't want to lose this info for users that will downgrade the plugin because of the change
+	//unset($wp_rp_options['missing_rp_algorithm']);
+	//unset($wp_rp_options['missing_rp_title']);
+	//unset($wp_rp_options['not_on_categories']);
+
+	// Forgot to unset this the last time.
+	unset($wp_rp_meta['show_invite_friends_form']);
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
+
+	wp_rp_schedule_notifications_cron();
+	wp_rp_related_posts_db_table_install();
 }
 
 function wp_rp_migrate_1_6() {
