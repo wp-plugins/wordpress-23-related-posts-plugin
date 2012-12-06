@@ -8,7 +8,7 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
-	if ($post->post_type === 'page' || $post->post_type === 'nav_menu_item' || $post->post_type === 'attachment') {
+	if ($post->post_type === 'nav_menu_item' || $post->post_type === 'attachment') {
 		return;
 	}
 
@@ -16,9 +16,11 @@ function wp_rp_update_tags($post_id) {
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
 	);
 
-	if ($post->post_status == 'publish') {
-		wp_rp_generate_tags($post);
+	if ($post->post_type === 'page' || $post->post_status !== 'publish') {
+		return;
 	}
+
+	wp_rp_generate_tags($post);
 }
 add_action('save_post', 'wp_rp_update_tags');
 
@@ -161,8 +163,11 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 
 	$tags_query = "SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID;";
 	$tags = $wpdb->get_col($tags_query, 0);
-	if (count($tags) == 0) {
+	if (empty($tags)) {
 		$tags = wp_rp_generate_tags($post);
+		if (empty($tags)) {
+			return array();
+		}
 	}
 
 	if($options['exclude_categories']) {
@@ -173,6 +178,9 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	}
 
 	$total_number_of_posts = $wpdb->get_col("SELECT count(distinct(post_id)) FROM " . $wpdb->prefix . "wp_rp_tags;", 0);
+	if (empty($total_number_of_posts)) {
+		return array();
+	}
 	$total_number_of_posts = $total_number_of_posts[0];
 
 	$post_id_query = $wpdb->prepare("
@@ -196,10 +204,18 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 		GROUP BY target.post_id
 		ORDER BY score desc
 		LIMIT %d;",
-		array_merge(array($total_number_of_posts, $total_number_of_posts), $tags, array($exclude_ids_str), $tags, $exclude_categories_labels, array($limit * 2))); // limit * 2 for unpublished posts
+		array_merge(
+			array($total_number_of_posts, $total_number_of_posts),
+			$tags,
+			array($exclude_ids_str),
+			$tags,
+			$exclude_categories_labels,
+			array($limit * 2)
+		)
+	);	// limit * just in case
 
 	$related_posts_with_score = $wpdb->get_results($post_id_query, 0);
-	if (!$related_posts_with_score) {
+	if (empty($related_posts_with_score)) {
 		return array();
 	}
 
@@ -214,11 +230,10 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	$post_query = $wpdb->prepare("
 		SELECT post.ID, post.post_title, post.post_excerpt, post.post_content, post.post_date, post.comment_count
 		FROM $wpdb->posts as post
-		WHERE post.post_type = %s
-			AND post.ID IN (" . implode(', ', array_fill(0, count($related_post_ids), '%s')) . ")
+		WHERE post.ID IN (" . implode(', ', array_fill(0, count($related_post_ids), '%s')) . ")
 			AND post_status = 'publish'
 			AND post_date_gmt < %s",
-		array_merge(array($post->post_type), $related_post_ids, array($now, $limit)));
+		array_merge($related_post_ids, array($now, $limit)));
 
 	$related_posts = $wpdb->get_results($post_query);
 

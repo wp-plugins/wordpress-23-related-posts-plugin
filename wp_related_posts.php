@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 2.0.2
+Version: 2.1
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Jure Ham
 Author URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 */
 
-define('WP_RP_VERSION', '2.0');
+define('WP_RP_VERSION', '2.1');
 
 include_once(dirname(__FILE__) . '/config.php');
 include_once(dirname(__FILE__) . '/lib/stemmer.php');
@@ -136,10 +136,6 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 function wp_rp_should_exclude() {
 	global $wpdb, $post;
 
-	if ($post->post_type === 'page') {
-		return true;
-	}
-
 	$options = wp_rp_get_options();
 
 	if($options['exclude_categories'] === '') { return false; }
@@ -147,6 +143,7 @@ function wp_rp_should_exclude() {
 	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
 
 	$result = $wpdb->get_col($q);
+
 	$count = (int) $result[0];
 
 	return $count > 0;
@@ -173,7 +170,11 @@ function wp_rp_head_resources() {
 
 	if ($statistics_enabled) {
 		$tags = $wpdb->get_col("SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID ORDER BY weight desc;", 0);
-		$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode(substr($v, strpos($v, \'_\') + 1)) . "\'";'), $tags)) . ']';
+		if (!empty($tags)) {
+			$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode(substr($v, strpos($v, \'_\') + 1)) . "\'";'), $tags)) . ']';
+		} else {
+			$post_tags = '[]';
+		}
 
 		$output .= "<script type=\"text/javascript\">\n" .
 			"\twindow._wp_rp_blog_id = '" . esc_js($meta['blog_id']) . "';\n" .
@@ -189,7 +190,7 @@ function wp_rp_head_resources() {
 	}
 
 	if ($remote_recommendations) {
-		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '?version=' . WP_RP_VERSION . '" async></script>' . "\n";
+		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '?version=' . WP_RP_VERSION . '"></script>' . "\n";
 		$output .= '<link rel="stylesheet" href="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE . '?version=' . WP_RP_VERSION . '" />' . "\n";
 	}
 
@@ -239,7 +240,10 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 
 	if ($related_posts) {
 		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = '<ul class="' . $css_classes . '" style="visibility: "' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>' . "\n";
+		$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
+		if($remote_recommendations) {
+			$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
+		}
 	}
 
 	if ($title != '') {

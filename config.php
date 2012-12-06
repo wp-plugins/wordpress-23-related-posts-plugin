@@ -38,6 +38,8 @@ define("WP_RP_RECOMMENDATIONS_CATEGORIES_SCORE", 5);
 
 define("WP_RP_RECOMMENDATIONS_NUM_PREGENERATED_POSTS", 50);
 
+define("WP_RP_THUMBNAILS_NUM_PREGENERATED_POSTS", 50);
+
 global $wp_rp_options, $wp_rp_meta;
 $wp_rp_options = false;
 $wp_rp_meta = false;
@@ -199,6 +201,25 @@ function wp_rp_install() {
 	update_option('wp_rp_options', $wp_rp_options);
 
 	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_2_0() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '2.1';
+
+	if ($wp_rp_options['default_thumbnail_path']) {
+		$upload_dir = wp_upload_dir();
+		$wp_rp_options['default_thumbnail_path'] = $upload_dir['baseurl'] . $wp_options['default_thumbnail_path'];
+	}
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
+
+	if($wp_rp_options['display_thumbnail'] && $wp_rp_options['thumbnail_use_attached']) {
+		wp_rp_process_latest_post_thumbnails();
+	}
 }
 
 function wp_rp_migrate_1_7() {

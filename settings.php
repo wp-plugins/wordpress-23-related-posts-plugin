@@ -262,6 +262,8 @@ function wp_rp_settings_page()
 			$new_options['exclude_categories'] = trim($postdata['wp_rp_exclude_categories']);
 		}
 
+		$preprocess_thumbnails = $new_options['display_thumbnail'] && $new_options['thumbnail_use_attached'] && (!$old_options['display_thumbnail'] || !$old_options['thumbnail_use_attached']);
+
 		if(isset($postdata['wp_rp_theme_name'])) {		// If this isn't set, maybe the AJAX didn't load...
 			$new_options['theme_name'] = trim($postdata['wp_rp_theme_name']);
 
@@ -295,7 +297,7 @@ function wp_rp_settings_page()
 		}
 
 		if (((array) $old_options) != $new_options) {
-			if($new_options['ctr_dashboard_enabled']) {
+			if($new_options['ctr_dashboard_enabled'] && !$old_options['ctr_dashboard_enabled']) {
 				$meta['show_statistics'] = true;
 
 				if($new_options['display_thumbnail']) {
@@ -309,6 +311,10 @@ function wp_rp_settings_page()
 				wp_rp_add_admin_notice('error', __('Failed to save settings.', 'wp_related_posts'));
 			} else {
 				wp_rp_add_admin_notice('updated', __('Settings saved.', 'wp_related_posts'));
+			}
+
+			if($preprocess_thumbnails) {
+				wp_rp_process_latest_post_thumbnails();
 			}
 		} else {
 			// I should duplicate success message here
@@ -350,7 +356,6 @@ function wp_rp_settings_page()
 				</p>
 			</div>
 			<h2 class="title"><?php _e("Related Posts",'wp_related_posts');?></h2>
-			<p class="desc"><?php _e("WordPress Related Posts Plugin places a list of related articles via WordPress tags at the bottom of your post.",'wp_related_posts');?></p>
 		</div>
 		<div id="wp-rp-survey" class="updated highlight" style="display:none;"><p><?php _e("Please fill out",'wp_related_posts');?> <a class="link" target="_blank" href="http://wprelatedposts.polldaddy.com/s/quick-survey"><?php _e("a quick survey", 'wp_related_posts');?></a>.<a href="#" class="close" style="float: right;">x</a></p></div>
 
@@ -364,7 +369,7 @@ function wp_rp_settings_page()
 						Turn on Advanced Features
 					</h2>
 					<ul>
-						<li>Real-time Analytics provided by a <a target="_blank" href="http://www.zemanta.com/?ref=related-posts-a">3rd party service</a></li>
+						<li>Real-time Analytics provided by a <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a></li>
 						<li>Thumbnail Support</li>
 						<li>Promoted Content</li>
 					</ul>
@@ -440,204 +445,208 @@ jQuery(function($) {
 		<?php endif; ?>
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
-		<?php if ($options['ctr_dashboard_enabled']): ?>
-		<div id="wp_rp_statistics_collapsible" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
-			<a href="#" class="collapse-handle">Collapse</a>
-			<h2><?php _e('Statistics', 'wp_related_posts'); ?></h2>
-			<div class="container" <?php if(!$meta['show_statistics']) { echo ' style="display: none;" '; } ?>>
-				<div id="wp_rp_statistics_wrap">
-					<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts'); ?></div>
+			<?php if ($options['ctr_dashboard_enabled']): ?>
+			<div id="wp_rp_statistics_collapsible" block="statistics" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
+				<a href="#" class="collapse-handle">Collapse</a>
+				<h2><?php _e('Statistics', 'wp_related_posts'); ?></h2>
+				<div class="container" <?php if(!$meta['show_statistics']) { echo ' style="display: none;" '; } ?>>
+					<div id="wp_rp_statistics_wrap">
+						<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts'); ?></div>
+					</div>
 				</div>
 			</div>
-		</div>
-		<?php endif; ?>
+			<?php endif; ?>
 
-			<h2><?php _e("Settings",'wp_related_posts');?></h2>
+			<div>
+				<h2><?php _e("Settings",'wp_related_posts');?></h2>
 
-			<?php do_action('wp_rp_admin_notices'); ?>
-			
-			<h3><?php _e("Basic Settings",'wp_related_posts');?></h3>
+				<?php do_action('wp_rp_admin_notices'); ?>
 
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php _e('Related Posts Title:', 'wp_related_posts'); ?></th>
-					<td>
-					  <input name="wp_rp_related_posts_title" type="text" id="wp_rp_related_posts_title" value="<?php esc_attr_e($options['related_posts_title']); ?>" class="regular-text" />
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row"><?php _e('Number of Posts:', 'wp_related_posts');?></th>
-					<td>
-					  <input name="wp_rp_max_related_posts" type="number" step="1" id="wp_rp_max_related_posts" class="small-text" min="1" value="<?php esc_attr_e($options['max_related_posts']); ?>" />
-					</td>
-				</tr>
-			</table>
+				<div class="container">
+					<h3><?php _e("Basic Settings",'wp_related_posts');?></h3>
 
-			<h3>Theme Settings</h3>
-			<table class="form-table">
-				<tr id="wp_rp_theme_options_wrap">
-					<th scope="row">Select Theme:</th>
-					<td>
-						<label>
-							<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
-							<?php _e("Enable Themes",'wp_related_posts'); ?>*
-						</label>
-						<div class="theme-list"></div>
-					</td>
-				</tr>
-				<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
-					<th scope="row"></th>
-					<td>
-						<textarea style="width: 300px; height: 215px;" name="wp_rp_theme_custom_css" class="custom-css"><?php echo htmlspecialchars($theme_custom_css, ENT_QUOTES); ?></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php _e("Thumbnail Options:",'wp_related_posts'); ?></th>
-					<td>
-						<label>
-							<input name="wp_rp_display_thumbnail" type="checkbox" id="wp_rp_display_thumbnail" value="yes"<?php checked($options["display_thumbnail"]); ?> onclick="wp_rp_display_thumbnail_onclick();" />
-							<?php _e("Display Thumbnails For Related Posts",'wp_related_posts');?>
-						</label>
-						<br />
-						<span id="wp_rp_thumbnail_span" style="<?php echo $options["display_thumbnail"] ? '' : 'display:none;'; ?>">
-						<label>
-							<input name="wp_rp_thumbnail_display_title" type="checkbox" id="wp_rp_thumbnail_display_title" value="yes"<?php checked($options["thumbnail_display_title"]); ?> />
-							<?php _e('Display Post Titles', 'wp_related_posts');?>
-						</label>
-						<br />
+					<table class="form-table">
+						<tr valign="top">
+							<th scope="row"><?php _e('Related Posts Title:', 'wp_related_posts'); ?></th>
+							<td>
+							  <input name="wp_rp_related_posts_title" type="text" id="wp_rp_related_posts_title" value="<?php esc_attr_e($options['related_posts_title']); ?>" class="regular-text" />
+							</td>
+						</tr>
+						<tr valign="top">
+							<th scope="row"><?php _e('Number of Posts:', 'wp_related_posts');?></th>
+							<td>
+							  <input name="wp_rp_max_related_posts" type="number" step="1" id="wp_rp_max_related_posts" class="small-text" min="1" value="<?php esc_attr_e($options['max_related_posts']); ?>" />
+							</td>
+						</tr>
+					</table>
 
-						<?php
-						global $wpdb;
+					<h3>Theme Settings</h3>
+					<table class="form-table">
+						<tr id="wp_rp_theme_options_wrap">
+							<th scope="row">Select Theme:</th>
+							<td>
+								<label>
+									<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
+									<?php _e("Enable Themes",'wp_related_posts'); ?>*
+								</label>
+								<div class="theme-list"></div>
+							</td>
+						</tr>
+						<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
+							<th scope="row"></th>
+							<td>
+								<textarea style="width: 300px; height: 215px;" name="wp_rp_theme_custom_css" class="custom-css"><?php echo htmlspecialchars($theme_custom_css, ENT_QUOTES); ?></textarea>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php _e("Thumbnail Options:",'wp_related_posts'); ?></th>
+							<td>
+								<label>
+									<input name="wp_rp_display_thumbnail" type="checkbox" id="wp_rp_display_thumbnail" value="yes"<?php checked($options["display_thumbnail"]); ?> onclick="wp_rp_display_thumbnail_onclick();" />
+									<?php _e("Display Thumbnails For Related Posts",'wp_related_posts');?>
+								</label>
+								<br />
+								<span id="wp_rp_thumbnail_span" style="<?php echo $options["display_thumbnail"] ? '' : 'display:none;'; ?>">
+								<label>
+									<input name="wp_rp_thumbnail_display_title" type="checkbox" id="wp_rp_thumbnail_display_title" value="yes"<?php checked($options["thumbnail_display_title"]); ?> />
+									<?php _e('Display Post Titles', 'wp_related_posts');?>
+								</label>
+								<br />
 
-						$custom_fields = $wpdb->get_col( "SELECT meta_key FROM $wpdb->postmeta GROUP BY meta_key HAVING meta_key NOT LIKE '\_%' ORDER BY LOWER(meta_key)" );
+								<?php
+								global $wpdb;
 
-						if($custom_fields) :
-						?>
-						<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="no" <?php checked(!$options['thumbnail_use_custom']); ?>> Use featured image</label>&nbsp;&nbsp;&nbsp;&nbsp;
-						<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="yes" <?php checked($options['thumbnail_use_custom']); ?>> Use custom field</label>
+								$custom_fields = $wpdb->get_col( "SELECT meta_key FROM $wpdb->postmeta GROUP BY meta_key HAVING meta_key NOT LIKE '\_%' ORDER BY LOWER(meta_key)" );
 
-						<select name="wp_rp_thumbnail_custom_field" id="wp_rp_thumbnail_custom_field"  class="postform">
-						
-						<?php foreach ( $custom_fields as $custom_field ) : ?>
-							<option value="<?php esc_attr_e($custom_field); ?>"<?php selected($options["thumbnail_custom_field"], $custom_field); ?>><?php esc_html_e($custom_field);?></option>
-						<?php endforeach; ?>
+								if($custom_fields) :
+								?>
+								<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="no" <?php checked(!$options['thumbnail_use_custom']); ?>> Use featured image</label>&nbsp;&nbsp;&nbsp;&nbsp;
+								<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="yes" <?php checked($options['thumbnail_use_custom']); ?>> Use custom field</label>
 
-						</select>
-						<br />
-						<?php endif; ?>
+								<select name="wp_rp_thumbnail_custom_field" id="wp_rp_thumbnail_custom_field"  class="postform">
+								
+								<?php foreach ( $custom_fields as $custom_field ) : ?>
+									<option value="<?php esc_attr_e($custom_field); ?>"<?php selected($options["thumbnail_custom_field"], $custom_field); ?>><?php esc_html_e($custom_field);?></option>
+								<?php endforeach; ?>
 
-						<label>
-							<input name="wp_rp_thumbnail_use_attached" type="checkbox" value="yes" <?php checked($options["thumbnail_use_attached"]); ?>>
-							<?php _e("If featured image is missing, show the first uploaded image of the post",'wp_related_posts');?>
-						</label>
-						<br />
+								</select>
+								<br />
+								<?php endif; ?>
+
+								<label>
+									<input name="wp_rp_thumbnail_use_attached" type="checkbox" value="yes" <?php checked($options["thumbnail_use_attached"]); ?>>
+									<?php _e("If featured image is missing, show an image from the post",'wp_related_posts');?>
+								</label>
+								<br />
 
 
-						<br />
-						<label>
-							<?php _e('For posts without images, a default image will be shown.<br/>
-							You can upload your own default image here','wp_related_posts');?>
-							<input type="file" name="wp_rp_default_thumbnail" />
-						</label>
-						<?php if($options['default_thumbnail_path']) : ?>
-							<span style="display: inline-block; vertical-align: top; *display: inline; zoom: 1;">
-								<img style="padding: 3px; border: 1px solid #DFDFDF; border-radius: 3px;" valign="top" width="80" height="80" src="<?php esc_attr_e(wp_rp_get_default_thumbnail_url()); ?>" alt="selected thumbnail" />
 								<br />
 								<label>
-									<input type="checkbox" name="wp_rp_default_thumbnail_remove" value="yes" />
-									<?php _e("Remove selected",'wp_related_posts');?>
+									<?php _e('For posts without images, a default image will be shown.<br/>
+									You can upload your own default image here','wp_related_posts');?>
+									<input type="file" name="wp_rp_default_thumbnail" />
 								</label>
-							</span>
-						<?php endif; ?>
-						</span>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php _e("Display Options:",'wp_related_posts'); ?></th>
-					<td>
-						<label>
-						<input name="wp_rp_display_comment_count" type="checkbox" id="wp_rp_display_comment_count" value="yes" <?php checked($options["display_comment_count"]); ?>>
-						<?php _e("Display Number of Comments",'wp_related_posts');?>
-						</label><br />
-						<label>
-						<input name="wp_rp_display_publish_date" type="checkbox" id="wp_rp_display_publish_date" value="yes" <?php checked($options["display_publish_date"]); ?>>
-						<?php _e("Display Publish Date",'wp_related_posts');?>
-						</label><br />
-						<label>
-							<input name="wp_rp_display_excerpt" type="checkbox" id="wp_rp_display_excerpt" value="yes"<?php checked($options["display_excerpt"]); ?> onclick="wp_rp_display_excerpt_onclick();" >
-							<?php _e("Display Post Excerpt",'wp_related_posts');?>
-						</label>
-						<label id="wp_rp_excerpt_max_length_label"<?php echo $options["display_excerpt"] ? '' : ' style="display: none;"'; ?>>
-							<input name="wp_rp_excerpt_max_length" type="text" id="wp_rp_excerpt_max_length" class="small-text" value="<?php esc_attr_e($options["excerpt_max_length"]); ?>" /> <span class="description"><?php _e('Maximum Number of Characters.', 'wp_related_posts'); ?></span>
-						</label><br/>
-						<label for="wp_rp_related_posts_title_tag">
-							<?php _e('Related Posts Title Tag', 'wp_related_posts'); ?>
-							<select name="wp_rp_related_posts_title_tag" id="wp_rp_related_posts_title_tag" class="postform">
-							<?php
-							foreach ($title_tags as $tag) :
-							?>
-								<option value="<?php esc_attr_e($tag); ?>"<?php selected($related_posts_title_tag, $tag); ?>>&lt;<?php esc_html_e($tag); ?>&gt;</option>
-							<?php endforeach; ?>
-							</select>
-						</label>
-					</td>
-				</tr>
-			</table>
-			<h3><?php _e("Other Settings:",'wp_related_posts'); ?></h3>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php _e('Exclude these Categories:', 'wp_related_posts'); ?></th>
-					<td>
-						<div class="excluded-categories">
-							<?php
-							$exclude = explode(',', $options['exclude_categories']);
-							$args = array(
-								'orderby' => 'name',
-								'order' => 'ASC',
-								'hide_empty' => false
-								);
+								<?php if($options['default_thumbnail_path']) : ?>
+									<span style="display: inline-block; vertical-align: top; *display: inline; zoom: 1;">
+										<img style="padding: 3px; border: 1px solid #DFDFDF; border-radius: 3px;" valign="top" width="80" height="80" src="<?php esc_attr_e(wp_rp_get_default_thumbnail_url()); ?>" alt="selected thumbnail" />
+										<br />
+										<label>
+											<input type="checkbox" name="wp_rp_default_thumbnail_remove" value="yes" />
+											<?php _e("Remove selected",'wp_related_posts');?>
+										</label>
+									</span>
+								<?php endif; ?>
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php _e("Display Options:",'wp_related_posts'); ?></th>
+							<td>
+								<label>
+								<input name="wp_rp_display_comment_count" type="checkbox" id="wp_rp_display_comment_count" value="yes" <?php checked($options["display_comment_count"]); ?>>
+								<?php _e("Display Number of Comments",'wp_related_posts');?>
+								</label><br />
+								<label>
+								<input name="wp_rp_display_publish_date" type="checkbox" id="wp_rp_display_publish_date" value="yes" <?php checked($options["display_publish_date"]); ?>>
+								<?php _e("Display Publish Date",'wp_related_posts');?>
+								</label><br />
+								<label>
+									<input name="wp_rp_display_excerpt" type="checkbox" id="wp_rp_display_excerpt" value="yes"<?php checked($options["display_excerpt"]); ?> onclick="wp_rp_display_excerpt_onclick();" >
+									<?php _e("Display Post Excerpt",'wp_related_posts');?>
+								</label>
+								<label id="wp_rp_excerpt_max_length_label"<?php echo $options["display_excerpt"] ? '' : ' style="display: none;"'; ?>>
+									<input name="wp_rp_excerpt_max_length" type="text" id="wp_rp_excerpt_max_length" class="small-text" value="<?php esc_attr_e($options["excerpt_max_length"]); ?>" /> <span class="description"><?php _e('Maximum Number of Characters.', 'wp_related_posts'); ?></span>
+								</label><br/>
+								<label for="wp_rp_related_posts_title_tag">
+									<?php _e('Related Posts Title Tag', 'wp_related_posts'); ?>
+									<select name="wp_rp_related_posts_title_tag" id="wp_rp_related_posts_title_tag" class="postform">
+									<?php
+									foreach ($title_tags as $tag) :
+									?>
+										<option value="<?php esc_attr_e($tag); ?>"<?php selected($related_posts_title_tag, $tag); ?>>&lt;<?php esc_html_e($tag); ?>&gt;</option>
+									<?php endforeach; ?>
+									</select>
+								</label>
+							</td>
+						</tr>
+					</table>
+					<h3><?php _e("Other Settings:",'wp_related_posts'); ?></h3>
+					<table class="form-table">
+						<tr valign="top">
+							<th scope="row"><?php _e('Exclude these Categories:', 'wp_related_posts'); ?></th>
+							<td>
+								<div class="excluded-categories">
+									<?php
+									$exclude = explode(',', $options['exclude_categories']);
+									$args = array(
+										'orderby' => 'name',
+										'order' => 'ASC',
+										'hide_empty' => false
+										);
 
-							foreach (get_categories($args) as $category) :
-							?>
-							<label>
-								<input name="wp_rp_exclude_categories[]" type="checkbox" id="wp_rp_exclude_categories" value="<?php esc_attr_e($category->cat_ID); ?>"<?php checked(in_array($category->cat_ID, $exclude)); ?> />
-								<?php esc_html_e($category->cat_name); ?>
+									foreach (get_categories($args) as $category) :
+									?>
+									<label>
+										<input name="wp_rp_exclude_categories[]" type="checkbox" id="wp_rp_exclude_categories" value="<?php esc_attr_e($category->cat_ID); ?>"<?php checked(in_array($category->cat_ID, $exclude)); ?> />
+										<?php esc_html_e($category->cat_name); ?>
+										<br />
+									</label>
+									<?php endforeach; ?>
+								</div>
+							</td>
+						</tr>
+						<tr valign="top">
+							<td colspan="2">
+								<label>
+									<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
+									<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
+								</label>
+								(or add <pre style="display: inline">&lt;?php wp_related_posts()?&gt;</pre> to your single post template)
 								<br />
-							</label>
-							<?php endforeach; ?>
-						</div>
-					</td>
-				</tr>
-				<tr valign="top">
-					<td colspan="2">
-						<label>
-							<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
-							<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
-						</label>
-						(or add <pre style="display: inline">&lt;?php wp_related_posts()?&gt;</pre> to your single post template)
-						<br />
-						<label>
-							<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
-							<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
-						</label>
-						<br />
-						<label>
-							<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
-							<?php _e("Turn statistics on",'wp_related_posts');?>*
-						</label>
-						<br />
-						<label>
-							<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
-							<?php _e('Promoted Content', 'wp_related_posts');?>
-						</label>
-					</td>
-				</tr>
-			</table>
-			<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>
+								<label>
+									<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
+									<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
+								</label>
+								<br />
+								<label>
+									<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
+									<?php _e("Turn statistics on",'wp_related_posts');?>*
+								</label>
+								<br />
+								<label>
+									<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
+									<?php _e('Promoted Content', 'wp_related_posts');?>*
+								</label>
+							</td>
+						</tr>
+					</table>
+					<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>
 
-		</form>
-		<div>
-			* Provided via third party service.
+				</form>
+				<div>
+					* Provided via <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a>.
+				</div>
+			</div>
 		</div>
 	</div>
 <?php }

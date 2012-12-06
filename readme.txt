@@ -63,6 +63,12 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 
 == Changelog ==
 
+= 2.1 =
+* Extract thumbnails from post content
+* Statistics for mobile devices
+* Exclude pages from related posts
+* Bugfixes
+
 = 2.0.2 =
 * Fixed bug for post_types with no tags
 
