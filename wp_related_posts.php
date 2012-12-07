@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 2.1
+Version: 2.1.1
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Generate a related posts list via tags of WordPress
 Author: Jure Ham
@@ -47,7 +47,7 @@ function wp_rp_add_related_posts_hook($content) {
 	global $wp_rp_output, $post;
 	$options = wp_rp_get_options();
 
-	if ((is_single() && $options["on_single_post"]) || (is_feed() && $options["on_rss"])) {
+	if (($options["on_single_post"] && is_single() && !is_page() && !is_attachment()) || (is_feed() && $options["on_rss"])) {
 		if (!isset($wp_rp_output[$post->ID])) {
 			$wp_rp_output[$post->ID] = wp_rp_get_related_posts();
 		}
@@ -163,7 +163,7 @@ function wp_rp_head_resources() {
 	$output = '';
 
 	// turn off statistics or recommendations on non-singular posts
-	if(is_single()) {
+	if (is_single() && !is_page() && !is_attachment()) {
 		$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
 		$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
 	}

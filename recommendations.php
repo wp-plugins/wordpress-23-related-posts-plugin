@@ -16,7 +16,7 @@ function wp_rp_update_tags($post_id) {
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
 	);
 
-	if ($post->post_type === 'page' || $post->post_status !== 'publish') {
+	if ($post->post_type === 'page' || $post->post_type === 'attachment' || $post->post_status !== 'publish') {
 		return;
 	}
 

@@ -86,7 +86,6 @@ function wp_rp_actually_extract_images_from_post_html($post) {
 	if($upload_dir['error'] !== false) {
 		return $img_url;
 	}
-
 	require_once(ABSPATH . 'wp-admin/includes/file.php');
 
 	global $wp_filesystem;
@@ -109,7 +108,17 @@ function wp_rp_actually_extract_images_from_post_html($post) {
 			continue;
 		}
 
-		$resized_img_path = image_resize($img_path, WP_RP_THUMBNAILS_WIDTH, WP_RP_THUMBNAILS_HEIGHT, true);
+		if (class_exists('WP_Image_Editor')) { // WP 3.5+
+			$image = WP_Image_Editor::get_instance($img_path);
+
+			$suffix = WP_RP_THUMBNAILS_WIDTH . 'x' . WP_RP_THUMBNAILS_HEIGHT;
+			$resized_img_path = $image->generate_filename($suffix, $upload_dir['path'], 'jpg');
+
+			$image->resize(WP_RP_THUMBNAILS_WIDTH, WP_RP_THUMBNAILS_HEIGHT, true);
+			$image->save($resized_img_path, 'image/jpeg');
+		} else {
+			$resized_img_path = image_resize($img_path, WP_RP_THUMBNAILS_WIDTH, WP_RP_THUMBNAILS_HEIGHT, true);
+		}
 
 		if(is_wp_error($resized_img_path)) {
 			continue;
@@ -147,7 +156,7 @@ function wp_rp_extract_images_from_post_html($post) {
 function wp_rp_post_save_update_image($post_id) {
 	$post = get_post($post_id);
 
-	if(empty($post->post_content) || $post->post_status !== 'publish' || $post->post_type === 'page' || $post->post_type === 'nav_menu_item') {
+	if(empty($post->post_content) || $post->post_status !== 'publish' || $post->post_type === 'page'  || $post->post_type === 'attachment' || $post->post_type === 'nav_menu_item') {
 		return;
 	}
 
