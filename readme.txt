@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.0.2
+Stable tag: 2.1
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 

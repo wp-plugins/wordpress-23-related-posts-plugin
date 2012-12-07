@@ -211,7 +211,7 @@ function wp_rp_migrate_2_0() {
 
 	if ($wp_rp_options['default_thumbnail_path']) {
 		$upload_dir = wp_upload_dir();
-		$wp_rp_options['default_thumbnail_path'] = $upload_dir['baseurl'] . $wp_options['default_thumbnail_path'];
+		$wp_rp_options['default_thumbnail_path'] = $upload_dir['baseurl'] . $wp_rp_options['default_thumbnail_path'];
 	}
 
 	update_option('wp_rp_options', $wp_rp_options);
