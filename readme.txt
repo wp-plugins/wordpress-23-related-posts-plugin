@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 1.7
+Stable tag: 2.1
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -59,10 +59,26 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 == Screenshots ==
 1. WordPress Related Posts Default Theme.
 2. WordPress Related Posts Settings and Statistics.
-3. WordPress Related Posts responsive theme on an iPhone 4s.
-4. WordPress Related Posts responsive theme on a Galaxy Nexus.
+3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
 
 == Changelog ==
+
+= 2.1 =
+* Extract thumbnails from post content
+* Statistics for mobile devices
+* Exclude pages from related posts
+* Bugfixes
+
+= 2.0.2 =
+* Fixed bug for post_types with no tags
+
+= 2.0.1 =
+* Fixed bug for short_open_tag=Off
+
+= 2.0 =
+* New recommendation engine
+* Statistics in dashboard
+* Exclude categories makes sense
 
 = 1.7 =
 * Improved thumbnail handling

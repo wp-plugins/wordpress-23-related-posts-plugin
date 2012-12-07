@@ -1,13 +1,4 @@
-#wp_rp_wrap, #wp_rp_wrap h2, #wp_rp_wrap h3, #wp_rp_wrap h4 {color: #464646;}
-
-#wp_rp_wrap h2 {font-size: 23px;}
-#wp_rp_wrap h3 {font-size: 14px;}
-#wp_rp_wrap label {user-select: none;-moz-user-select: none;-webkit-user-select: none;}
-#wp_rp_wrap p, #wp_rp_wrap h4 {font-size: 12px;}
-
-#wp_rp_wrap th {padding-left: 0; font-size: 14px;}
-
-#wp_rp_wrap div.header {border-bottom: 1px solid #ddd; position: relative; padding-bottom: 5px;}
+#wp_rp_wrap div.header {position: relative; padding-bottom: 5px;}
 #wp_rp_wrap .updated, #wp_rp_wrap .error {max-width: 600px; margin-right: 254px; }
 #wp_rp_wrap div.header h2.title {font-size: 2.5em; line-height: 1em; font-weight: bold;}
 #wp_rp_wrap div.header p.desc {font-size: 1.2em; line-height: 1.5em; max-width: 430px;}
@@ -16,18 +7,35 @@
 #wp_rp_wrap div.header div.support p {margin: 0; font-size: 11px;}
 #wp_rp_wrap div.header div.support p a {color: #82c1cb; font-weight: bold; text-decoration: none;}
 
-#wp_rp_wrap div#wp_rp_statistics_wrap {padding: 5px 0;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li {display: inline-block; zoom: 1; *display: inline; width: 250px; margin: 0 20px 0 0; padding: 0; position: relative;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay {display: none; position: absolute; top: 0; left: 0; width: 240px; padding: 100px 10px 10px 10px; margin: -5px 0 0 -5px; border: 1px solid #ccc; box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.2);}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay p {background: #fff; margin: -10px; padding: 10px;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li:hover div.overlay {display: block;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h4 {border-bottom: 2px solid #ccc; text-transform: uppercase; font-weight: normal; padding: 5px 0; margin: 0;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h4 span {text-transform: lowercase; font-size: 11px; color: #999; float: right;}
-#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li p.num {font-size: 40px; line-height: 40px; color: #82c1cb; font-weight: bold; margin: 15px 0;}
+
+#wp_rp_wrap div#wp_rp_statistics_wrap {position: relative;}
+
+#wp_rp_wrap div#wp_rp_statistics_collapsible {max-width: 600px;}
+#wp_rp_wrap div#wp_rp_statistics_collapsible.collapsed {border-bottom: 1px solid #ddd;}
+#wp_rp_wrap div#wp_rp_statistics_collapsible.collapsed {border-bottom: 1px solid #ddd;}
+
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics {margin: 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li.title div {background-size: 40px 40px; height: 20px; padding: 20px 0 0 0; text-transform: uppercase; margin: 5px 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li.title .mobile {float: left; text-align: left; background: url(../img/mobile_icon.png) no-repeat; background-size: 40px 40px; padding-left: 45px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li.title .desktop {float: right; text-align: right; background: url(../img/desktop_icon.png) no-repeat right; background-size: 40px 40px; padding-right: 45px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li {position: relative; overflow: hidden; border-bottom: 1px solid #ddd; margin: 0; height: 60px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h5 {text-transform: uppercase; text-align: center; font-weight: normal; padding: 5px 0; margin: 20px auto 0 auto; font-size: 13px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li h5 span {text-transform: lowercase; font-size: 11px; color: #999; margin-left: 10px;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li p.num {position: absolute; right: 0; font-size: 40px; line-height: 40px; color: #82c1cb; font-weight: bold; margin: 10px 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li p.num.mobile {position: absolute; left: 0;}
+#wp_rp_wrap div#wp_rp_statistics_wrap div.description {position: absolute; right: -200px; width: 170px; padding: 5px; top: 0; border: 1px solid #ddd; display: none;}
+#wp_rp_dashboard_widget #wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li.clicks {border-bottom: 0;}
+
 
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message {font-size: 25px; line-height: 1em; padding-top: 50px; margin-bottom: 15px; position: relative; font-weight: bold;}
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.enable {color: #82c1cb;}
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.unavailable {color: #848484; display: none; padding-top: 20px;}
+
+#wp_rp_dashboard_widget #wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li {display:block;width:100%;}
+#wp_rp_dashboard_widget #wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay {z-index:100;width: 100%;margin:0;left:-10px;}
+#wp_rp_dashboard_widget #wp_rp_statistics_wrap {padding: 0;}
+#wp_rp_dashboard_widget #wp_rp_wrap {margin: 0px;}
+#wp_rp_dashboard_widget .statistics {margin: 0px;}
 
 #wp_rp_invite_friends_form { background: #f7f7f7; padding: 15px; margin: 30px 0px; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
 #wp_rp_invite_friends_form h2 { font-size: 19px; line-height: 20px; padding: 0px; }
@@ -102,3 +110,26 @@ form.wp_rp_message_form a.dismiss {float: right;}
 		background-size: 12px 12px;
 	}
 }
+
+#wp_rp_wrap .excluded-categories {
+	width: 250px;
+	height: 12em;
+	overflow: auto;
+	padding: 0 5px; 
+	border: 1px solid #dfdfdf;
+}
+
+/* collapsible CSS */
+#wp_rp_wrap .collapsible .collapse-handle {
+	margin-top: 16px;
+	margin-right: 16px;
+	float: right;
+	width: 30px;
+	height: 20px;
+	background: url('../img/up.jpg') 0% 0% no-repeat;
+	text-indent: -9999px;
+	overflow: hidden;
+	outline: 0;
+}
+#wp_rp_wrap .collapsible.collapsed .collapse-handle {background-image: url('../img/down.jpg');}
+#wp_rp_wrap .collapsible .collapse-handle:after {clear:both;overflow:hidden;height:0;}
