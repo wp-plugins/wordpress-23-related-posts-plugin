@@ -163,14 +163,15 @@ function wp_rp_install() {
 		'new_user' => true,
 		'show_upgrade_tooltip' => false,
 		'show_install_tooltip' => true,
-		'remote_recommendations' => false,
+		'remote_recommendations' => true,		# WARNING: TODO: Turn this off at the end of this experiment!
 		'show_turn_on_button' => true,
 		'name' => '',
 		'email' => '',
 		'show_blogger_network_form' => false,
 		'remote_notifications' => array(),
 		'turn_on_button_pressed' => false,
-		'show_statistics' => false
+		'show_statistics' => false,
+		'show_traffic_exchange' => false
 	);
 
 	$wp_rp_options = array(
@@ -194,13 +195,38 @@ function wp_rp_install() {
 		'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 		'ctr_dashboard_enabled'		=> false,
 		'promoted_content_enabled'	=> false,
-		'enable_themes'				=> false
+		'enable_themes'				=> false,
+		'show_RP_in_posts' => true,
+		'custom_theme_enabled' => false,
+		'show_santa_hat' => true,
+		'traffic_exchange_enabled' => false
 	);
 
 	update_option('wp_rp_meta', $wp_rp_meta);
 	update_option('wp_rp_options', $wp_rp_options);
 
 	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_2_1() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '2.2';
+
+	$wp_rp_options['custom_theme_enabled'] = $wp_rp_options['theme_name'] == 'custom.css';
+	if ($wp_rp_options['custom_theme_enabled']) {
+		$wp_rp_options['theme_name'] = 'plain.css';
+	}
+	$wp_rp_options['show_santa_hat'] = false;
+
+	$wp_rp_options['show_RP_in_posts'] = false;
+
+	$wp_rp_options['traffic_exchange_enabled'] = false;
+	$wp_rp_meta['show_traffic_exchange'] = false;
+
+	update_option('wp_rp_options', $wp_rp_options);
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_2_0() {

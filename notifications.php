@@ -113,7 +113,22 @@ function wp_rp_load_remote_notifications() {
 					$meta['show_blogger_network_form'] = false;
 				}
 
+				if(isset($data->show_RP_in_posts) && $data->show_RP_in_posts) {
+					$options['show_RP_in_posts'] = true;
+				} else if(isset($data->hide_RP_in_posts) && $data->hide_RP_in_posts) {
+					$options['show_RP_in_posts'] = false;
+				}
+
+				if(isset($data->show_traffic_exchange) && $data->show_traffic_exchange) {
+					$meta['show_traffic_exchange'] = true;
+					$options['traffic_exchange_enabled'] = true;
+				} else if(isset($data->hide_traffic_exchange) && $data->hide_traffic_exchange) {
+					$meta['show_traffic_exchange'] = false;
+					$options['traffic_exchange_enabled'] = false;
+				}
+
 				wp_rp_update_meta($meta);
+				wp_rp_update_options($options);
 			}
 		}
 	}

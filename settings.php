@@ -109,6 +109,10 @@ function wp_rp_admin_head() {
 add_action('admin_menu', 'wp_rp_settings_admin_menu');
 
 function wp_rp_settings_admin_menu() {
+	if (!current_user_can('delete_users')) {
+		return;
+	}
+
 	$title = __('Related Posts', 'wp_related_posts');
 	$count = wp_rp_number_of_available_notifications();
 
@@ -219,8 +223,7 @@ function wp_rp_ajax_hide_show_statistics() {
 
 add_action('wp_ajax_rp_show_hide_statistics', 'wp_rp_ajax_hide_show_statistics');
 
-function wp_rp_settings_page()
-{
+function wp_rp_settings_page() {
 	$title_tags = array('h2', 'h3', 'h4', 'p', 'div');
 
 	$options = wp_rp_get_options();
@@ -251,7 +254,11 @@ function wp_rp_settings_page()
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
 			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
 			'promoted_content_enabled' => isset($postdata['wp_rp_promoted_content_enabled']),
-			'enable_themes' => isset($postdata['wp_rp_enable_themes'])
+			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
+			'show_RP_in_posts' => isset($postdata['wp_rp_show_RP_in_posts']),
+			'custom_theme_enabled' => isset($postdata['wp_rp_custom_theme_enabled']),
+			'show_santa_hat' => isset($postdata['wp_rp_show_santa_hat']),
+			'traffic_exchange_enabled' => isset($postdata['wp_rp_traffic_exchange_enabled'])
 		);
 
 		if(!isset($postdata['wp_rp_exclude_categories'])) {
@@ -348,6 +355,10 @@ function wp_rp_settings_page()
 		<input type="hidden" id="wp_rp_auth_key" value="<?php esc_attr_e($meta['auth_key']); ?>" />
 		<?php endif; ?>
 
+		<?php if($meta['show_traffic_exchange'] && $options['traffic_exchange_enabled']): ?>
+		<input type="hidden" id="wp_rp_show_traffic_exchange_statistics" value="1" />
+		<?php endif; ?>
+
 		<div class="header">
 			<div class="support">
 				<h4><?php _e("Awesome support", 'wp_related_posts'); ?></h4>
@@ -369,7 +380,7 @@ function wp_rp_settings_page()
 						Turn on Advanced Features
 					</h2>
 					<ul>
-						<li>Real-time Analytics provided by a <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a></li>
+						<li>Real-time Analytics*</li>
 						<li>Thumbnail Support</li>
 						<li>Promoted Content</li>
 					</ul>
@@ -446,12 +457,14 @@ jQuery(function($) {
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
 			<?php if ($options['ctr_dashboard_enabled']): ?>
-			<div id="wp_rp_statistics_collapsible" block="statistics" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
-				<a href="#" class="collapse-handle">Collapse</a>
-				<h2><?php _e('Statistics', 'wp_related_posts'); ?></h2>
-				<div class="container" <?php if(!$meta['show_statistics']) { echo ' style="display: none;" '; } ?>>
-					<div id="wp_rp_statistics_wrap">
-						<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts'); ?></div>
+			<div id="wp_rp_statistics_holder">
+				<div id="wp_rp_statistics_collapsible" block="statistics" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
+					<a href="#" class="collapse-handle">Collapse</a>
+					<h2><?php _e('Statistics', 'wp_related_posts'); ?></h2>
+					<div class="container" <?php if(!$meta['show_statistics']) { echo ' style="display: none;" '; } ?>>
+						<div id="wp_rp_statistics_wrap">
+							<div class="message unavailable"><?php _e("Statistics currently unavailable",'wp_related_posts'); ?></div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -489,12 +502,26 @@ jQuery(function($) {
 									<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
 									<?php _e("Enable Themes",'wp_related_posts'); ?>*
 								</label>
-								<div class="theme-list"></div>
+								<div id="wp_rp_theme_area" style="display: none;">
+									<div class="theme-list"></div>
+									<div class="theme-screenshot"></div>
+									<div class="theme-extra-options">
+										<label>
+											<input name="wp_rp_show_santa_hat" type="checkbox" id="wp_rp_show_santa_hat" value="yes" <?php checked($options["show_santa_hat"]); ?>>
+											<?php _e("Christmas Surprise",'wp_related_posts');?>
+										</label><br />
+										<label>
+											<input type="checkbox" id="wp_rp_custom_theme_enabled" name="wp_rp_custom_theme_enabled" value="yes"<?php checked($options['custom_theme_enabled']); ?> />
+											Customize
+										</label>
+									</div>
+								</div>
 							</td>
 						</tr>
 						<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
 							<th scope="row"></th>
 							<td>
+								<p class="notice">To override default rules please add "!important" after every declaration.</p>
 								<textarea style="width: 300px; height: 215px;" name="wp_rp_theme_custom_css" class="custom-css"><?php echo htmlspecialchars($theme_custom_css, ENT_QUOTES); ?></textarea>
 							</td>
 						</tr>
@@ -563,12 +590,12 @@ jQuery(function($) {
 							<th scope="row"><?php _e("Display Options:",'wp_related_posts'); ?></th>
 							<td>
 								<label>
-								<input name="wp_rp_display_comment_count" type="checkbox" id="wp_rp_display_comment_count" value="yes" <?php checked($options["display_comment_count"]); ?>>
-								<?php _e("Display Number of Comments",'wp_related_posts');?>
+									<input name="wp_rp_display_comment_count" type="checkbox" id="wp_rp_display_comment_count" value="yes" <?php checked($options["display_comment_count"]); ?>>
+									<?php _e("Display Number of Comments",'wp_related_posts');?>
 								</label><br />
 								<label>
-								<input name="wp_rp_display_publish_date" type="checkbox" id="wp_rp_display_publish_date" value="yes" <?php checked($options["display_publish_date"]); ?>>
-								<?php _e("Display Publish Date",'wp_related_posts');?>
+									<input name="wp_rp_display_publish_date" type="checkbox" id="wp_rp_display_publish_date" value="yes" <?php checked($options["display_publish_date"]); ?>>
+									<?php _e("Display Publish Date",'wp_related_posts');?>
 								</label><br />
 								<label>
 									<input name="wp_rp_display_excerpt" type="checkbox" id="wp_rp_display_excerpt" value="yes"<?php checked($options["display_excerpt"]); ?> onclick="wp_rp_display_excerpt_onclick();" >
@@ -627,6 +654,18 @@ jQuery(function($) {
 									<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
 									<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
 								</label>
+								<br />
+								<label>
+									<input name="wp_rp_show_RP_in_posts" type="checkbox" id="wp_rp_show_RP_in_posts" value="yes"<?php checked($options['show_RP_in_posts']); ?>>
+									<?php _e("Show related posts in article text",'wp_related_posts');?>
+								</label>
+					<?php if($meta['show_traffic_exchange']): ?>
+								<br />
+								<label>
+									<input name="wp_rp_traffic_exchange_enabled" type="checkbox" id="wp_rp_traffic_exchange_enabled" value="yes"<?php checked($options['traffic_exchange_enabled']); ?>>
+									<?php _e("Enable traffic exchange with blogger networks",'wp_related_posts');?>
+								</label>
+					<?php endif; ?>
 								<br />
 								<label>
 									<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />

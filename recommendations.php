@@ -8,7 +8,7 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
-	if ($post->post_type === 'nav_menu_item' || $post->post_type === 'attachment') {
+	if ($post->post_type === 'nav_menu_item') {
 		return;
 	}
 

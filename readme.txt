@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.1
+Stable tag: 2.2
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -13,7 +13,7 @@ WordPress Related Posts generates a list of related posts with thumbnails and gi
 
 Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. The plugin also delivers statistics about Pageviews and Clicks\*. It supports different styles, thumbnails and is fully customizable.
 
-After installation, go to Settings -> Related Posts in your plugins list and turn on Thumbnails & Statistics!
+After installation, go to Settings -> Related Posts in your plugins list and Turn on Advanced Features!
 
 \* Real time traffic analytics are provided via third party service.
 
@@ -32,7 +32,6 @@ It places a list of links with thumbnails at the bottom of your posts. It increa
 * thumbnail size, style
 * number of posts
 * display post excerpt, publish date, number of comments
-* fallback if there are no related posts
 * categories to exclude
 * set default image
 
@@ -42,13 +41,6 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 
 == Installation ==
 
-= Via upload: =
-1. Download the plugin .zip file
-2. Log in to yourdomain.com/wp-admin
-3. Click Plugins -> Add New -> Upload
-4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
-5. You're finished!
-
 = Via admin: =
 1. Go to Plugins -> Add New
 2. Search for WordPress Related Posts
@@ -56,12 +48,32 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
 5. Done!
 
+= Via upload: =
+1. Download the plugin .zip file
+2. Log in to yourdomain.com/wp-admin
+3. Click Plugins -> Add New -> Upload
+4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
+5. You're finished!
+
 == Screenshots ==
 1. WordPress Related Posts Default Theme.
-2. WordPress Related Posts Settings and Statistics.
+2. WordPress Related Posts reporting real time statistics for mobile and desktop devices.
 3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
 
 == Changelog ==
+
+= 2.2 =
+* Updated theme settings with one new theme
+* Option to enable related posts in article text
+* Support for blogging network
+* qTranslate support
+* Christmas Surprise
+* Bugfixes
+* Ho ho ho
+
+= 2.1.1 =
+* Exlude attachments
+* Use WP_Image_Editor on WP 3.5
 
 = 2.1 =
 * Extract thumbnails from post content
