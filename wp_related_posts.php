@@ -149,7 +149,7 @@ function wp_rp_should_exclude() {
 
 	$options = wp_rp_get_options();
 
-	if($options['exclude_categories'] === '') { return false; }
+	if(!$options['exclude_categories']) { return false; }
 
 	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
 
@@ -280,17 +280,19 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
 
+	if (!$related_posts) {
+		return;
+	}
+
 	$css_classes = 'related_post wp_rp';
 	if ($options['enable_themes']) {
 		$css_classes .= ' ' . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $options['theme_name']));
 	}
 
-	if ($related_posts) {
-		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
-		if($remote_recommendations) {
-			$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
-		}
+	$output = wp_rp_generate_related_posts_list_items($related_posts);
+	$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
+	if($remote_recommendations) {
+		$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
 	}
 
 	if ($title != '') {
