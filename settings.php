@@ -257,7 +257,6 @@ function wp_rp_settings_page() {
 			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
 			'show_RP_in_posts' => isset($postdata['wp_rp_show_RP_in_posts']),
 			'custom_theme_enabled' => isset($postdata['wp_rp_custom_theme_enabled']),
-			'show_santa_hat' => isset($postdata['wp_rp_show_santa_hat']),
 			'traffic_exchange_enabled' => isset($postdata['wp_rp_traffic_exchange_enabled'])
 		);
 
@@ -506,10 +505,6 @@ jQuery(function($) {
 									<div class="theme-list"></div>
 									<div class="theme-screenshot"></div>
 									<div class="theme-extra-options">
-										<label>
-											<input name="wp_rp_show_santa_hat" type="checkbox" id="wp_rp_show_santa_hat" value="yes" <?php checked($options["show_santa_hat"]); ?>>
-											<?php _e("Christmas Surprise",'wp_related_posts');?>
-										</label><br />
 										<label>
 											<input type="checkbox" id="wp_rp_custom_theme_enabled" name="wp_rp_custom_theme_enabled" value="yes"<?php checked($options['custom_theme_enabled']); ?> />
 											Customize
