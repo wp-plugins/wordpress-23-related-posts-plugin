@@ -102,18 +102,18 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 	$output = "";
 	$i = 0;
 
-	$santa_position = ($options['enable_themes'] && $options['show_santa_hat']) ? rand(1, count($related_posts)) : -1;
+	$statistics_enabled = $options['ctr_dashboard_enabled'];
 
 	foreach ($related_posts as $related_post ) {
-		$output .= '<li position="' . $i++ . '">';
+		$data_attrs = '';
+		if ($statistics_enabled) {
+			$data_attrs .= 'data-position="' . $i++ . '" data-poid="in-' . $related_post->ID . '" ';
+		}
+
+		$output .= '<li ' . $data_attrs . '>';
 
 		$img = wp_rp_get_post_thumbnail_img($related_post);
 		if ($img) {
-
-			if ($i === $santa_position) {
-				$img .= '<img class="wp_rp_santa_hat" style="position: absolute; right: -15px; top: -18px; width: 37px !important; height: 32px !important; box-shadow: none !important; z-index: 1; border: 0 !important;" src="' . WP_RP_STATIC_BASE_URL . 'img/themes/santa.png">';
-			}
-
 			$output .=  '<a href="' . get_permalink($related_post->ID) . '" class="wp_rp_thumbnail">' . $img . '</a>';
 		}
 
@@ -149,7 +149,7 @@ function wp_rp_should_exclude() {
 
 	$options = wp_rp_get_options();
 
-	if($options['exclude_categories'] === '') { return false; }
+	if(!$options['exclude_categories']) { return false; }
 
 	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
 
@@ -280,17 +280,19 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
 
+	if (!$related_posts) {
+		return;
+	}
+
 	$css_classes = 'related_post wp_rp';
 	if ($options['enable_themes']) {
 		$css_classes .= ' ' . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $options['theme_name']));
 	}
 
-	if ($related_posts) {
-		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
-		if($remote_recommendations) {
-			$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
-		}
+	$output = wp_rp_generate_related_posts_list_items($related_posts);
+	$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
+	if($remote_recommendations) {
+		$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
 	}
 
 	if ($title != '') {

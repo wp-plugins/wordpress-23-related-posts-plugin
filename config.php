@@ -198,7 +198,6 @@ function wp_rp_install() {
 		'enable_themes'				=> false,
 		'show_RP_in_posts' => true,
 		'custom_theme_enabled' => false,
-		'show_santa_hat' => true,
 		'traffic_exchange_enabled' => false
 	);
 
@@ -207,6 +206,12 @@ function wp_rp_install() {
 
 	wp_rp_related_posts_db_table_install();
 }
+
+/*function wp_rp_migrate_2_2() {
+	if(isset($wp_rp_options['show_santa_hat'])) {
+		unset($wp_rp_options['show_santa_hat']);
+	}
+}*/
 
 function wp_rp_migrate_2_1() {
 	$wp_rp_meta = get_option('wp_rp_meta');
@@ -218,7 +223,6 @@ function wp_rp_migrate_2_1() {
 	if ($wp_rp_options['custom_theme_enabled']) {
 		$wp_rp_options['theme_name'] = 'plain.css';
 	}
-	$wp_rp_options['show_santa_hat'] = false;
 
 	$wp_rp_options['show_RP_in_posts'] = false;
 

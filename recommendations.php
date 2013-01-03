@@ -270,7 +270,7 @@ function wp_rp_fetch_related_posts($limit = 10, $exclude_ids = array()) {
 	$related_posts = false;
 	if ($taglist) {
 		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date, p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID NOT IN ($exclude_ids_str) AND " .
-			($options['exclude_categories'] == "" ? "" : "p.ID NOT IN (SELECT tr.object_id FROM $wpdb->term_taxonomy tt, $wpdb->term_relationships tr WHERE tt.taxonomy = 'category' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.term_id IN (" . $options['exclude_categories'] . ")) AND ") .
+			(!$options['exclude_categories'] ? "" : "p.ID NOT IN (SELECT tr.object_id FROM $wpdb->term_taxonomy tt, $wpdb->term_relationships tr WHERE tt.taxonomy = 'category' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.term_id IN (" . $options['exclude_categories'] . ")) AND ") .
 			"p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
 
 		$related_posts = $wpdb->get_results($q);
@@ -286,7 +286,7 @@ function wp_rp_fetch_random_posts($limit = 10, $exclude_ids = array()) {
 	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
 
 	$q1 = "SELECT ID FROM $wpdb->posts posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN ($exclude_ids_str)";
-	if($options['exclude_categories'] != "") {
+	if($options['exclude_categories']) {
 		$q1 .= " AND ID NOT IN (SELECT tr.object_id FROM $wpdb->term_taxonomy tt, $wpdb->term_relationships tr WHERE tt.taxonomy = 'category' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.term_id IN (" . $options['exclude_categories'] . "))";
 	}
 	$ids = $wpdb->get_col($q1, 0);
