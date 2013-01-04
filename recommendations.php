@@ -8,15 +8,11 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
-	if ($post->post_type === 'nav_menu_item') {
-		return;
-	}
-
 	$wpdb->query(
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
 	);
 
-	if ($post->post_type === 'page' || $post->post_type === 'attachment' || $post->post_status !== 'publish') {
+	if ($post->post_type !== 'post' ||  $post->post_status !== 'publish') {
 		return;
 	}
 
@@ -212,7 +208,7 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 			$exclude_categories_labels,
 			array($limit * 2)
 		)
-	);	// limit * just in case
+	);	// limit * 2 just in case
 
 	$related_posts_with_score = $wpdb->get_results($post_id_query, 0);
 	if (empty($related_posts_with_score)) {
@@ -231,6 +227,7 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 		SELECT post.ID, post.post_title, post.post_excerpt, post.post_content, post.post_date, post.comment_count
 		FROM $wpdb->posts as post
 		WHERE post.ID IN (" . implode(', ', array_fill(0, count($related_post_ids), '%s')) . ")
+			AND post_type = 'post'
 			AND post_status = 'publish'
 			AND post_date_gmt < %s",
 		array_merge($related_post_ids, array($now, $limit)));
@@ -271,7 +268,7 @@ function wp_rp_fetch_related_posts($limit = 10, $exclude_ids = array()) {
 	if ($taglist) {
 		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date, p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID NOT IN ($exclude_ids_str) AND " .
 			(!$options['exclude_categories'] ? "" : "p.ID NOT IN (SELECT tr.object_id FROM $wpdb->term_taxonomy tt, $wpdb->term_relationships tr WHERE tt.taxonomy = 'category' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.term_id IN (" . $options['exclude_categories'] . ")) AND ") .
-			"p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
+			"p.post_status = 'publish' AND p.post_type = 'post' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
 
 		$related_posts = $wpdb->get_results($q);
 	}

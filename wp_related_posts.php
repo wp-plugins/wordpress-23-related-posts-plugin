@@ -47,7 +47,7 @@ function wp_rp_add_related_posts_hook($content) {
 	global $wp_rp_output, $post;
 	$options = wp_rp_get_options();
 
-	if (($options["on_single_post"] && is_single() && !is_page() && !is_attachment()) || (is_feed() && $options["on_rss"])) {
+	if ($post->post_type === 'post' && (($options["on_single_post"] && is_single()) || (is_feed() && $options["on_rss"]))) {
 		if (!isset($wp_rp_output[$post->ID])) {
 			$wp_rp_output[$post->ID] = wp_rp_get_related_posts();
 		}
@@ -147,11 +147,19 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 function wp_rp_should_exclude() {
 	global $wpdb, $post;
 
+	if (!$post || !$post->ID) {
+		return true;
+	}
+
+	if ($post->post_type !== 'post') {
+		return true;
+	}
+
 	$options = wp_rp_get_options();
 
 	if(!$options['exclude_categories']) { return false; }
 
-	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
+	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '. $post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
 
 	$result = $wpdb->get_col($q);
 
@@ -206,8 +214,7 @@ function wp_rp_head_resources() {
 	$remote_recommendations = false;
 	$output = '';
 
-	// turn off statistics or recommendations on non-singular posts
-	if (is_single() && !is_page() && !is_attachment()) {
+	if (is_single()) {
 		$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
 		$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
 	}
