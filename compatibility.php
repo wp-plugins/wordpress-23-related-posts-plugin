@@ -4,7 +4,7 @@
 /* WP 3.3 compatibility */
 /* ***************************** */
 
-if (!function_exists('wp_is_mobile')) {
+if (!function_exists('wp_is_mobile') && version_compare(get_bloginfo('version'), '3.4', '<')) {
 	function wp_is_mobile() {
 		static $is_mobile;
 
