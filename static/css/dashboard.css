@@ -44,6 +44,15 @@
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.enable {color: #82c1cb;}
 #wp_rp_wrap div#wp_rp_statistics_wrap div.message.unavailable {color: #848484; display: none; padding-top: 20px;}
 
+#wp_rp_earnings_wrap {position: relative;}
+#wp_rp_earnings_wrap .num {font-size:48px; line-height: 1em; color:#e77001; font-weight:bold;}
+#wp_rp_earnings_wrap a.claim {font-size: 16px; margin-left: 10px; color: #333;}
+#wp_rp_earnings_wrap a.claim .payout-explain {display: none;}
+#wp_rp_earnings_wrap a.claim.disabled {cursor: default; color: #999; text-decoration: none;}
+#wp_rp_earnings_wrap a.claim.disabled .payout-explain {border: 1px solid #ccc; padding: 15px; color: #333; border-radius: 2px; margin-left: 10px;}
+#wp_rp_earnings_wrap a.claim.disabled:hover .payout-explain {display: inline;}
+
+
 #wp_rp_dashboard_widget #wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li {display:block;width:100%;}
 #wp_rp_dashboard_widget #wp_rp_wrap div#wp_rp_statistics_wrap ul.statistics li div.overlay {z-index:100;width: 100%;margin:0;left:-10px;}
 #wp_rp_dashboard_widget #wp_rp_statistics_wrap {padding: 0;}

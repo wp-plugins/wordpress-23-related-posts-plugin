@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.2
+Stable tag: 2.3
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -61,6 +61,10 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
 
 == Changelog ==
+
+= 2.3 =
+* Earn money by displaying promoted content
+* Bugfixes
 
 = 2.2 =
 * Updated theme settings with one new theme

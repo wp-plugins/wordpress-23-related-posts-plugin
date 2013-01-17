@@ -255,7 +255,6 @@ function wp_rp_settings_page() {
 			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
 			'promoted_content_enabled' => isset($postdata['wp_rp_promoted_content_enabled']),
 			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
-			'show_RP_in_posts' => isset($postdata['wp_rp_show_RP_in_posts']),
 			'custom_theme_enabled' => isset($postdata['wp_rp_custom_theme_enabled']),
 			'traffic_exchange_enabled' => isset($postdata['wp_rp_traffic_exchange_enabled'])
 		);
@@ -357,6 +356,9 @@ function wp_rp_settings_page() {
 		<?php if($meta['show_traffic_exchange'] && $options['traffic_exchange_enabled']): ?>
 		<input type="hidden" id="wp_rp_show_traffic_exchange_statistics" value="1" />
 		<?php endif; ?>
+		<?php if($meta['remote_recommendations'] && $options['promoted_content_enabled']): ?>
+		<input type="hidden" id="wp_rp_show_promoted_content_statistics" value="1" />
+		<?php endif; ?>
 
 		<div class="header">
 			<div class="support">
@@ -456,6 +458,18 @@ jQuery(function($) {
 
 		<form method="post" enctype="multipart/form-data" action="" id="wp_rp_settings_form">
 			<?php if ($options['ctr_dashboard_enabled']): ?>
+			<div id="wp_rp_earnings_holder" style="display:none;">
+				<h2><?php _e('Earnings', 'wp_related_posts'); ?></h2>
+				<div class="container">
+					<p>By displaying promoted posts on your site you've already earned:</p>
+					<div id="wp_rp_earnings_wrap">
+						<span class="num"></span>
+						<a href="#" class="claim disabled">claim
+							<span class="payout-explain">You can claim the money when it reaches <span class="payout"></span>.</span>
+						</a>
+					</div>
+				</div>
+			</div>
 			<div id="wp_rp_statistics_holder">
 				<div id="wp_rp_statistics_collapsible" block="statistics" class="collapsible<?php if(!$meta['show_statistics']) { echo " collapsed"; } ?>">
 					<a href="#" class="collapse-handle">Collapse</a>
@@ -648,11 +662,6 @@ jQuery(function($) {
 								<label>
 									<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
 									<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
-								</label>
-								<br />
-								<label>
-									<input name="wp_rp_show_RP_in_posts" type="checkbox" id="wp_rp_show_RP_in_posts" value="yes"<?php checked($options['show_RP_in_posts']); ?>>
-									<?php _e("Show related posts in article text",'wp_related_posts');?>
 								</label>
 					<?php if($meta['show_traffic_exchange']): ?>
 								<br />

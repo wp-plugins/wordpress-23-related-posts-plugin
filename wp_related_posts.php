@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 2.2
+Version: 2.3
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content.
 Author: Jure Ham
 Author URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 */
 
-define('WP_RP_VERSION', '2.2');
+define('WP_RP_VERSION', '2.3');
 
 include_once(dirname(__FILE__) . '/config.php');
 include_once(dirname(__FILE__) . '/lib/stemmer.php');
@@ -236,10 +236,10 @@ function wp_rp_head_resources() {
 			"\twindow._wp_rp_post_tags = {$post_tags};\n" .
 			"\twindow._wp_rp_static_base_url = '" . esc_js(WP_RP_STATIC_BASE_URL) . "';\n" .
 			"\twindow._wp_rp_promoted_content = " . ($options['promoted_content_enabled'] ? 'true' : 'false') . ";\n" .
-			(wp_is_mobile() && $options['show_RP_in_posts'] ? "\twindow._wp_rp_show_rp_in_posts = true;\n" : '') .
 			"\twindow._wp_rp_plugin_version = '" . WP_RP_VERSION . "';\n" .
 			"\twindow._wp_rp_traffic_exchange = " . ($options['traffic_exchange_enabled'] ? 'true' : 'false') . ";\n" .
 			(current_user_can('delete_users') ? "\twindow._wp_rp_admin_ajax_url = '" . admin_url('admin-ajax.php') . "';\n" : '') .
+			"\twindow._wp_rp_num_rel_posts = '" . $options['max_related_posts'] . "';\n" .
 			"</script>\n";
 	}
 
