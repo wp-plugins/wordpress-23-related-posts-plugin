@@ -1,32 +1,4 @@
 <script type="text/javascript">
-	function wp_rp_missing_rp_algorithm_onchange(){
-		var wp_rp_missing_rp_algorithm = document.getElementById('wp_rp_missing_rp_algorithm');
-		var wp_rp_missing_rp_title_th = document.getElementById('wp_rp_missing_rp_title_th');
-		var wp_rp_missing_rp_title = document.getElementById('wp_rp_missing_rp_title');
-		switch(wp_rp_missing_rp_algorithm.value){
-		case 'text':
-			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("No Related Posts Text:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("No Related Posts", 'wp_related_posts'); ?>';
-			break;
-		case 'random':
-			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Random Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
-			break;
-		case 'commented':
-			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Most Commented Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
-			break;
-		case 'popularity':
-			wp_rp_missing_rp_title_th.innerHTML = '<?php _e("Most Popular Posts Title:", 'wp_related_posts'); ?>';
-			wp_rp_missing_rp_title.value = '<?php _e("Other Posts", 'wp_related_posts'); ?>';
-			break;
-		default:
-			wp_rp_missing_rp_title_th.innerHTML = '';
-		}
-		if(wp_rp_missing_rp_algorithm.value == '<?php echo $missing_rp_algorithm;?>') {
-			wp_rp_missing_rp_title.value = '<?php echo $options["missing_rp_title"];?>';
-		}
-	}
 	function wp_rp_display_excerpt_onclick(){
 		var wp_rp_display_excerpt = document.getElementById('wp_rp_display_excerpt');
 		var wp_rp_excerpt_max_length_label = document.getElementById('wp_rp_excerpt_max_length_label');
