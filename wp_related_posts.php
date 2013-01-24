@@ -1,26 +1,29 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 1.7
+Version: 2.4
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
-Description: Generate a related posts list via tags of WordPress
+Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content.
 Author: Jure Ham
 Author URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 */
 
-define('WP_RP_VERSION', '1.7');
+define('WP_RP_VERSION', '2.4');
 
 include_once(dirname(__FILE__) . '/config.php');
+include_once(dirname(__FILE__) . '/lib/stemmer.php');
 
-register_activation_hook(__FILE__, 'wp_rp_activate_hook');
-
+include_once(dirname(__FILE__) . '/admin_notices.php');
+include_once(dirname(__FILE__) . '/notifications.php');
 include_once(dirname(__FILE__) . '/widget.php');
 include_once(dirname(__FILE__) . '/thumbnailer.php');
 include_once(dirname(__FILE__) . '/settings.php');
+include_once(dirname(__FILE__) . '/recommendations.php');
+include_once(dirname(__FILE__) . '/dashboard_widget.php');
 include_once(dirname(__FILE__) . '/compatibility.php');
 
-add_action('init', 'wp_rp_init_hook');
-add_filter('the_content', 'wp_rp_add_related_posts_hook', 99);
+register_activation_hook(__FILE__, 'wp_rp_activate_hook');
+register_deactivation_hook(__FILE__, 'wp_rp_deactivate_hook');
 
 add_action('wp_head', 'wp_rp_head_resources');
 add_action('wp_before_admin_bar_render', 'wp_rp_extend_adminbar');
@@ -33,151 +36,60 @@ function wp_rp_extend_adminbar() {
 
 	$wp_admin_bar->add_menu(array(
 		'id' => 'wp_rp_adminbar_menu',
-		'title' => __('Related Posts Statistics', 'wp_related_posts'),
+		'title' => __('Related Posts', 'wp_related_posts'),
 		'href' => admin_url('admin.php?page=wordpress-related-posts&ref=adminbar')
 	));
 }
 
-function wp_rp_init_hook() {
-	load_plugin_textdomain('wp_related_posts', false, dirname(plugin_basename (__FILE__)) . '/lang');
-}
-
+global $wp_rp_output;
+$wp_rp_output = array();
 function wp_rp_add_related_posts_hook($content) {
+	global $wp_rp_output, $post;
 	$options = wp_rp_get_options();
 
-	if ((is_single() && $options["on_single_post"]) || (is_feed() && $options["on_rss"])) {
-		$output = wp_rp_get_related_posts();
-		$content = $content . $output;
+	if ($post->post_type === 'post' && (($options["on_single_post"] && is_single()) || (is_feed() && $options["on_rss"]))) {
+		if (!isset($wp_rp_output[$post->ID])) {
+			$wp_rp_output[$post->ID] = wp_rp_get_related_posts();
+		}
+		$content = str_replace('%RELATEDPOSTS%', '', $content); // used for gp
+		$content = $content . $wp_rp_output[$post->ID];
 	}
 
 	return $content;
 }
+add_filter('the_content', 'wp_rp_add_related_posts_hook', 99);
 
-function wp_rp_fetch_related_posts($limit = 10, $exclude_ids = array()) {
-	global $wpdb, $post;
+function wp_rp_append_posts(&$related_posts, $fetch_function_name) {
 	$options = wp_rp_get_options();
 
-	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+	$limit = $options['max_related_posts'];
 
-	if(!$post->ID){return;}
-	$now = current_time('mysql', 1);
-	$tags = wp_get_post_tags($post->ID);
+	$len = sizeof($related_posts);
+	$num_missing_posts = $limit - $len;
+	if ($num_missing_posts > 0) {
+		$exclude_ids = array_map(create_function('$p', 'return $p->ID;'), $related_posts);
 
-	$tagcount = count($tags);
-	$taglist = false;
-	if ($tagcount > 0) {
-		$taglist = "'" . $tags[0]->term_id. "'";
-		for ($i = 1; $i < $tagcount; $i++) {
-			$taglist = $taglist . ", '" . $tags[$i]->term_id . "'";
+		$posts = call_user_func($fetch_function_name, $num_missing_posts, $exclude_ids);
+		if ($posts) {
+			$related_posts = array_merge($related_posts, $posts);
 		}
 	}
-
-	$related_posts = false;
-	if ($taglist) {
-		$q = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date,  p.comment_count, count(t_r.object_id) as cnt FROM $wpdb->term_taxonomy t_t, $wpdb->term_relationships t_r, $wpdb->posts p WHERE t_t.taxonomy ='post_tag' AND t_t.term_taxonomy_id = t_r.term_taxonomy_id AND t_r.object_id  = p.ID AND (t_t.term_id IN ($taglist)) AND p.ID NOT IN ($exclude_ids_str) AND p.post_status = 'publish' AND p.post_date_gmt < '$now' GROUP BY t_r.object_id ORDER BY cnt DESC, p.post_date_gmt DESC LIMIT $limit;";
-
-		$related_posts = $wpdb->get_results($q);
-	}
-
-	return $related_posts;
-}
-
-function wp_rp_get_exclude_ids_list_string($exclude_ids = array()) {
-	global $post;
-
-	array_push($exclude_ids, $post->ID);
-	$exclude_ids = array_map('intval', $exclude_ids);
-	$exclude_ids_str = implode(', ', $exclude_ids);
-
-	return $exclude_ids_str;
-}
-
-function wp_rp_fetch_random_posts($limit = 10, $exclude_ids = array()) {
-	global $wpdb, $post;
-
-	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
-
-	$q1 = "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID NOT IN ($exclude_ids_str)";
-	$ids = $wpdb->get_col($q1, 0);
-	$count = count($ids);
-	if($count <= 1) {
-		if($count === 0) return false;
-		if($count === 1) $rnd = $ids;
-	} else {
-		$display_number = min($limit, $count);
-
-		$next_seed = rand();
-		$t = time();
-		$seed = $t - $t % 300 + $post->ID << 4;		// We keep the same seed for 5 minutes, so MySQL can cache the `q2` query.
-		srand($seed);
-
-		$rnd = array_rand($ids, $display_number);	// This is an array of random indexes, sorted
-		if ($display_number == 1) {
-			$ids = array($ids[$rnd]);
-		} else {
-			shuffle($rnd);
-			foreach ($rnd as &$i) {		// Here, index is passed by reference, so we can modify it
-				$i = $ids[$i];		// Replace indexes with corresponding IDs
-			}
-			$ids = $rnd;
-		}
-		srand($next_seed);
-	}
-	$q2 = "SELECT ID, post_title, post_content, post_excerpt, post_date, comment_count FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = 'post' AND ID IN (" . implode(',', $ids) . ")";
-	return $wpdb->get_results($q2);
-}
-
-function wp_rp_fetch_most_commented_posts($limit = 10, $exclude_ids = array()) {
-	global $wpdb;
-
-	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
-
-	$q = "SELECT ID, post_title, post_content, post_excerpt, post_date, COUNT($wpdb->comments.comment_post_ID) AS 'comment_count' FROM $wpdb->posts, $wpdb->comments WHERE comment_approved = '1' AND $wpdb->posts.ID=$wpdb->comments.comment_post_ID AND post_status = 'publish' AND ID NOT IN ($exclude_ids_str) GROUP BY $wpdb->comments.comment_post_ID ORDER BY comment_count DESC LIMIT $limit";
-	return $wpdb->get_results($q);
-}
-
-function wp_rp_fetch_most_popular_posts ($limit = 10, $exclude_ids = array()) {
-	global $wpdb, $table_prefix;
-
-	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
-
-	$q = $sql = "SELECT p.ID, p.post_title, p.post_content,p.post_excerpt, p.post_date, p.comment_count FROM ". $table_prefix ."ak_popularity as akpc,".$table_prefix ."posts as p WHERE p.ID = akpc.post_id AND p.ID NOT IN ($exclude_ids_str) ORDER BY akpc.total DESC LIMIT $limit";;
-	return $wpdb->get_results($q);
 }
 
 function wp_rp_fetch_posts_and_title() {
 	$options = wp_rp_get_options();
 
 	$limit = $options['max_related_posts'];
-
 	$title = $options["related_posts_title"];
-	$related_posts = wp_rp_fetch_related_posts($limit);
-	$missing_rp_algorithm = $options["missing_rp_algorithm"];
 
-	if (!$related_posts) {
-		$title = $options["missing_rp_title"];
-	}
+	$related_posts = array();
 
-	if (!$related_posts && $missing_rp_algorithm === "text") {
-		$related_posts = false;
-	} else if (!$related_posts || sizeof($related_posts) < $limit) {
-		$related_posts = !is_array($related_posts) ? array() : $related_posts;
-		$exclude_ids = array_map(create_function('$p', 'return $p->ID;'), $related_posts);
+	wp_rp_append_posts($related_posts, 'wp_rp_fetch_related_posts_v2');
+	wp_rp_append_posts($related_posts, 'wp_rp_fetch_related_posts');
+	wp_rp_append_posts($related_posts, 'wp_rp_fetch_random_posts');
 
-		$num_missing_posts = $limit - sizeof($related_posts);
-
-		$other_posts = false;
-		if ($missing_rp_algorithm === "commented") {
-			$other_posts = wp_rp_fetch_most_commented_posts($num_missing_posts, $exclude_ids);
-		} else if ($missing_rp_algorithm === "popularity" && function_exists('akpc_most_popular')) {
-			$other_posts = wp_rp_fetch_most_popular_posts($num_missing_posts, $exclude_ids);
-		} else if ($missing_rp_algorithm === "random") {
-			$other_posts = wp_rp_fetch_random_posts($num_missing_posts, $exclude_ids);
-		}
-
-		if ($other_posts) {
-			$related_posts = array_merge($related_posts, $other_posts);
-		}
+	if(function_exists('qtrans_postsFilter')) {
+		$related_posts = qtrans_postsFilter($related_posts);
 	}
 
 	return array(
@@ -191,8 +103,15 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 	$output = "";
 	$i = 0;
 
+	$statistics_enabled = $options['ctr_dashboard_enabled'];
+
 	foreach ($related_posts as $related_post ) {
-		$output .= '<li position="' . $i++ . '">';
+		$data_attrs = '';
+		if ($statistics_enabled) {
+			$data_attrs .= 'data-position="' . $i++ . '" data-poid="in-' . $related_post->ID . '" ';
+		}
+
+		$output .= '<li ' . $data_attrs . '>';
 
 		$img = wp_rp_get_post_thumbnail_img($related_post);
 		if ($img) {
@@ -228,25 +147,63 @@ function wp_rp_generate_related_posts_list_items($related_posts) {
 
 function wp_rp_should_exclude() {
 	global $wpdb, $post;
+
+	if (!$post || !$post->ID) {
+		return true;
+	}
+
+	if ($post->post_type !== 'post') {
+		return true;
+	}
+
 	$options = wp_rp_get_options();
 
-	if($options['not_on_categories'] === '') { return false; }
+	if(!$options['exclude_categories']) { return false; }
 
-	$exclude = explode(",", $options["not_on_categories"]);
-	$q = 'SELECT tt.term_id FROM '. $wpdb->term_taxonomy.'  tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '.$post->ID;
+	$q = 'SELECT COUNT(tt.term_id) FROM '. $wpdb->term_taxonomy.' tt, ' . $wpdb->term_relationships.' tr WHERE tt.taxonomy = \'category\' AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tr.object_id = '. $post->ID . ' AND tt.term_id IN (' . $options['exclude_categories'] . ')';
 
-	$cats = $wpdb->get_results($q);
+	$result = $wpdb->get_col($q);
 
-	foreach($cats as $cat) {
-		if (in_array($cat->term_id, $exclude) != false){
-			return true;
-		}
-	}
-	return false;
+	$count = (int) $result[0];
+
+	return $count > 0;
 }
 
+function wp_rp_ajax_blogger_network_blacklist_callback() {
+	if (!current_user_can('delete_users')) {
+		die();
+	}
+
+	$sourcefeed = (int) $_GET['sourcefeed'];
+
+	$meta = wp_rp_get_meta();
+
+	$blog_id = $meta['blog_id'];
+	$auth_key = $meta['auth_key'];
+	$req_options = array(
+		'timeout' => 5
+	);
+	$url = WP_RP_CTR_DASHBOARD_URL . "blacklist/?blog_id=$blog_id&auth_key=$auth_key&sfid=$sourcefeed";
+	$response = wp_remote_get($url, $req_options);
+
+	if (wp_remote_retrieve_response_code($response) == 200) {
+		$body = wp_remote_retrieve_body($response);
+		if ($body) {
+			$doc = json_decode($body);
+			if ($doc && $doc->status === 'ok') {
+				header_remove();
+				header('Content-Type: text/javascript');
+				echo "if(window['_wp_rp_blacklist_callback$sourcefeed']) window._wp_rp_blacklist_callback$sourcefeed();";
+			}
+		}
+	}
+	die();
+}
+
+add_action('wp_ajax_rp_blogger_network_blacklist', 'wp_rp_ajax_blogger_network_blacklist_callback');
+
 function wp_rp_head_resources() {
-	global $post;
+	global $post, $wpdb;
 
 	if (wp_rp_should_exclude()) {
 		return;
@@ -258,16 +215,20 @@ function wp_rp_head_resources() {
 	$remote_recommendations = false;
 	$output = '';
 
-	// turn off statistics or recommendations on non-singular posts
-	if(is_single()) {
+	if (is_single()) {
 		$statistics_enabled = $options['ctr_dashboard_enabled'] && $meta['blog_id'] && $meta['auth_key'];
 		$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
 	}
 
 	if ($statistics_enabled) {
-		$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode($v) . "\'";'), wp_get_post_tags($post->ID, array('fields' => 'names')))) . ']';
+		$tags = $wpdb->get_col("SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID ORDER BY weight desc;", 0);
+		if (!empty($tags)) {
+			$post_tags = '[' . implode(', ', array_map(create_function('$v', 'return "\'" . urlencode(substr($v, strpos($v, \'_\') + 1)) . "\'";'), $tags)) . ']';
+		} else {
+			$post_tags = '[]';
+		}
 
-		$output .= "<script type=\"text/javascript\">\n" . 
+		$output .= "<script type=\"text/javascript\">\n" .
 			"\twindow._wp_rp_blog_id = '" . esc_js($meta['blog_id']) . "';\n" .
 			"\twindow._wp_rp_ajax_img_src_url = '" . esc_js(WP_RP_CTR_REPORT_URL) . "';\n" .
 			"\twindow._wp_rp_post_id = '" . esc_js($post->ID) . "';\n" .
@@ -275,26 +236,33 @@ function wp_rp_head_resources() {
 			"\twindow._wp_rp_post_title = '" . urlencode($post->post_title) . "';\n" .
 			"\twindow._wp_rp_post_tags = {$post_tags};\n" .
 			"\twindow._wp_rp_static_base_url = '" . esc_js(WP_RP_STATIC_BASE_URL) . "';\n" .
+			"\twindow._wp_rp_promoted_content = " . ($options['promoted_content_enabled'] ? 'true' : 'false') . ";\n" .
+			"\twindow._wp_rp_plugin_version = '" . WP_RP_VERSION . "';\n" .
+			"\twindow._wp_rp_traffic_exchange = " . ($options['traffic_exchange_enabled'] ? 'true' : 'false') . ";\n" .
+			(current_user_can('delete_users') ? "\twindow._wp_rp_admin_ajax_url = '" . admin_url('admin-ajax.php') . "';\n" : '') .
+			"\twindow._wp_rp_num_rel_posts = '" . $options['max_related_posts'] . "';\n" .
 			"</script>\n";
-
-		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_CTR_PAGEVIEW_FILE . '"></script>' . "\n";
 	}
 
 	if ($remote_recommendations) {
-		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '"></script>' . "\n";
-		$output .= '<link rel="stylesheet" href="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE . '" />' . "\n";
+		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '?version=' . WP_RP_VERSION . '"></script>' . "\n";
+		$output .= '<link rel="stylesheet" href="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE . '?version=' . WP_RP_VERSION . '" />' . "\n";
 	}
 
-	if ($options['enable_themes']) {	
+	if($statistics_enabled) {
+		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_CTR_PAGEVIEW_FILE . '?version=' . WP_RP_VERSION . '" async></script>' . "\n";
+	}
+
+	if ($options['enable_themes']) {
 		if ($options["display_thumbnail"]) {
 			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_THUMBS_PATH;
 		} else {
 			$theme_url = WP_RP_STATIC_BASE_URL . WP_RP_STATIC_THEMES_PATH;
 		}
 
-		$output .= '<link rel="stylesheet" href="' . $theme_url.  $options['theme_name'] . '" />' . "\n";
-		if ($options['theme_name'] === 'custom.css') {
-			$output .= '<style type="text/css">' . $options['theme_custom_css'] . "</style>\n";
+		$output .= '<link rel="stylesheet" href="' . $theme_url . $options['theme_name'] . '?version=' . WP_RP_VERSION . '" />' . "\n";
+		if ($options['custom_theme_enabled']) {
+			$output .= '<style type="text/css">' . "\n" . $options['theme_custom_css'] . "</style>\n";
 		}
 	}
 
@@ -316,17 +284,23 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$promotional_link = '';
 
 	$posts_and_title = wp_rp_fetch_posts_and_title();
+
 	$related_posts = $posts_and_title['posts'];
 	$title = $posts_and_title['title'];
+
+	if (!$related_posts) {
+		return;
+	}
 
 	$css_classes = 'related_post wp_rp';
 	if ($options['enable_themes']) {
 		$css_classes .= ' ' . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $options['theme_name']));
 	}
 
-	if ($related_posts) {
-		$output = wp_rp_generate_related_posts_list_items($related_posts);
-		$output = '<ul class="' . $css_classes . '" style="visibility: "' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>' . "\n";
+	$output = wp_rp_generate_related_posts_list_items($related_posts);
+	$output = '<ul class="' . $css_classes . '" style="visibility: ' . ($remote_recommendations ? 'hidden' : 'visible') . '">' . $output . '</ul>';
+	if($remote_recommendations) {
+		$output = $output . '<script type="text/javascript">window._wp_rp_callback_widget_exists && window._wp_rp_callback_widget_exists();</script>';
 	}
 
 	if ($title != '') {
@@ -334,7 +308,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 			$output = $before_title . $title . $after_title . $output;
 		} else {
 			$title_tag = $options["related_posts_title_tag"];
-			$output =  '<' . $title_tag . '  class="related_post_title">' . $title . $promotional_link . '</' . $title_tag . '>' . $output;
+			$output =  '<' . $title_tag . ' class="related_post_title">' . $title . $promotional_link . '</' . $title_tag . '>' . $output;
 		}
 	}
 
