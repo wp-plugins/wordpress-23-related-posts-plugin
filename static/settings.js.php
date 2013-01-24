@@ -13,10 +13,6 @@
 		var wp_rp_thumbnail_span = document.getElementById('wp_rp_thumbnail_span');
 		if(wp_rp_display_thumbnail.checked){
 			wp_rp_thumbnail_span.style.display = '';
-			jQuery('#wp-rp-thumbnails-info').fadeOut();
-			if (window.localStorage) {
-				window.localStorage.wp_rp_thumbnails_info = "close";
-			}
 		} else {
 			wp_rp_thumbnail_span.style.display = 'none';
 		}

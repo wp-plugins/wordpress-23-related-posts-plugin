@@ -132,13 +132,23 @@ function wp_rp_upgrade() {
 	}
 }
 
+function wp_rp_related_posts_db_table_uninstall() {
+	global $wpdb;
+
+	$tags_table_name = $wpdb->prefix . "wp_rp_tags";
+
+	$sql = "DROP TABLE " . $tags_table_name;
+
+	$wpdb->query($sql);
+}
+
 function wp_rp_related_posts_db_table_install() {
 	global $wpdb;
 
 	$tags_table_name = $wpdb->prefix . "wp_rp_tags";
 	$sql_tags = "CREATE TABLE $tags_table_name (
 	  post_id mediumint(9),
-	  time timestamp DEFAULT CURRENT_TIMESTAMP,
+	  post_date datetime NOT NULL,
 	  label VARCHAR(32) NOT NULL,
 	  weight float,
 	  INDEX post_id (post_id),
@@ -197,13 +207,29 @@ function wp_rp_install() {
 		'promoted_content_enabled'	=> false,
 		'enable_themes'				=> false,
 		'custom_theme_enabled' => false,
-		'traffic_exchange_enabled' => false
+		'traffic_exchange_enabled' => false,
+		'max_related_post_age_in_days' => 0
 	);
 
 	update_option('wp_rp_meta', $wp_rp_meta);
 	update_option('wp_rp_options', $wp_rp_options);
 
 	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_2_3() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '2.4';
+
+	$wp_rp_options['max_related_post_age_in_days'] = 0;
+
+	wp_rp_related_posts_db_table_uninstall();
+	wp_rp_related_posts_db_table_install();
+
+	update_option('wp_rp_meta', $wp_rp_meta);
+	update_option('wp_rp_options', $wp_rp_options);
 }
 
 function wp_rp_migrate_2_2() {
