@@ -385,7 +385,7 @@ function wp_rp_settings_page() {
 							<li>Related Posts</li>
 							<li>Settings</li>
 							<li>Analytics</li>
-							<li class="turn-on"><a data-type="basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -397,7 +397,7 @@ function wp_rp_settings_page() {
 							<li>Settings</li>
 							<li>Analytics</li>
 							<li>Increase pageviews<br />(traffic exchange)</li>
-							<li class="turn-on"><a data-type="advanced" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="advanced" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -410,7 +410,7 @@ function wp_rp_settings_page() {
 							<li>Analytics</li>
 							<li>Increase pageviews<br />(traffic exchange)</li>
 							<li>Earn money<br />(promoted posts)</li>
-							<li class="turn-on"><a data-type="publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
