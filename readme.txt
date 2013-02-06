@@ -1,5 +1,5 @@
 ﻿=== Plugin Name ===
-Contributors: jureham
+Contributors: Zemanta
 Tags: related,posts,post,related posts,plugin
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 License: GPLv2
@@ -38,6 +38,10 @@ It places a list of links with thumbnails at the bottom of your posts. It increa
 = Does it support mobile themes? =
 
 Yes, related posts are responsive so they adapt to the screen size to ensure maximum click-through rates.
+
+= Why does Zemanta have 3 similar plugins? What's the difference between them? =
+
+We adopted the principle of having three "release channels". You can try the most experimental (still stable!) features in [Related Posts](http://wordpress.org/extend/plugins/related-posts/ "Related Posts"). The more advanced ones are in [WordPress Related Posts](http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/ "WordPress Related Posts"). If you're looking for the Professional version go for [Related Posts by Zemanta](http://wordpress.org/extend/plugins/related-posts-by-zemanta/ "Related Posts by Zemanta").
 
 == Installation ==
 
