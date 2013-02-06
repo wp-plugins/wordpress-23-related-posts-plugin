@@ -367,10 +367,10 @@ function wp_rp_settings_page() {
 			<div class="support">
 				<h4><?php _e("Awesome support", 'wp_related_posts'); ?></h4>
 				<p>
-					<?php _e("If you have any questions please contact us at",'wp_related_posts');?> <a target="_blank" href="mailto:relatedpostsplugin@gmail.com"><?php _e("support", 'wp_related_posts');?></a>.
+					<?php _e("If you have any questions please contact us at",'wp_related_posts');?> <a target="_blank" href="mailto:support+wprp@zemanta.com"><?php _e("support", 'wp_related_posts');?></a>.
 				</p>
 			</div>
-			<h2 class="title"><?php _e("Related Posts",'wp_related_posts');?></h2>
+			<h2 class="title"><?php _e("Related Posts by ",'wp_related_posts');?><a href="http://www.zemanta.com">Zemanta</a></h2>
 		</div>
 
 		<?php wp_rp_print_notifications(); ?>
