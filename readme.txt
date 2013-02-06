@@ -1,5 +1,5 @@
 ﻿=== Plugin Name ===
-Contributors: Zemanta
+Contributors: zemanta
 Tags: related,posts,post,related posts,plugin
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 License: GPLv2

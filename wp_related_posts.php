@@ -4,7 +4,7 @@ Plugin Name: WordPress Related Posts
 Version: 2.4
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content.
-Author: Zemanta
+Author: Zemanta Ltd.
 Author URI: http://www.zemanta.com
 */
 
