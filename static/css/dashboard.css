@@ -7,6 +7,8 @@
 #wp_rp_wrap div.header div.support p {margin: 0; font-size: 11px;}
 #wp_rp_wrap div.header div.support p a {color: #82c1cb; font-weight: bold; text-decoration: none;}
 
+#wp_rp_settings_form th,
+#wp_rp_settings_form td {padding-left: 0;}
 
 #wp_rp_wrap div#wp_rp_statistics_wrap {position: relative; overflow: hidden;}
 #wp_rp_wrap div#wp_rp_statistics_holder {overflow: hidden;}
@@ -116,11 +118,22 @@ form.wp_rp_message_form a.dismiss {float: right;}
 #wp_rp_wrap .collapsible.collapsed .collapse-handle {background-image: url('../img/down.jpg');}
 #wp_rp_wrap .collapsible .collapse-handle:after {clear:both;overflow:hidden;height:0;}
 
+#wp_rp_theme_options_wrap .wp_rp_settings_button {font-size: 1.5em;padding:0 0 0 20px;background: url('../img/arrow_right.png') left center no-repeat;background-position: 3px 3px;}
+#wp_rp_theme_options_wrap .wp_rp_settings_button_disabled {background: url('../img/arrow_down.png') left center no-repeat;background-position: 0px 7px;}
+
+/* theme options */
 #wp_rp_theme_options_wrap .theme-list {margin: 5px 0; width: 150px; float: left;}
-#wp_rp_theme_options_wrap .theme-screenshot img {width: 448px; margin-top: -30px;}
-#wp_rp_theme_options_wrap .theme-screenshot {height: 170px;}
+#wp_rp_theme_options_wrap .theme-screenshot img {width: 448px;}
+#wp_rp_theme_options_wrap .theme-screenshot {height: 250px; overflow:hidden;}
 #wp_rp_theme_options_wrap .theme-extra-options {clear: left;}
 #wp_rp_theme_options_wrap .custom-theme {clear: both;}
+
+#wp_rp_theme_options_wrap .wp_rp_settings_table {padding: 15px;border: 1px solid #CCC;width: 630px;margin-bottom: 30px;border-top: 5px solid #CCC;}
+#wp_rp_theme_options_wrap .wp_rp_settings_table tbody tr td {padding: 8px 10px;}
+#wp_rp_theme_options_wrap .wp_rp_settings_table tbody tr td h4 {font-size: 1.5em;font-weight: normal;}
+#wp_rp_theme_options_wrap .wp_rp_settings_table tbody tr td div .theme-extra-options label {}
+#wp_rp_theme_options_wrap .wp_rp_settings_table tbody tr td div .theme-extra-options label.selected {}
+#wp_rp_theme_options_wrap .wp_rp_settings_table tbody tr td div .theme-extra-options label input {display: none;}
 
 #wp_rp_theme_custom_css_wrap td {margin: 0; padding-top: 0;}
 #wp_rp_theme_custom_css_wrap .notice {margin: 0; padding: 0 0 3px 0; color: #666;}

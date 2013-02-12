@@ -134,12 +134,13 @@ function wp_rp_settings_scripts() {
 	wp_enqueue_script("wp_rp_dashboard_script", plugins_url('static/js/dashboard.js', __FILE__), array('jquery'), WP_RP_VERSION);
 }
 function wp_rp_settings_styles() {
-	wp_enqueue_style("wp_rp_dashaboard_style", plugins_url("static/css/dashboard.css", __FILE__));
+	wp_enqueue_style("wp_rp_dashboard_style", plugins_url("static/css/dashboard.css", __FILE__));
 }
 
 function wp_rp_register_blog($account_type='other') {
 	$meta = wp_rp_get_meta();
 
+	if($meta['blog_id']) return true;
 	$req_options = array(
 		'timeout' => 30
 	);
@@ -225,8 +226,6 @@ function wp_rp_ajax_hide_show_statistics() {
 add_action('wp_ajax_rp_show_hide_statistics', 'wp_rp_ajax_hide_show_statistics');
 
 function wp_rp_settings_page() {
-	$title_tags = array('h2', 'h3', 'h4', 'p', 'div');
-
 	$options = wp_rp_get_options();
 	$meta = wp_rp_get_meta();
 
@@ -235,30 +234,39 @@ function wp_rp_settings_page() {
 	// load notifications every time user goes to settings page
 	wp_rp_load_remote_notifications();
 
-	if(sizeof($_POST))
-	{
+	if(sizeof($_POST)) {
 		$old_options = $options;
 		$new_options = array(
 			'on_single_post' => isset($postdata['wp_rp_on_single_post']),
-			'display_comment_count' => isset($postdata['wp_rp_display_comment_count']),
-			'display_publish_date' => isset($postdata['wp_rp_display_publish_date']),
-			'display_excerpt' => isset($postdata['wp_rp_display_excerpt']),
-			'excerpt_max_length' => (isset($postdata['wp_rp_excerpt_max_length']) && is_numeric(trim($postdata['wp_rp_excerpt_max_length']))) ? intval(trim($postdata['wp_rp_excerpt_max_length'])) : 200,
 			'max_related_posts' => (isset($postdata['wp_rp_max_related_posts']) && is_numeric(trim($postdata['wp_rp_max_related_posts']))) ? intval(trim($postdata['wp_rp_max_related_posts'])) : 5,
 			'on_rss' => isset($postdata['wp_rp_on_rss']),
-			'display_thumbnail' => isset($postdata['wp_rp_display_thumbnail']),
-			'thumbnail_custom_field' => isset($postdata['wp_rp_thumbnail_custom_field']) ? trim($postdata['wp_rp_thumbnail_custom_field']) : false,
-			'thumbnail_display_title' => isset($postdata['wp_rp_thumbnail_display_title']),
 			'related_posts_title' => isset($postdata['wp_rp_related_posts_title']) ? trim($postdata['wp_rp_related_posts_title']) : '',
-			'related_posts_title_tag' => isset($postdata['wp_rp_related_posts_title_tag']) ? $postdata['wp_rp_related_posts_title_tag'] : 'h3',
-			'thumbnail_use_attached' => isset($postdata['wp_rp_thumbnail_use_attached']),
-			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
 			'ctr_dashboard_enabled' => isset($postdata['wp_rp_ctr_dashboard_enabled']),
 			'promoted_content_enabled' => isset($postdata['wp_rp_promoted_content_enabled']),
 			'enable_themes' => isset($postdata['wp_rp_enable_themes']),
-			'custom_theme_enabled' => isset($postdata['wp_rp_custom_theme_enabled']),
 			'traffic_exchange_enabled' => isset($postdata['wp_rp_traffic_exchange_enabled']),
-			'max_related_post_age_in_days' => (isset($postdata['wp_rp_max_related_post_age_in_days']) && is_numeric(trim($postdata['wp_rp_max_related_post_age_in_days']))) ? intval(trim($postdata['wp_rp_max_related_post_age_in_days'])) : 0
+			'max_related_post_age_in_days' => (isset($postdata['wp_rp_max_related_post_age_in_days']) && is_numeric(trim($postdata['wp_rp_max_related_post_age_in_days']))) ? intval(trim($postdata['wp_rp_max_related_post_age_in_days'])) : 0,
+
+			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
+			'thumbnail_custom_field' => isset($postdata['wp_rp_thumbnail_custom_field']) ? trim($postdata['wp_rp_thumbnail_custom_field']) : '',
+			'display_zemanta_linky' => $meta['show_zemanta_linky_option'] ? isset($postdata['wp_rp_display_zemanta_linky']) : true,
+
+			'mobile' => array(
+				'display_comment_count' => isset($postdata['wp_rp_mobile_display_comment_count']),
+				'display_publish_date' => isset($postdata['wp_rp_mobile_display_publish_date']),
+				'display_excerpt' => isset($postdata['wp_rp_mobile_display_excerpt']),
+				'display_thumbnail' => isset($postdata['wp_rp_mobile_display_thumbnail']),
+				'excerpt_max_length' => (isset($postdata['wp_rp_mobile_excerpt_max_length']) && is_numeric(trim($postdata['wp_rp_mobile_excerpt_max_length']))) ? intval(trim($postdata['wp_rp_mobile_excerpt_max_length'])) : 200,
+				'custom_theme_enabled' => isset($postdata['wp_rp_mobile_custom_theme_enabled']),
+			),
+			'desktop' => array(
+				'display_comment_count' => isset($postdata['wp_rp_desktop_display_comment_count']),
+				'display_publish_date' => isset($postdata['wp_rp_desktop_display_publish_date']),
+				'display_excerpt' => isset($postdata['wp_rp_desktop_display_excerpt']),
+				'display_thumbnail' => isset($postdata['wp_rp_desktop_display_thumbnail']),
+				'excerpt_max_length' => (isset($postdata['wp_rp_desktop_excerpt_max_length']) && is_numeric(trim($postdata['wp_rp_desktop_excerpt_max_length']))) ? intval(trim($postdata['wp_rp_desktop_excerpt_max_length'])) : 200,
+				'custom_theme_enabled' => isset($postdata['wp_rp_desktop_custom_theme_enabled']),
+			)
 		);
 
 		if(!isset($postdata['wp_rp_exclude_categories'])) {
@@ -269,24 +277,30 @@ function wp_rp_settings_page() {
 			$new_options['exclude_categories'] = trim($postdata['wp_rp_exclude_categories']);
 		}
 
-		$preprocess_thumbnails = $new_options['display_thumbnail'] && $new_options['thumbnail_use_attached'] && (!$old_options['display_thumbnail'] || !$old_options['thumbnail_use_attached']);
+		foreach(array('mobile', 'desktop') as $platform) {
+			if(isset($postdata['wp_rp_' . $platform . '_theme_name'])) {		// If this isn't set, maybe the AJAX didn't load...
+				$new_options[$platform]['theme_name'] = trim($postdata['wp_rp_' . $platform . '_theme_name']);
 
-		if(isset($postdata['wp_rp_theme_name'])) {		// If this isn't set, maybe the AJAX didn't load...
-			$new_options['theme_name'] = trim($postdata['wp_rp_theme_name']);
-
-			if(isset($postdata['wp_rp_theme_custom_css'])) {
-				$new_options['theme_custom_css'] = $postdata['wp_rp_theme_custom_css'];
+				if(isset($postdata['wp_rp_' . $platform . '_theme_custom_css'])) {
+					$new_options[$platform]['theme_custom_css'] = $postdata['wp_rp_' . $platform . '_theme_custom_css'];
+				} else {
+					$new_options[$platform]['theme_custom_css'] = '';
+				}
 			} else {
-				$new_options['theme_custom_css'] = '';
+				$new_options[$platform]['theme_name'] = $old_options[$platform]['theme_name'];
+				$new_options[$platform]['theme_custom_css'] = $old_options[$platform]['theme_custom_css'];
 			}
-		} else {
-			$new_options['theme_name'] = $old_options['theme_name'];
-			$new_options['theme_custom_css'] = $old_options['theme_custom_css'];
 		}
 
 		if (isset($postdata['wp_rp_turn_on_button_pressed'])) {
+			$meta['show_turn_on_button'] = false;
 			$meta['turn_on_button_pressed'] = $postdata['wp_rp_turn_on_button_pressed'];
+			$new_options['mobile']['display_thumbnail'] = true;
+			$new_options['desktop']['display_thumbnail'] = true;
 		}
+
+		$preprocess_thumbnails = ($new_options['desktop']['display_thumbnail'] && !$old_options['desktop']['display_thumbnail']) || ($new_options['mobile']['display_thumbnail'] && !$old_options['mobile']['display_thumbnail']);
+
 
 		$default_thumbnail_path = wp_rp_upload_default_thumbnail_file();
 
@@ -307,7 +321,7 @@ function wp_rp_settings_page() {
 			if($new_options['ctr_dashboard_enabled'] && !$old_options['ctr_dashboard_enabled']) {
 				$meta['show_statistics'] = true;
 
-				if($new_options['display_thumbnail']) {
+				if($new_options['desktop']['display_thumbnail'] || $new_options['mobile']['display_thumbnail']) {
 					$meta['show_turn_on_button'] = false;
 				}
 
@@ -337,17 +351,8 @@ function wp_rp_settings_page() {
 ?>
 
 	<div class="wrap" id="wp_rp_wrap">
-	<?php
-		$related_posts_title_tag = $options['related_posts_title_tag'];
-		$theme_name = $options['theme_name'];
-		$theme_custom_css = $options['theme_custom_css'];
-
-		include(dirname(__FILE__) . '/static/settings.js.php');
-	?>
-
 		<input type="hidden" id="wp_rp_json_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL . WP_RP_STATIC_JSON_PATH); ?>" />
 		<input type="hidden" id="wp_rp_version" value="<?php esc_attr_e(WP_RP_VERSION); ?>" />
-		<input type="hidden" id="wp_rp_theme_selected" value="<?php esc_attr_e($theme_name); ?>" />
 		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_DASHBOARD_URL); ?>" />
 		<input type="hidden" id="wp_rp_static_base_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL); ?>" />
 
@@ -381,11 +386,13 @@ function wp_rp_settings_page() {
 				<li>
 					<div>
 						<ul>
-							<li class="title"><h3>Basic</h3></li>
+							<li class="title"><h3>Publisher</h3></li>
 							<li>Related Posts</li>
 							<li>Settings</li>
 							<li>Analytics</li>
-							<li class="turn-on-wrap"><a data-type="basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li>Increase pageviews<br />(traffic exchange)</li>
+							<li>Earn money<br />(promoted posts)</li>
+							<li class="turn-on-wrap"><a data-type="publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -404,13 +411,11 @@ function wp_rp_settings_page() {
 				<li>
 					<div>
 						<ul>
-							<li class="title"><h3>Publisher</h3></li>
+							<li class="title"><h3>Basic</h3></li>
 							<li>Related Posts</li>
 							<li>Settings</li>
 							<li>Analytics</li>
-							<li>Increase pageviews<br />(traffic exchange)</li>
-							<li>Earn money<br />(promoted posts)</li>
-							<li class="turn-on-wrap"><a data-type="publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -543,128 +548,125 @@ jQuery(function($) {
 								</select> &nbsp;months.
 							</label></td>
 						</tr>
-					</table>
+					</table><?php
 
+/**************************************
+ *         Theme Settings             *
+ **************************************/
+
+?>
 					<h3>Theme Settings</h3>
-					<table class="form-table">
-						<tr id="wp_rp_theme_options_wrap">
-							<th scope="row">Select Theme:</th>
-							<td>
-								<label>
-									<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
-									<?php _e("Enable Themes",'wp_related_posts'); ?>*
-								</label>
-								<div id="wp_rp_theme_area" style="display: none;">
-									<div class="theme-list"></div>
-									<div class="theme-screenshot"></div>
-									<div class="theme-extra-options">
-										<label>
-											<input type="checkbox" id="wp_rp_custom_theme_enabled" name="wp_rp_custom_theme_enabled" value="yes"<?php checked($options['custom_theme_enabled']); ?> />
-											Customize
-										</label>
+					<label>
+						<input name="wp_rp_enable_themes" type="checkbox" id="wp_rp_enable_themes" value="yes"<?php checked($options["enable_themes"]); ?> />
+						<?php _e("Enable Themes",'wp_related_posts'); ?>*
+					</label>
+
+					<div id="wp_rp_theme_options_wrap" style="display:none;">
+						<?php foreach(array('desktop' => 'Desktop/Tablet', 'mobile' => 'Mobile Phones') as $platform => $platform_title): ?>
+						<input type="hidden" id="wp_rp_<?php echo $platform; ?>_theme_selected" value="<?php esc_attr_e($options[$platform]['theme_name']); ?>" />
+						<table class="form-table wp_rp_settings_table">
+							<tr id="wp_rp_<?php echo $platform; ?>_theme_options_wrap">
+								<td>
+									<h4><?php _e($platform_title, 'wp_related_posts'); ?></h4>
+									<div id="wp_rp_<?php echo $platform; ?>_theme_area" style="display: none;">
+										<div class="theme-list"></div>
+										<div class="theme-screenshot"></div>
+										<div class="theme-extra-options">
+											<label class="wp_rp_settings_button">
+												<input type="checkbox" id="wp_rp_<?php echo $platform; ?>_custom_theme_enabled" name="wp_rp_<?php echo $platform; ?>_custom_theme_enabled" value="yes" <?php checked($options[$platform]['custom_theme_enabled']); ?> />
+												Customize
+											</label>
+										</div>
 									</div>
-								</div>
-							</td>
-						</tr>
-						<tr id="wp_rp_theme_custom_css_wrap" style="display: none; ">
-							<th scope="row"></th>
-							<td>
-								<p class="notice">To override default rules please add "!important" after every declaration.</p>
-								<textarea style="width: 300px; height: 215px;" name="wp_rp_theme_custom_css" class="custom-css"><?php echo htmlspecialchars($theme_custom_css, ENT_QUOTES); ?></textarea>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><?php _e("Thumbnail Options:",'wp_related_posts'); ?></th>
-							<td>
-								<label>
-									<input name="wp_rp_display_thumbnail" type="checkbox" id="wp_rp_display_thumbnail" value="yes"<?php checked($options["display_thumbnail"]); ?> onclick="wp_rp_display_thumbnail_onclick();" />
-									<?php _e("Display Thumbnails For Related Posts",'wp_related_posts');?>
-								</label>
-								<br />
-								<span id="wp_rp_thumbnail_span" style="<?php echo $options["display_thumbnail"] ? '' : 'display:none;'; ?>">
-								<label>
-									<input name="wp_rp_thumbnail_display_title" type="checkbox" id="wp_rp_thumbnail_display_title" value="yes"<?php checked($options["thumbnail_display_title"]); ?> />
-									<?php _e('Display Post Titles', 'wp_related_posts');?>
-								</label>
-								<br />
+								</td>
+							</tr>
+							<tr id="wp_rp_<?php echo $platform; ?>_theme_custom_css_wrap" style="display: none; ">
+								<td>
+									<label>
+										<input name="wp_rp_<?php echo $platform; ?>_display_thumbnail" type="checkbox" id="wp_rp_<?php echo $platform; ?>_display_thumbnail" value="yes" <?php checked($options[$platform]["display_thumbnail"]); ?> onclick="wp_rp_display_thumbnail_onclick();" />
+										<?php _e("Display Thumbnails For Related Posts",'wp_related_posts');?>
+									</label><br />
+									<label>
+										<input name="wp_rp_<?php echo $platform; ?>_display_comment_count" type="checkbox" id="wp_rp_<?php echo $platform; ?>_display_comment_count" value="yes" <?php checked($options[$platform]["display_comment_count"]); ?>>
+										<?php _e("Display Number of Comments",'wp_related_posts');?>
+									</label><br />
+									<label>
+										<input name="wp_rp_<?php echo $platform; ?>_display_publish_date" type="checkbox" id="wp_rp_<?php echo $platform; ?>_display_publish_date" value="yes" <?php checked($options[$platform]["display_publish_date"]); ?>>
+										<?php _e("Display Publish Date",'wp_related_posts');?>
+									</label><br />
+									<label>
+										<input name="wp_rp_<?php echo $platform; ?>_display_excerpt" type="checkbox" id="wp_rp_<?php echo $platform; ?>_display_excerpt" value="yes" <?php checked($options[$platform]["display_excerpt"]); ?> onclick="wp_rp_display_excerpt_onclick();" >
+										<?php _e("Display Post Excerpt",'wp_related_posts');?>
+									</label>
+									<label id="wp_rp_<?php echo $platform; ?>_excerpt_max_length_label">
+										<input name="wp_rp_<?php echo $platform; ?>_excerpt_max_length" type="text" id="wp_rp_<?php echo $platform; ?>_excerpt_max_length" class="small-text" value="<?php esc_attr_e($options[$platform]["excerpt_max_length"]); ?>" /> <span class="description"><?php _e('Maximum Number of Characters.', 'wp_related_posts'); ?></span>
+									</label>
+									<br/>
+									<h4>Custom CSS</h4>
+									<textarea style="width: 300px; height: 215px; background: #EEE;" name="wp_rp_<?php echo $platform; ?>_theme_custom_css" class="custom-css"><?php echo htmlspecialchars($options[$platform]['theme_custom_css'], ENT_QUOTES); ?></textarea>
+								</td>
+							</tr>
+							<tr>
+								<td>
 
-								<?php
-								global $wpdb;
+								</td>
+							</tr>
+						</table>
+						<?php endforeach; ?>
+					</div><?php
 
-								$custom_fields = $wpdb->get_col( "SELECT meta_key FROM $wpdb->postmeta GROUP BY meta_key HAVING meta_key NOT LIKE '\_%' ORDER BY LOWER(meta_key)" );
+/**************************************
+ *       Thumbnail Settings           *
+ **************************************/
 
-								if($custom_fields) :
-								?>
-								<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="no" <?php checked(!$options['thumbnail_use_custom']); ?>> Use featured image</label>&nbsp;&nbsp;&nbsp;&nbsp;
-								<label><input name="wp_rp_thumbnail_use_custom" type="radio" value="yes" <?php checked($options['thumbnail_use_custom']); ?>> Use custom field</label>
+?>
+					<table class="form-table">
+						<tbody>
+							<tr valign="top">
+								<td>
+									<label>
+										<?php _e('For posts without images, a default image will be shown.<br/>
+										You can upload your own default image here','wp_related_posts');?>
+										<input type="file" name="wp_rp_default_thumbnail" />
+									</label>
+									<?php if($options['default_thumbnail_path']) : ?>
+										<span style="display: inline-block; vertical-align: top; *display: inline; zoom: 1;">
+											<img style="padding: 3px; border: 1px solid #DFDFDF; border-radius: 3px;" valign="top" width="80" height="80" src="<?php esc_attr_e(wp_rp_get_default_thumbnail_url()); ?>" alt="selected thumbnail" />
+											<br />
+											<label>
+												<input type="checkbox" name="wp_rp_default_thumbnail_remove" value="yes" />
+												<?php _e("Remove selected",'wp_related_posts');?>
+											</label>
+										</span>
+									<?php endif; ?>
 
-								<select name="wp_rp_thumbnail_custom_field" id="wp_rp_thumbnail_custom_field"  class="postform">
-								
-								<?php foreach ( $custom_fields as $custom_field ) : ?>
-									<option value="<?php esc_attr_e($custom_field); ?>"<?php selected($options["thumbnail_custom_field"], $custom_field); ?>><?php esc_html_e($custom_field);?></option>
-								<?php endforeach; ?>
-
-								</select>
-								<br />
-								<?php endif; ?>
-
-								<label>
-									<input name="wp_rp_thumbnail_use_attached" type="checkbox" value="yes" <?php checked($options["thumbnail_use_attached"]); ?>>
-									<?php _e("If featured image is missing, show an image from the post",'wp_related_posts');?>
-								</label>
-								<br />
-
-
-								<br />
-								<label>
-									<?php _e('For posts without images, a default image will be shown.<br/>
-									You can upload your own default image here','wp_related_posts');?>
-									<input type="file" name="wp_rp_default_thumbnail" />
-								</label>
-								<?php if($options['default_thumbnail_path']) : ?>
-									<span style="display: inline-block; vertical-align: top; *display: inline; zoom: 1;">
-										<img style="padding: 3px; border: 1px solid #DFDFDF; border-radius: 3px;" valign="top" width="80" height="80" src="<?php esc_attr_e(wp_rp_get_default_thumbnail_url()); ?>" alt="selected thumbnail" />
-										<br />
-										<label>
-											<input type="checkbox" name="wp_rp_default_thumbnail_remove" value="yes" />
-											<?php _e("Remove selected",'wp_related_posts');?>
-										</label>
-									</span>
-								<?php endif; ?>
-								</span>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><?php _e("Display Options:",'wp_related_posts'); ?></th>
-							<td>
-								<label>
-									<input name="wp_rp_display_comment_count" type="checkbox" id="wp_rp_display_comment_count" value="yes" <?php checked($options["display_comment_count"]); ?>>
-									<?php _e("Display Number of Comments",'wp_related_posts');?>
-								</label><br />
-								<label>
-									<input name="wp_rp_display_publish_date" type="checkbox" id="wp_rp_display_publish_date" value="yes" <?php checked($options["display_publish_date"]); ?>>
-									<?php _e("Display Publish Date",'wp_related_posts');?>
-								</label><br />
-								<label>
-									<input name="wp_rp_display_excerpt" type="checkbox" id="wp_rp_display_excerpt" value="yes"<?php checked($options["display_excerpt"]); ?> onclick="wp_rp_display_excerpt_onclick();" >
-									<?php _e("Display Post Excerpt",'wp_related_posts');?>
-								</label>
-								<label id="wp_rp_excerpt_max_length_label"<?php echo $options["display_excerpt"] ? '' : ' style="display: none;"'; ?>>
-									<input name="wp_rp_excerpt_max_length" type="text" id="wp_rp_excerpt_max_length" class="small-text" value="<?php esc_attr_e($options["excerpt_max_length"]); ?>" /> <span class="description"><?php _e('Maximum Number of Characters.', 'wp_related_posts'); ?></span>
-								</label><br/>
-								<label for="wp_rp_related_posts_title_tag">
-									<?php _e('Related Posts Title Tag', 'wp_related_posts'); ?>
-									<select name="wp_rp_related_posts_title_tag" id="wp_rp_related_posts_title_tag" class="postform">
 									<?php
-									foreach ($title_tags as $tag) :
+									global $wpdb;
+
+									$custom_fields = $wpdb->get_col( "SELECT meta_key FROM $wpdb->postmeta GROUP BY meta_key HAVING meta_key NOT LIKE '\_%' ORDER BY LOWER(meta_key)" );
+									if($custom_fields) :
 									?>
-										<option value="<?php esc_attr_e($tag); ?>"<?php selected($related_posts_title_tag, $tag); ?>>&lt;<?php esc_html_e($tag); ?>&gt;</option>
+									<br />
+									<br />
+									<label><input name="wp_rp_thumbnail_use_custom" type="checkbox" value="yes" <?php checked($options['thumbnail_use_custom']); ?>> Use custom field for thumbnails</label>
+									<select name="wp_rp_thumbnail_custom_field" id="wp_rp_thumbnail_custom_field"  class="postform">
+
+									<?php foreach ( $custom_fields as $custom_field ) : ?>
+										<option value="<?php esc_attr_e($custom_field); ?>"<?php selected($options["thumbnail_custom_field"], $custom_field); ?>><?php esc_html_e($custom_field);?></option>
 									<?php endforeach; ?>
 									</select>
-								</label>
-							</td>
-						</tr>
-					</table>
+									<br />
+									<?php endif; ?>
+								</td>
+							</tr>
+						</tbody>
+					</table><?php
+
+/**************************************
+ *          Other Settings            *
+ **************************************/
+
+?>
 					<h3><?php _e("Other Settings:",'wp_related_posts'); ?></h3>
 					<table class="form-table">
 						<tr valign="top">
@@ -692,6 +694,8 @@ jQuery(function($) {
 						</tr>
 						<tr valign="top">
 							<td colspan="2">
+
+								<br/>
 								<label>
 									<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
 									<?php _e("Auto Insert Related Posts",'wp_related_posts');?>
@@ -714,12 +718,21 @@ jQuery(function($) {
 									<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
 									<?php _e("Turn statistics on",'wp_related_posts');?>*
 								</label>
+					<?php if($meta['remote_recommendations']): ?>
 								<br />
 								<label>
 									<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
 									<?php _e('Promoted Content', 'wp_related_posts');?>*
 								</label>
+					<?php endif; ?>
+					<?php if($meta['show_zemanta_linky_option']): ?>
+								<br />
+								<label>
+									<input name="wp_rp_display_zemanta_linky" type="checkbox" id="wp_rp_display_zemanta_linky" value="yes" <?php checked($options['display_zemanta_linky']); ?> />
+									<?php _e("Support us (show our logo)",'wp_related_posts');?>
+								</label>
 							</td>
+					<?php endif; ?>
 						</tr>
 					</table>
 					<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>

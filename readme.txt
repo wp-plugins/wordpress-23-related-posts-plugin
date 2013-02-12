@@ -4,7 +4,7 @@ Tags: related,posts,post,related posts,plugin
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 2.4
+Stable tag: 2.5
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -63,7 +63,20 @@ We adopted the principle of having three "release channels". You can try the mos
 2. WordPress Related Posts reporting real time statistics for mobile and desktop devices.
 3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
 
+== Upgrade Notice ==
+
+= 2.5 =
+This version adds a wrapper around related posts. Please recheck the layout after upgrade.
+
 == Changelog ==
+
+= 2.5 =
+* Mobile themes settings
+* Editorial control
+* New Pinterest inspired theme
+* Support us by displaying our logo
+* Small output html layout change
+* Bugfixes
 
 = 2.4 =
 * Limit related post age

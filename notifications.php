@@ -66,7 +66,7 @@ function wp_rp_load_remote_notifications() {
 		'timeout' => 5
 	);
 
-	if(empty($blog_id) || empty($auth_key) || !$options['ctr_dashboard_enabled']) return;
+	if(!$blog_id || !$auth_key || !$options['ctr_dashboard_enabled']) return;
 
 	// receive remote recommendations
 	$url = WP_RP_CTR_DASHBOARD_URL . "notifications/?blog_id=$blog_id&auth_key=$auth_key";
