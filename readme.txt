@@ -1,7 +1,6 @@
 ﻿=== Plugin Name ===
 Contributors: zemanta
 Tags: related,posts,post,related posts,plugin
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
