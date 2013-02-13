@@ -346,6 +346,13 @@ function wp_rp_head_resources() {
 		$remote_recommendations = $meta['remote_recommendations'] && $statistics_enabled;
 	}
 
+	$output_vars = "\twindow._wp_rp_static_base_url = '" . esc_js(WP_RP_STATIC_BASE_URL) . "';\n" .
+		"\twindow._wp_rp_wp_ajax_url = \"" . admin_url('admin-ajax.php') . "\";\n" .
+		"\twindow._wp_rp_plugin_version = '" . WP_RP_VERSION . "';\n" .
+		"\twindow._wp_rp_post_id = '" . esc_js($post->ID) . "';\n" .
+		"\twindow._wp_rp_num_rel_posts = '" . $options['max_related_posts'] . "';\n";
+
+
 	if ($statistics_enabled) {
 		$tags = $wpdb->get_col("SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID ORDER BY weight desc;", 0);
 		if (!empty($tags)) {
@@ -354,25 +361,20 @@ function wp_rp_head_resources() {
 			$post_tags = '[]';
 		}
 
-		$output .= "<script type=\"text/javascript\">\n" .
-			"\twindow._wp_rp_blog_id = '" . esc_js($meta['blog_id']) . "';\n" .
+		$output_vars .= "\twindow._wp_rp_blog_id = '" . esc_js($meta['blog_id']) . "';\n" .
 			"\twindow._wp_rp_ajax_img_src_url = '" . esc_js(WP_RP_CTR_REPORT_URL) . "';\n" .
-			"\twindow._wp_rp_post_id = '" . esc_js($post->ID) . "';\n" .
 			"\twindow._wp_rp_thumbnails = " . ($platform_options['display_thumbnail'] ? 'true' : 'false') . ";\n" .
 			"\twindow._wp_rp_post_title = '" . urlencode($post->post_title) . "';\n" .
 			"\twindow._wp_rp_post_tags = {$post_tags};\n" .
-			"\twindow._wp_rp_static_base_url = '" . esc_js(WP_RP_STATIC_BASE_URL) . "';\n" .
-			"\twindow._wp_rp_wp_ajax_url = \"" . admin_url('admin-ajax.php') . "\";\n" .
-			"\twindow._wp_rp_plugin_version = '" . WP_RP_VERSION . "';\n" .
 			"\twindow._wp_rp_promoted_content = " . ($options['promoted_content_enabled'] ? 'true' : 'false') . ";\n" .
 			"\twindow._wp_rp_traffic_exchange = " . ($options['traffic_exchange_enabled'] ? 'true' : 'false') . ";\n" .
-			"\twindow._wp_rp_num_rel_posts = '" . $options['max_related_posts'] . "';\n" .
 			(current_user_can('edit_posts') ?
 				"\twindow._wp_rp_admin_ajax_url = '" . admin_url('admin-ajax.php') . "';\n" .
 				"\twindow._wp_rp_plugin_static_base_url = '" . esc_js(plugins_url('static/' , __FILE__)) . "';\n"
-			: '') .
-			"</script>\n";
+			: '');
 	}
+
+	$output .= "<script type=\"text/javascript\">\n" . $output_vars . "</script>\n";
 
 	if ($remote_recommendations) {
 		$output .= '<script type="text/javascript" src="' . WP_RP_STATIC_BASE_URL . WP_RP_STATIC_RECOMMENDATIONS_JS_FILE . '?version=' . WP_RP_VERSION . '"></script>' . "\n";
