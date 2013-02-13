@@ -208,7 +208,7 @@ function wp_rp_install() {
 			'display_excerpt'			=> false,
 			'display_thumbnail'			=> false,
 			'excerpt_max_length'			=> 200,
-			'theme_name' 				=> 'm-stream.css',
+			'theme_name' 				=> 'm-modern.css',
 			'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 		),
 		'desktop' => array(
@@ -250,7 +250,7 @@ function wp_rp_migrate_2_4_1() {
 	$wp_rp_options['mobile'] = $display_options;
 
 	if($wp_rp_options['mobile']['theme_name'] !== 'plain.css') {
-		$wp_rp_options['mobile']['theme_name'] = 'm-stream.css';
+		$wp_rp_options['mobile']['theme_name'] = 'm-modern.css';
 	}
 
 	unset($wp_rp_options['related_posts_title_tag']);
