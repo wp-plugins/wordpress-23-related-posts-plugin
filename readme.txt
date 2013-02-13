@@ -66,7 +66,7 @@ We adopted the principle of having three "release channels". You can try the mos
 == Upgrade Notice ==
 
 = 2.5 =
-This version adds a wrapper around related posts. Please recheck the layout after upgrade.
+This version adds a wrapper around related posts and a link to zemanta.com (can be turned off in plugin settings). Please recheck the layout after upgrade.
 
 == Changelog ==
 
