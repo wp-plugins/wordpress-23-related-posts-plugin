@@ -485,7 +485,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 		$first_id_attr = 'id="wp_rp_first"';
 	}
 
-	$output = '<div class="wp_rp_wrap" ' . $css_classes_wrap . '" ' . $first_id_attr . '>' .
+	$output = '<div class="wp_rp_wrap ' . $css_classes_wrap . '" ' . $first_id_attr . '>' .
 			'<div class="wp_rp_content">' .
 				$related_posts_title .
 				$related_posts_ul .
