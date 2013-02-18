@@ -437,7 +437,7 @@ function wp_rp_settings_page() {
 					</div>
 				</li>
 			</ul>
-			<p>Analytics, traffic exchange and promoted posts are provided via <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a>.</p>
+			<p>Analytics, traffic exchange and promoted posts are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
 			<?php endif; ?>
 		</div>
 		<?php endif; ?>
@@ -756,9 +756,6 @@ jQuery(function($) {
 					<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>
 
 				</div>
-			</div>
-			<div id="wp_rp_tos">
-				* Provided via <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a>.
 			</div>
 		</form>
 	</div>
