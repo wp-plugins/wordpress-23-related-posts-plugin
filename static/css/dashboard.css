@@ -75,7 +75,16 @@
 #wp_rp_invite_friends_form img.down { display: none; }
 #wp_rp_invite_friends_form.up img.down { display: block; }
 
-#wp_rp_turn_on_statistics {}
+
+#wp_rp_turn_on_statistics {margin-top: 50px;}
+#wp_rp_turn_on_statistics .turn_on_wrap {max-width: 790px; border: 1px solid #ddd; border-top-right-radius: 5px; border-top-left-radius: 5px; padding: 30px 0; text-align: center;}
+#wp_rp_turn_on_statistics .turn_on_wrap { background: #e7f7fb; /* Old browsers */ background: -moz-linear-gradient(top, #e7f7fb 50%, #c1edef 100%); /* FF3.6+ */ background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,#e7f7fb), color-stop(100%,#c1edef)); /* Chrome,Safari4+ */ background: -webkit-linear-gradient(top, #e7f7fb 50%,#c1edef 100%); /* Chrome10+,Safari5.1+ */ background: -o-linear-gradient(top, #e7f7fb 50%,#c1edef 100%); /* Opera 11.10+ */ background: -ms-linear-gradient(top, #e7f7fb 50%,#c1edef 100%); /* IE10+ */ background: linear-gradient(to bottom, #e7f7fb 50%,#c1edef 100%); /* W3C */ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e7f7fb', endColorstr='#c1edef',GradientType=0 ); /* IE6-9 */ } 
+#wp_rp_turn_on_statistics h4 {font-size: 1.8em;font-weight: normal; margin: 5px 0 30px 0;}
+#wp_rp_turn_on_statistics p {margin: 10px 0 0 0; font-size: 13px;}
+#wp_rp_turn_on_statistics .screendesc {margin: 0;}
+#wp_rp_turn_on_statistics .button_wrap {margin-bottom: 30px;}
+#wp_rp_turn_on_statistics .turn_on_wrap .zemanta-button {font-size: 20px;text-shadow: 1px 1px #a05515;padding: 15px 30px;-moz-box-shadow: inset 0 1px 0 0 #ffaf65;-webkit-box-shadow: inset 0 1px 0 0 #ffaf65;box-shadow: inset 0 1px 0 0 #ffaf65;background: -webkit-gradient(linear,left top,left bottom,color-stop(0.05,#f79124),color-stop(1,#f57b1e));background: -moz-linear-gradient(center top,#f79124 5%,#f57b1e 100%);filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f79124', endColorstr='#f57b1e');background-color: #f79124;-moz-border-radius: 30px;-webkit-border-radius: 30px;border-radius: 30px;border: 1px solid #e77001;display: inline-block;color: #fff;text-decoration: none;cursor: pointer;}
+
 #wp_rp_turn_on_statistics > ul {margin: 0 0 10px 0;}
 #wp_rp_turn_on_statistics > ul > li {display: inline-block; margin-right: 10px; vertical-align: top; text-align: center;}
 #wp_rp_turn_on_statistics > ul > li {text-decoration: none; font-size: 12px;}
@@ -89,7 +98,6 @@
 
 #wp_rp_turn_on_statistics > ul > li > div .zemanta-button {font-size: 16px;text-shadow: 1px 1px #555;padding: 7px 15px;background-color: #999;-moz-border-radius: 15px;-webkit-border-radius: 15px;border-radius: 15px;border: 1px solid #999;display: inline-block;color: #fff;text-decoration: none;cursor: pointer;}
 #wp_rp_turn_on_statistics > ul > li > div:hover .zemanta-button {font-size: 16px;text-shadow: 1px 1px #a05515;padding: 7px 15px;-moz-box-shadow: inset 0 1px 0 0 #ffaf65;-webkit-box-shadow: inset 0 1px 0 0 #ffaf65;box-shadow: inset 0 1px 0 0 #ffaf65;background: -webkit-gradient(linear,left top,left bottom,color-stop(0.05,#f79124),color-stop(1,#f57b1e));background: -moz-linear-gradient(center top,#f79124 5%,#f57b1e 100%);filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f79124', endColorstr='#f57b1e');background-color: #f79124;-moz-border-radius: 15px;-webkit-border-radius: 15px;border-radius: 15px;border: 1px solid #e77001;display: inline-block;color: #fff;text-decoration: none;cursor: pointer;}
-
 
 form.wp_rp_message_form { background: #f7f7f7; padding: 20px; margin: 30px 0px; border: 1px solid #e1e1e1; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
 form.wp_rp_message_form p {font-size: 14px;}
