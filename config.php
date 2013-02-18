@@ -172,6 +172,7 @@ function wp_rp_install() {
 		'version' => WP_RP_VERSION,
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
+		'blog_tg' => rand(0, 1),
 		'show_upgrade_tooltip' => false,
 		'show_install_tooltip' => true,
 		'remote_recommendations' => false,
@@ -234,6 +235,8 @@ function wp_rp_migrate_2_4_1() {
 	$wp_rp_options = get_option('wp_rp_options');
 
 	$wp_rp_meta['version'] = '2.5';
+
+	$wp_rp_meta['blog_tg'] = rand(0, 1);
 
 	$display_options = array(
 		'display_comment_count' => $wp_rp_options['display_comment_count'],

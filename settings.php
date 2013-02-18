@@ -382,6 +382,23 @@ function wp_rp_settings_page() {
 
 		<?php if($meta['show_turn_on_button']): ?>
 		<div id="wp_rp_turn_on_statistics">
+			<?php
+			if (!isset($meta['blog_tg'])) {
+				// TODO remove this after a proper migration
+				$meta['blog_tg'] = rand(0, 1);
+			}
+			if ($meta['blog_tg'] == 1):
+			?>
+			<div class="turn_on_wrap">
+				<h4>Turn on Related Posts and start using awesome features.</h4>
+				<div class="button_wrap">
+					<a data-type="singlebutton" href="#" class="zemanta-button turn-on">Turn on Related Posts</a>
+				</div>
+				<p>You'll get Settings, Themes, Thumbnails, Reader Exchange and Promoted Content.</p>
+				<p>These features are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
+			</div>
+			<img class="screendesc" src="<?php echo plugins_url("static/img/turnonscreen.jpg", __FILE__); ?>" />
+			<?php else: ?>
 			<ul>
 				<li>
 					<div>
@@ -392,7 +409,7 @@ function wp_rp_settings_page() {
 							<li>Analytics</li>
 							<li>Increase pageviews<br />(traffic exchange)</li>
 							<li>Earn money<br />(promoted posts)</li>
-							<li class="turn-on-wrap"><a data-type="publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="types-publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -404,7 +421,7 @@ function wp_rp_settings_page() {
 							<li>Settings</li>
 							<li>Analytics</li>
 							<li>Increase pageviews<br />(traffic exchange)</li>
-							<li class="turn-on-wrap"><a data-type="advanced" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="types-advanced" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
@@ -415,12 +432,13 @@ function wp_rp_settings_page() {
 							<li>Related Posts</li>
 							<li>Settings</li>
 							<li>Analytics</li>
-							<li class="turn-on-wrap"><a data-type="basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
+							<li class="turn-on-wrap"><a data-type="types-basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
 						</ul>
 					</div>
 				</li>
 			</ul>
 			<p>Analytics, traffic exchange and promoted posts are provided via <a target="_blank" href="http://related-posts.com/tos/">3rd party service</a>.</p>
+			<?php endif; ?>
 		</div>
 		<?php endif; ?>
 
