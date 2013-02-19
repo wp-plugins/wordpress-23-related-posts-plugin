@@ -59,7 +59,7 @@ function wp_rp_add_related_posts_hook($content) {
 
 	return $content;
 }
-add_filter('the_content', 'wp_rp_add_related_posts_hook', 101);
+add_filter('the_content', 'wp_rp_add_related_posts_hook', 1);
 
 global $wp_rp_is_phone;
 function wp_rp_is_phone() {
