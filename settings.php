@@ -139,33 +139,46 @@ function wp_rp_settings_styles() {
 
 function wp_rp_register_blog($account_type='other') {
 	$meta = wp_rp_get_meta();
+	$error = '';
 
-	if($meta['blog_id']) return true;
-	$req_options = array(
-		'timeout' => 30
-	);
+	try {
+		if($meta['blog_id']) return true;
+		$req_options = array(
+			'timeout' => 30
+		);
 
-	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') .
-			'&account_type=' . $account_type .
-			($meta['new_user'] ? '&new' : '') .
-			($meta['turn_on_button_pressed'] ? ('&turn_on=' . $meta['turn_on_button_pressed']) : ''),
-		$req_options);
+		$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') .
+				'&account_type=' . $account_type .
+				($meta['new_user'] ? '&new' : '') .
+				($meta['turn_on_button_pressed'] ? ('&turn_on=' . $meta['turn_on_button_pressed']) : ''),
+			$req_options);
 
-	if (wp_remote_retrieve_response_code($response) == 200) {
-		$body = wp_remote_retrieve_body($response);
-		if ($body) {
-			$doc = json_decode($body);
+		if (wp_remote_retrieve_response_code($response) == 200) {
+			$body = wp_remote_retrieve_body($response);
+			if ($body) {
+				$doc = json_decode($body);
 
-			if ($doc && $doc->status === 'ok') {
-				$meta['blog_id'] = $doc->data->blog_id;
-				$meta['auth_key'] = $doc->data->auth_key;
-				$meta['new_user'] = false;
-				wp_rp_update_meta($meta);
+				if ($doc && $doc->status === 'ok') {
+					$meta['blog_id'] = $doc->data->blog_id;
+					$meta['auth_key'] = $doc->data->auth_key;
+					$meta['new_user'] = false;
+					wp_rp_update_meta($meta);
 
-				return true;
+					return true;
+				} else {
+					$error = 'invalid_doc';
+				}
+			} else {
+				$error = 'no_body';
 			}
+		} else {
+			$error = 'response_code_' . print_r($response, true);
 		}
+	} catch (Exception $e) {
+		$error = $e->getMessage();
 	}
+
+	wp_remote_get(WP_RP_STATIC_BASE_URL . 'stats.gif?action=blog_register_error&error=' . $error . '&blog_url=' . get_bloginfo('wpurl'), $req_options);
 
 	return false;
 }
