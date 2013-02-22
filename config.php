@@ -218,7 +218,7 @@ function wp_rp_install() {
 			'display_thumbnail'			=> false,
 			'display_excerpt'			=> false,
 			'excerpt_max_length'			=> 200,
-			'theme_name' 				=> 'pinterest.css',
+			'theme_name' 				=> 'vertical-m.css',
 			'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 			'custom_theme_enabled' => false,
 		)
