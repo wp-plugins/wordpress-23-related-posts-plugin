@@ -1,11 +1,10 @@
 ﻿=== Plugin Name ===
-Contributors: jureham
+Contributors: zemanta
 Tags: related,posts,post,related posts,plugin
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LB3MVPLUAWCY6
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 1.7
+Stable tag: 2.6
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -13,7 +12,7 @@ WordPress Related Posts generates a list of related posts with thumbnails and gi
 
 Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. The plugin also delivers statistics about Pageviews and Clicks\*. It supports different styles, thumbnails and is fully customizable.
 
-After installation, go to Settings -> Related Posts in your plugins list and turn on Thumbnails & Statistics!
+After installation, go to Settings -> Related Posts in your plugins list and Turn on Advanced Features!
 
 \* Real time traffic analytics are provided via third party service.
 
@@ -32,7 +31,6 @@ It places a list of links with thumbnails at the bottom of your posts. It increa
 * thumbnail size, style
 * number of posts
 * display post excerpt, publish date, number of comments
-* fallback if there are no related posts
 * categories to exclude
 * set default image
 
@@ -40,14 +38,11 @@ It places a list of links with thumbnails at the bottom of your posts. It increa
 
 Yes, related posts are responsive so they adapt to the screen size to ensure maximum click-through rates.
 
-== Installation ==
+= Why does Zemanta have 3 similar plugins? What's the difference between them? =
 
-= Via upload: =
-1. Download the plugin .zip file
-2. Log in to yourdomain.com/wp-admin
-3. Click Plugins -> Add New -> Upload
-4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
-5. You're finished!
+We adopted the principle of having three "release channels". You can try the most experimental (still stable!) features in [Related Posts](http://wordpress.org/extend/plugins/related-posts/ "Related Posts"). The more advanced ones are in [WordPress Related Posts](http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/ "WordPress Related Posts"). If you're looking for the Professional version go for [Related Posts by Zemanta](http://wordpress.org/extend/plugins/related-posts-by-zemanta/ "Related Posts by Zemanta").
+
+== Installation ==
 
 = Via admin: =
 1. Go to Plugins -> Add New
@@ -56,13 +51,76 @@ Yes, related posts are responsive so they adapt to the screen size to ensure max
 4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
 5. Done!
 
+= Via upload: =
+1. Download the plugin .zip file
+2. Log in to yourdomain.com/wp-admin
+3. Click Plugins -> Add New -> Upload
+4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
+5. You're finished!
+
 == Screenshots ==
 1. WordPress Related Posts Default Theme.
-2. WordPress Related Posts Settings and Statistics.
-3. WordPress Related Posts responsive theme on an iPhone 4s.
-4. WordPress Related Posts responsive theme on a Galaxy Nexus.
+2. WordPress Related Posts reporting real time statistics for mobile and desktop devices.
+3. WordPress Related Posts responsive theme on a Galaxy Nexus and iPhone 4s.
+
+== Upgrade Notice ==
+
+= 2.5 =
+This version adds a wrapper around related posts and a link to zemanta.com (can be turned off in plugin settings). Please recheck the layout after upgrade.
 
 == Changelog ==
+
+= 2.6 =
+* Improved editorial control
+* Changed plugin content filter priority from 101 to 10
+* Improved AB testing on mobile infinite stream
+* Bugfixes
+
+= 2.5 =
+* Mobile themes settings
+* Editorial control
+* New Pinterest inspired theme
+* Support us by displaying our logo
+* Small output html layout change
+* Bugfixes
+
+= 2.4 =
+* Limit related post age
+* Bugfix for thumbnail extraction
+
+= 2.3 =
+* Earn money by displaying promoted content
+* Bugfixes
+
+= 2.2 =
+* Updated theme settings with one new theme
+* Option to enable related posts in article text
+* Support for blogging network
+* qTranslate support
+* Christmas Surprise
+* Bugfixes
+* Ho ho ho
+
+= 2.1.1 =
+* Exlude attachments
+* Use WP_Image_Editor on WP 3.5
+
+= 2.1 =
+* Extract thumbnails from post content
+* Statistics for mobile devices
+* Exclude pages from related posts
+* Bugfixes
+
+= 2.0.2 =
+* Fixed bug for post_types with no tags
+
+= 2.0.1 =
+* Fixed bug for short_open_tag=Off
+
+= 2.0 =
+* New recommendation engine
+* Statistics in dashboard
+* Exclude categories makes sense
 
 = 1.7 =
 * Improved thumbnail handling

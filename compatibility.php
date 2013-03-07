@@ -1,6 +1,35 @@
 <?php
 
 /* ***************************** */
+/* WP 3.3 compatibility */
+/* ***************************** */
+
+if (!function_exists('wp_is_mobile') && version_compare(get_bloginfo('version'), '3.4', '<')) {
+	function wp_is_mobile() {
+		static $is_mobile;
+
+		if ( isset($is_mobile) )
+			return $is_mobile;
+
+		if ( empty($_SERVER['HTTP_USER_AGENT']) ) {
+			$is_mobile = false;
+		} elseif ( strpos($_SERVER['HTTP_USER_AGENT'], 'Mobile') !== false // many mobile devices (all iPhone, iPad, etc.)
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Silk/') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Kindle') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'BlackBerry') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mini') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mobi') !== false ) {
+				$is_mobile = true;
+		} else {
+			$is_mobile = false;
+		}
+
+		return $is_mobile;
+	}
+}
+
+/* ***************************** */
 /* WP RP backwards compatibility */
 /* ***************************** */
 
@@ -14,30 +43,6 @@ function wp_random_posts ($number = 10){
 	}
 
 	$output = '<ul class="randome_post">' . $output . '</ul>';
-
-	echo $output;
-}
-
-function wp_most_popular_posts ($number = 10){
-	$most_popular_posts = wp_get_most_popular_posts ($number);
-
-	foreach($most_popular_posts as $most_popular_post) {
-		$output .=  '<li><a href="' . get_permalink($most_popular_post->ID) . '" title="' . esc_attr(wptexturize($most_popular_post->post_title)) . '">' . wptexturize($most_popular_post->post_title) . '</a></li>';
-	}
-
-	$output = '<ul class="most_popular_post">' . $output . '</ul>';
-
-	echo $output;
-}
-
-function wp_most_commented_posts ($number = 10){
-	$most_commented_posts = wp_get_most_commented_posts ($number);
-
-	foreach($most_commented_posts as $most_commented_post) {
-		$output .=  '<li><a href="'.get_permalink($most_commented_post->ID).'" title="' . esc_attr(wptexturize($most_commented_post->post_title)) . '">' . wptexturize($most_commented_post->post_title) . '</a></li>';
-	}
-
-	$output = '<ul class="most_commented_post">' . $output . '</ul>';
 
 	echo $output;
 }
@@ -56,16 +61,6 @@ function wp_get_random_posts ($limitclause = '') {
 	return wp_rp_fetch_random_posts($limit);
 }
 
-function wp_get_most_commented_posts($limitclause = '') {
-	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
-	return wp_rp_fetch_most_commented_posts($limit);
-}
-
-function wp_get_most_popular_posts ($limitclause = '') {
-	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
-	return wp_rp_fetch_most_popular_posts($limit);
-}
-
 function wp_fetch_related_posts($limitclause = '') {
 	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
 	return wp_rp_fetch_related_posts($limit);
@@ -73,16 +68,6 @@ function wp_fetch_related_posts($limitclause = '') {
 
 function wp_fetch_random_posts($limit = 10) {
 	return wp_rp_fetch_random_posts($limit);
-}
-
-function wp_fetch_most_commented_posts($limitclause = '') {
-	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
-	return wp_rp_fetch_most_commented_posts($limit);
-}
-
-function wp_fetch_most_popular_posts($limitclause = '') {
-	$limit = filter_var($limitclause, FILTER_SANITIZE_NUMBER_INT);
-	return wp_rp_fetch_most_popular_posts($limit);
 }
 
 function wp_fetch_content() {
