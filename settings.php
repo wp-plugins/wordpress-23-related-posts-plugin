@@ -137,7 +137,7 @@ function wp_rp_settings_styles() {
 	wp_enqueue_style("wp_rp_dashboard_style", plugins_url("static/css/dashboard.css", __FILE__));
 }
 
-function wp_rp_register_blog($account_type='other') {
+function wp_rp_register_blog($button_type='other') {
 	$meta = wp_rp_get_meta();
 
 	if($meta['blog_id']) return true;
@@ -146,9 +146,9 @@ function wp_rp_register_blog($account_type='other') {
 	);
 
 	$response = wp_remote_get(WP_RP_CTR_DASHBOARD_URL . 'register/?blog_url=' . get_bloginfo('wpurl') .
-			'&account_type=' . $account_type .
-			($meta['new_user'] ? '&new' : '') .
-			($meta['turn_on_button_pressed'] ? ('&turn_on=' . $meta['turn_on_button_pressed']) : ''),
+			'&button_type=' . $button_type .
+			'&blogtg=' . $meta['blog_tg'] .
+			($meta['new_user'] ? '&new' : ''),
 		$req_options);
 
 	if (wp_remote_retrieve_response_code($response) == 200) {
@@ -344,8 +344,8 @@ function wp_rp_settings_page() {
 	}
 
 	if($options['ctr_dashboard_enabled'] && (!$meta['blog_id'] || !$meta['auth_key'])) {
-		$account_type = isset($postdata['wp_rp_account_type']) ? $postdata['wp_rp_account_type'] : 'other';
-		wp_rp_register_blog($account_type);
+		$button_type = isset($postdata['wp_rp_button_type']) ? $postdata['wp_rp_button_type'] : 'other';
+		wp_rp_register_blog($button_type);
 	}
 
 ?>
@@ -382,13 +382,6 @@ function wp_rp_settings_page() {
 
 		<?php if($meta['show_turn_on_button']): ?>
 		<div id="wp_rp_turn_on_statistics">
-			<?php
-			if (!isset($meta['blog_tg'])) {
-				// TODO remove this after a proper migration
-				$meta['blog_tg'] = rand(0, 1);
-			}
-			if ($meta['blog_tg'] == 1):
-			?>
 			<div class="turn_on_wrap">
 				<h4>Turn on Related Posts and start using awesome features.</h4>
 				<div class="button_wrap">
@@ -398,47 +391,6 @@ function wp_rp_settings_page() {
 				<p>These features are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
 			</div>
 			<img class="screendesc" src="<?php echo plugins_url("static/img/turnonscreen.jpg", __FILE__); ?>" />
-			<?php else: ?>
-			<ul>
-				<li>
-					<div>
-						<ul>
-							<li class="title"><h3>Publisher</h3></li>
-							<li>Related Posts</li>
-							<li>Settings</li>
-							<li>Analytics</li>
-							<li>Increase pageviews<br />(traffic exchange)</li>
-							<li>Earn money<br />(promoted posts)</li>
-							<li class="turn-on-wrap"><a data-type="types-publisher" href="#" class="zemanta-button turn-on">Turn on</a></li>
-						</ul>
-					</div>
-				</li>
-				<li>
-					<div>
-						<ul>
-							<li class="title"><h3>Advanced</h3></li>
-							<li>Related Posts</li>
-							<li>Settings</li>
-							<li>Analytics</li>
-							<li>Increase pageviews<br />(traffic exchange)</li>
-							<li class="turn-on-wrap"><a data-type="types-advanced" href="#" class="zemanta-button turn-on">Turn on</a></li>
-						</ul>
-					</div>
-				</li>
-				<li>
-					<div>
-						<ul>
-							<li class="title"><h3>Basic</h3></li>
-							<li>Related Posts</li>
-							<li>Settings</li>
-							<li>Analytics</li>
-							<li class="turn-on-wrap"><a data-type="types-basic" href="#" class="zemanta-button turn-on">Turn on</a></li>
-						</ul>
-					</div>
-				</li>
-			</ul>
-			<p>Analytics, traffic exchange and promoted posts are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
-			<?php endif; ?>
 		</div>
 		<?php endif; ?>
 
@@ -724,27 +676,24 @@ jQuery(function($) {
 									<input name="wp_rp_on_rss" type="checkbox" id="wp_rp_on_rss" value="yes"<?php checked($options['on_rss']); ?>>
 									<?php _e("Display Related Posts in Feed",'wp_related_posts');?>
 								</label>
-					<?php if($meta['show_traffic_exchange']): ?>
-								<br />
-								<label>
-									<input name="wp_rp_traffic_exchange_enabled" type="checkbox" id="wp_rp_traffic_exchange_enabled" value="yes"<?php checked($options['traffic_exchange_enabled']); ?>>
-									<?php _e("Enable traffic exchange with blogger networks",'wp_related_posts');?>
-								</label>
-					<?php endif; ?>
 								<br />
 								<label>
 									<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
 									<?php _e("Turn statistics on",'wp_related_posts');?>*
 								</label>
-					<?php if($meta['remote_recommendations']): ?>
-								<br />
-								<label>
-									<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
-									<?php _e('Promoted Content', 'wp_related_posts');?>*
-								</label>
-					<?php endif; ?>
+								<div style="display:<?php echo $meta['show_traffic_exchange'] ? 'block' : 'none' ?>;">
+									<label>
+										<input name="wp_rp_traffic_exchange_enabled" type="checkbox" id="wp_rp_traffic_exchange_enabled" value="yes"<?php checked($options['traffic_exchange_enabled']); ?>>
+										<?php _e("Enable traffic exchange with blogger networks",'wp_related_posts');?>
+									</label>
+								</div>
+								<div style="display:<?php echo $meta['remote_recommendations'] ? 'block' : 'none' ?>;">
+									<label>
+										<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
+										<?php _e('Promoted Content', 'wp_related_posts');?>*
+									</label>
+								</div>
 					<?php if($meta['show_zemanta_linky_option']): ?>
-								<br />
 								<label>
 									<input name="wp_rp_display_zemanta_linky" type="checkbox" id="wp_rp_display_zemanta_linky" value="yes" <?php checked($options['display_zemanta_linky']); ?> />
 									<?php _e("Support us (show our logo)",'wp_related_posts');?>

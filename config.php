@@ -230,6 +230,22 @@ function wp_rp_install() {
 	wp_rp_related_posts_db_table_install();
 }
 
+function wp_rp_migrate_2_5() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_options = get_option('wp_rp_options');
+
+	$wp_rp_meta['version'] = '2.6';
+
+	if (!isset($wp_rp_meta['blog_tg'])) {
+		$wp_rp_meta['blog_tg'] = rand(0, 1);
+	}
+
+	$wp_rp_meta['new_user'] = false;
+
+	update_option('wp_rp_meta', $wp_rp_meta);
+	update_option('wp_rp_options', $wp_rp_options);
+}
+
 function wp_rp_migrate_2_4_1() {
 	$wp_rp_meta = get_option('wp_rp_meta');
 	$wp_rp_options = get_option('wp_rp_options');
