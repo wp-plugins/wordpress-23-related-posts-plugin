@@ -184,7 +184,7 @@ function wp_rp_install() {
 		'turn_on_button_pressed' => false,
 		'show_statistics' => false,
 		'show_traffic_exchange' => false,
-		'show_zemanta_linky_option' => false
+		'show_zemanta_linky_option' => true
 	);
 
 	$wp_rp_options = array(
@@ -201,7 +201,7 @@ function wp_rp_install() {
 		'traffic_exchange_enabled' => false,
 		'thumbnail_use_custom'			=> false,
 		'thumbnail_custom_field'		=> false,
-		'display_zemanta_linky'			=> true,
+		'display_zemanta_linky'			=> false,
 
 		'mobile' => array(
 			'display_comment_count'			=> false,
@@ -284,7 +284,7 @@ function wp_rp_migrate_2_4_1() {
 	unset($wp_rp_options['theme_custom_css']);
 	unset($wp_rp_options['custom_theme_enabled']);
 
-	$wp_rp_options['display_zemanta_linky'] = true;
+	$wp_rp_options['display_zemanta_linky'] = false;
 	$wp_rp_meta['show_zemanta_linky_option'] = true;
 
 	update_option('wp_rp_meta', $wp_rp_meta);
