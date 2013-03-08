@@ -691,6 +691,7 @@ jQuery(function($) {
 									<input name="wp_rp_ctr_dashboard_enabled" type="checkbox" id="wp_rp_ctr_dashboard_enabled" value="yes" <?php checked($options['ctr_dashboard_enabled']); ?> />
 									<?php _e("Turn statistics on",'wp_related_posts');?>*
 								</label>
+								<br />
 								<div style="display:<?php echo $meta['show_traffic_exchange'] ? 'block' : 'none' ?>;">
 									<label>
 										<input name="wp_rp_traffic_exchange_enabled" type="checkbox" id="wp_rp_traffic_exchange_enabled" value="yes"<?php checked($options['traffic_exchange_enabled']); ?>>
