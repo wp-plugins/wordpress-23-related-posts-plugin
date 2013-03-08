@@ -103,6 +103,16 @@ function wp_rp_admin_head() {
 }
 
 /**
+* Add settings link to installed plugins list
+**/
+function wp_rp_add_link_to_settings($links) {
+	return array_merge( array(
+		'<a href="' . admin_url('admin.php?page=wordpress-related-posts') . '">' . __('Settings', 'wp_related_posts') . '</a>',
+	), $links);
+}
+add_filter('plugin_action_links_' . WP_RP_PLUGIN_FILE, 'wp_rp_add_link_to_settings', 10, 2);
+
+/**
 * Settings
 **/
 
