@@ -65,9 +65,6 @@ We adopted the principle of having three "release channels". You can try the mos
 
 == Upgrade Notice ==
 
-= 2.5 =
-This version adds a wrapper around related posts and a link to zemanta.com (can be turned off in plugin settings). Please recheck the layout after upgrade.
-
 == Changelog ==
 
 = 2.6 =
@@ -80,7 +77,7 @@ This version adds a wrapper around related posts and a link to zemanta.com (can 
 * Mobile themes settings
 * Editorial control
 * New Pinterest inspired theme
-* Support us by displaying our logo
+* Support us by displaying our logo (opt-in)
 * Small output html layout change
 * Bugfixes
 
