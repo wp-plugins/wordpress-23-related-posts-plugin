@@ -397,8 +397,8 @@ function wp_rp_settings_page() {
 				<div class="button_wrap">
 					<a data-type="singlebutton" href="#" class="zemanta-button turn-on">Turn on Related Posts</a>
 				</div>
-				<p>You'll get Settings, Themes, Thumbnails, Reader Exchange and Promoted Content.</p>
-				<p>These features are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
+				<p>By turning on Related Posts you agree to <a href="http://www.zemanta.com/blog/related-posts-terms-of-service/" target="_blank">terms of service.</a></p>
+				<p>You'll get Advanced Settings, Themes, Thumbnails and Analytics Dashboard. These features are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
 			</div>
 			<img class="screendesc" src="<?php echo plugins_url("static/img/turnonscreen.jpg", __FILE__); ?>" />
 		</div>
