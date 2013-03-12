@@ -184,7 +184,7 @@ function wp_rp_install() {
 		'turn_on_button_pressed' => false,
 		'show_statistics' => false,
 		'show_traffic_exchange' => false,
-		'show_zemanta_linky_option' => true
+		'show_zemanta_linky_option' => false
 	);
 
 	$wp_rp_options = array(
@@ -201,7 +201,7 @@ function wp_rp_install() {
 		'traffic_exchange_enabled' => false,
 		'thumbnail_use_custom'			=> false,
 		'thumbnail_custom_field'		=> false,
-		'display_zemanta_linky'			=> false,
+		'display_zemanta_linky'			=> true,
 
 		'mobile' => array(
 			'display_comment_count'			=> false,
