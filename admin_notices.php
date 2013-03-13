@@ -42,7 +42,8 @@ function wp_rp_admin_connect_notice() {
 			</div>
 		</div>
 		<div id="wp-rp-bottom-container">
-			<p>You'll get Settings, Themes, Thumbnails, Reader Exchange and Promoted Content.  These features are provided by <a target="_blank" href="http://www.zemanta.com"><b>Zemanta</b></a> as a service.</p>
+			<p>By turning on Related Posts you agree to <a href="http://www.zemanta.com/rp-tos" target="_blank">terms of service.</a></p>
+			<p>You'll get Advanced Settings, Themes, Thumbnails and Analytics Dashboard. These features are provided by <a target="_blank" href="http://www.zemanta.com">Zemanta</a> as a service.</p>
 		</div>
 	</div>
 	<?php
