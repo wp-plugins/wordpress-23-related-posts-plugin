@@ -34,17 +34,7 @@ function wp_rp_admin_connect_notice() {
 		</div>
 		<div id="wp-rp-wrap-container">
 			<div id="wp-rp-connect-wrap">
-				<form action="<?php echo admin_url('admin.php?page=wordpress-related-posts&ref=turn-on-rp'); ?>" method="post">
-					<input type="hidden" value="yes" name="wp_rp_enable_themes" id="wp_rp_enable_themes" />
-					<input type="hidden" value="yes" name="wp_rp_ctr_dashboard_enabled" id="wp_rp_ctr_dashboard_enabled" />
-					<input type="hidden" value="yes" name="wp_rp_promoted_content_enabled" id="wp_rp_promoted_content_enabled" />
-					<input type="hidden" value="yes" name="wp_rp_traffic_exchange_enabled" id="wp_rp_traffic_exchange_enabled" />
-
-					<input type="hidden" value="statistics+thumbnails+promoted" name="wp_rp_turn_on_button_pressed" id="wp_rp_turn_on_button_pressed" />
-					<input type="hidden" value="turn-on-banner" name="wp_rp_button_type" id="wp_rp_button_type" />
-
-					<input type="submit" id="wp-rp-login" value="Turn on" />
-				</form>
+				<a id="wp-rp-login" href="<?php echo admin_url('admin.php?page=wordpress-related-posts&ref=turn-on-rp'); ?>">Turn on</a>
 			</div>
 			<div id="wp-rp-text-container">
 				<h4>WordPress Related Posts are almost ready,</h4>
