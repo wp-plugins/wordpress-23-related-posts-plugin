@@ -17,7 +17,7 @@ function wp_rp_display_admin_notices() {
 function wp_rp_prepare_admin_connect_notice() {
 	$meta = wp_rp_get_meta();
 
-	if ($meta['blog_tg'] == 1 && $meta['show_turn_on_button'] && !$meta['turn_on_button_pressed'] && !$meta['blog_id'] && $meta['new_user']) {
+	if ($meta['show_turn_on_button'] && !$meta['turn_on_button_pressed'] && !$meta['blog_id'] && $meta['new_user']) {
 		wp_register_style( 'wp_rp_connect_style', plugins_url('static/css/connect.css', __FILE__) );
 		wp_register_script( 'wp_rp_connect_js', plugins_url('static/js/connect.js', __FILE__) );
 		add_action( 'admin_notices', 'wp_rp_admin_connect_notice' );

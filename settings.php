@@ -1,86 +1,6 @@
 <?php
 
 /**
-* Tooltips
-**/
-
-function wp_rp_display_tooltips() {
-	$meta = wp_rp_get_meta();
-
-	if ($meta['show_upgrade_tooltip']) {
-		$meta['show_upgrade_tooltip'] = false;
-		wp_rp_update_meta($meta);
-
-		add_action('admin_enqueue_scripts', 'wp_rp_load_upgrade_tooltip');
-	} else if ($meta['show_install_tooltip']) {
-		$meta['show_install_tooltip'] = false;
-		wp_rp_update_meta($meta);
-
-		add_action('admin_enqueue_scripts', 'wp_rp_load_install_tooltip');
-	}
-}
-function wp_rp_load_upgrade_tooltip() {
-	if (version_compare(get_bloginfo('version'), '3.3', '<')) {
-		return;
-	}
-
-    wp_enqueue_style('wp-pointer');
-    wp_enqueue_script('wp-pointer');
-    add_action('admin_print_footer_scripts', 'wp_rp_print_upgrade_tooltip');
-}
-function wp_rp_print_upgrade_tooltip() {
-	$content = "<h3>Thanks for updating Related Posts plugin!</h3><p>We've added some new stuff to the Settings, go check them out. Let us know what you think.</p>";
-	wp_rp_print_tooltip($content);
-}
-
-function wp_rp_load_install_tooltip() {
-	if (version_compare(get_bloginfo('version'), '3.3', '<')) {
-		return;
-	}
-
-    wp_enqueue_style('wp-pointer');
-    wp_enqueue_script('wp-pointer');
-    add_action('admin_print_footer_scripts', 'wp_rp_print_install_tooltip');
-}
-function wp_rp_print_install_tooltip() {
-	$content = "<h3>Thanks for installing Related Posts plugin!</h3><p>To experience the full power of Related Posts, go to settings and turn on advanced features!</p>";
-	wp_rp_print_tooltip($content);
-}
-
-function wp_rp_print_tooltip($content) {
-	?>
-	<script type="text/javascript">
-		jQuery(function ($) {
-			var body = $(document.body),
-				collapse = $('#collapse-menu'),
-				target = $("#toplevel_page_wordpress-related-posts"),
-				collapse_handler = function (e) {
-					body.pointer('reposition');
-				},
-				options = {
-					content: "<?php echo $content; ?>",
-					position: {
-						edge: 'left',
-						align: 'center',
-						of: target
-					},
-					open: function () {
-						collapse.bind('click', collapse_handler);
-					},
-					close: function() {
-						collapse.unbind('click', collapse_handler);
-					}
-				};
-
-			if (target.length) {
-				body.pointer(options).pointer('open');
-			}
-		});
-	</script>
-	<?php
-}
-
-/**
 * Place menu icons at admin head
 **/
 add_action('admin_head', 'wp_rp_admin_head');
@@ -135,8 +55,6 @@ function wp_rp_settings_admin_menu() {
 
 	add_action('admin_print_styles-' . $page, 'wp_rp_settings_styles');
 	add_action('admin_print_scripts-' . $page, 'wp_rp_settings_scripts');
-
-	wp_rp_display_tooltips();
 }
 
 function wp_rp_settings_scripts() {
