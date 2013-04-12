@@ -173,8 +173,6 @@ function wp_rp_install() {
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
 		'blog_tg' => rand(0, 1),
-		'show_upgrade_tooltip' => false,
-		'show_install_tooltip' => true,
 		'remote_recommendations' => false,
 		'show_turn_on_button' => true,
 		'name' => '',
@@ -218,7 +216,7 @@ function wp_rp_install() {
 			'display_thumbnail'			=> false,
 			'display_excerpt'			=> false,
 			'excerpt_max_length'			=> 200,
-			'theme_name' 				=> 'vertical-m.css',
+			'theme_name' 				=> 'vertical.css',
 			'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 			'custom_theme_enabled' => false,
 		)
