@@ -487,11 +487,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	}
 
 	$posts_footer = '';
-	if (current_user_can('edit_posts')) {
-		$posts_footer = '<div class="wp_rp_footer">' .
-					'<a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a>' .
-			'</div>';
-	} else if ($options['display_zemanta_linky']) {
+	if ($options['display_zemanta_linky']) {
 		$posts_footer = '<div class="wp_rp_footer">' .
 					'<a class="wp_rp_backlink" target="_blank" rel="nofollow" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a>' .
 			'</div>';
