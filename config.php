@@ -182,12 +182,12 @@ function wp_rp_install() {
 		'turn_on_button_pressed' => false,
 		'show_statistics' => false,
 		'show_traffic_exchange' => false,
-		'show_zemanta_linky_option' => false
+		'show_zemanta_linky_option' => true
 	);
 
 	$wp_rp_options = array(
 		'related_posts_title'			=> __('Related Posts', 'wp_related_posts'),
-		'max_related_posts'			=> 5,
+		'max_related_posts'			=> 6,
 		'exclude_categories'			=> '',
 		'on_single_post'			=> true,
 		'on_rss'				=> false,
@@ -199,7 +199,7 @@ function wp_rp_install() {
 		'traffic_exchange_enabled' => false,
 		'thumbnail_use_custom'			=> false,
 		'thumbnail_custom_field'		=> false,
-		'display_zemanta_linky'			=> true,
+		'display_zemanta_linky'			=> false,
 
 		'mobile' => array(
 			'display_comment_count'			=> false,
