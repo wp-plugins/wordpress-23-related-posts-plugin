@@ -98,32 +98,9 @@ function wp_rp_register_blog($button_type='other') {
 	return false;
 }
 
-function wp_rp_ajax_blogger_network_submit_callback() {
-	$postdata = stripslashes_deep($_POST);
+function wp_rp_ajax_dismiss_notification_callback() {
+	check_ajax_referer('wp_rp_ajax_nonce');
 
-	$meta = wp_rp_get_meta();
-
-	$meta['show_blogger_network_form'] = false;
-	if(isset($postdata['join'])) {
-		$meta['remote_recommendations'] = true;
-	}
-	else {
-		$blog_id = $meta['blog_id'];
-		$auth_key = $meta['auth_key'];
-		$req_options = array(
-			'timeout' => 5
-		);
-		$url = WP_RP_CTR_DASHBOARD_URL . "notifications/dismiss/?blog_id=$blog_id&auth_key=$auth_key&msg_id=blogger_network_form";
-		$response = wp_remote_get($url, $req_options);
-	}
-
-	wp_rp_update_meta($meta);
-
-	die('ok');
-}
-add_action('wp_ajax_blogger_network_submit', 'wp_rp_ajax_blogger_network_submit_callback');
-
-function wp_rp_ajax_dismiss_notification_callback() {	
 	if(isset($_REQUEST['id'])) {
 		wp_rp_dismiss_notification((int)$_REQUEST['id']);
 	}
@@ -136,6 +113,8 @@ function wp_rp_ajax_dismiss_notification_callback() {
 add_action('wp_ajax_rp_dismiss_notification', 'wp_rp_ajax_dismiss_notification_callback');
 
 function wp_rp_ajax_hide_show_statistics() {
+	check_ajax_referer('wp_rp_ajax_nonce');
+
 	$meta = wp_rp_get_meta();
 	$postdata = stripslashes_deep($_POST);
 
@@ -154,6 +133,10 @@ function wp_rp_ajax_hide_show_statistics() {
 add_action('wp_ajax_rp_show_hide_statistics', 'wp_rp_ajax_hide_show_statistics');
 
 function wp_rp_settings_page() {
+	if (!current_user_can('delete_users')) {
+		die('Sorry, you don\'t have permissions to access this page.');
+	}
+
 	$options = wp_rp_get_options();
 	$meta = wp_rp_get_meta();
 
@@ -163,6 +146,10 @@ function wp_rp_settings_page() {
 	wp_rp_load_remote_notifications();
 
 	if(sizeof($_POST)) {
+		if (!isset($_POST['_wp_rp_nonce']) || !wp_verify_nonce($_POST['_wp_rp_nonce'], 'wp_rp_settings') ) {
+			die('Sorry, your nonce did not verify.');
+		}
+
 		$old_options = $options;
 		$new_options = array(
 			'on_single_post' => isset($postdata['wp_rp_on_single_post']),
@@ -279,6 +266,8 @@ function wp_rp_settings_page() {
 ?>
 
 	<div class="wrap" id="wp_rp_wrap">
+		<input type="hidden" id="wp_rp_ajax_nonce" value="<?php echo wp_create_nonce("wp_rp_ajax_nonce"); ?>" />
+
 		<input type="hidden" id="wp_rp_json_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL . WP_RP_STATIC_JSON_PATH); ?>" />
 		<input type="hidden" id="wp_rp_version" value="<?php esc_attr_e(WP_RP_VERSION); ?>" />
 		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_DASHBOARD_URL); ?>" />
@@ -322,71 +311,9 @@ function wp_rp_settings_page() {
 		</div>
 		<?php endif; ?>
 
-		<?php if ($meta['show_blogger_network_form'] and $meta['blog_id'] and !$meta['show_turn_on_button']): ?>
-		<form action="https://docs.google.com/a/zemanta.com/spreadsheet/formResponse?formkey=dDEyTlhraEd0dnRwVVFMX19LRW8wbWc6MQ&amp;ifq" method="POST" class="wp_rp_message_form" id="wp_rp_blogger_network_form" target="wp_rp_blogger_network_hidden_iframe">
-			<input type="hidden" name="pageNumber" value="0" />
-			<input type="hidden" name="backupCache" />
-			<input type="hidden" name="entry.2.single" value="<?php echo get_bloginfo('wpurl'); ?>" />
-			<input type="hidden" name="entry.3.single" value="<?php echo $meta['blog_id']; ?>" />
-			<a href="#" class="dismiss"><img width="12" src="<?php echo plugins_url("static/img/close.png", __FILE__); ?>" /></a>
-			<h2>Blogger networks</h2>
-			<p>Easily link out to similar bloggers to exchange traffic with them. One click out, one click in.</p>
-			<table class="form-table"><tbody>
-				<tr valign="top">
-					<th scope="row"><label for="wp_rp_blogger_network_kind">I want to exchange traffic with</label></th>
-					<td width="1%">
-						<select name="entry.0.group" id="wp_rp_blogger_network_kind">
-							<option value="Automotive" />Automotive bloggers</option>
-							<option value="Beauty &amp; Style" />Beauty &amp; Style bloggers</option>
-							<option value="Business" />Business bloggers</option>
-							<option value="Consumer Tech" />Consumer Tech bloggers</option>
-							<option value="Enterprise Tech" />Enterprise Tech bloggers</option>
-							<option value="Entertainment" />Entertainment bloggers</option>
-							<option value="Family &amp; Parenting" />Family &amp; Parenting bloggers</option>
-							<option value="Food &amp; Drink" />Food &amp; Drink bloggers</option>
-							<option value="Graphic Arts" />Graphic Arts bloggers</option>
-							<option value="Healthy Living" />Healthy Living bloggers</option>
-							<option value="Home &amp; Shelter" />Home &amp; Shelter bloggers</option>
-							<option value="Lifestyle &amp; Hobby" />Lifestyle &amp; Hobby bloggers</option>
-							<option value="Men's Lifestyle" />Men's Lifestyle bloggers</option>
-							<option value="Personal Finance" />Personal Finance bloggers</option>
-							<option value="Women's Lifestyle" />Women's Lifestyle bloggers</option>
-						</select>
-					</td>
-					<td rowspan="2" valign="middle"><div id="wp_rp_blogger_network_thankyou" class="thankyou"><img src="<?php echo plugins_url("static/img/check.png", __FILE__); ?>" width="30" height="22" />Thanks for showing interest.</div></td>
-				</tr>
-				<tr valign="top">
-					<th scope="row"><label for="wp_rp_blogger_network_email">My email is:</label></th>
-					<td><input type="email" name="entry.1.single" value="" id="wp_rp_blogger_network_email" required="required" /></td>
-				</tr>
-				<tr valign="top">
-					<th scope="row"></th>
-					<td><input type="submit" name="submit" value="Submit" class="submit" id="wp_rp_blogger_network_submit" /></td>
-			</tbody></table>
-			<script type="text/javascript">
-jQuery(function($) {
-	var submit = $('#wp_rp_blogger_network_submit');
-	$('#wp_rp_blogger_network_form')
-		.submit(function(event) {
-			submit.addClass('disabled');
-			setTimeout(function() { submit.attr('disabled', true); }, 0);
-			$('#wp_rp_blogger_network_hidden_iframe').load(function() {
-				submit.attr('disabled', false).removeClass('disabled');
-				$('#wp_rp_blogger_network_thankyou').fadeIn('slow');
-				$.post(ajaxurl, {action: 'blogger_network_submit', 'join': true});
-			});
-		})
-		.find('a.dismiss').click(function () {
-			$.post(ajaxurl, {action: 'blogger_network_submit'});
-			$('#wp_rp_blogger_network_form').slideUp();
-		});
-});
-			</script>
-		</form>
-		<iframe id="wp_rp_blogger_network_hidden_iframe" name="wp_rp_blogger_network_hidden_iframe" style="display: none"></iframe>
-		<?php endif; ?>
-
 		<form method="post" enctype="multipart/form-data" action="<?php echo admin_url('admin.php?page=wordpress-related-posts'); ?>" id="wp_rp_settings_form" style="display: <?php echo ($meta['show_turn_on_button'] && !$meta['turn_on_button_pressed'] && !$meta['blog_id'] ? 'none' : 'block'); ?>;">
+			<?php wp_nonce_field('wp_rp_settings', '_wp_rp_nonce') ?>
+
 			<?php if ($options['ctr_dashboard_enabled']): ?>
 			<div id="wp_rp_earnings_holder" style="display:none;">
 				<h2><?php _e('Earnings', 'wp_related_posts'); ?></h2>

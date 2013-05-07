@@ -65,7 +65,13 @@ We adopted the principle of having three "release channels". You can try the mos
 
 == Upgrade Notice ==
 
+= 2.6.2 =
+Fix for security vulnerability. Upgrade immediately.
+
 == Changelog ==
+
+= 2.6.2 =
+* Fix for Cross-Site Request Forgery vulnerability. Credits for finding and reporting the vulnerability go to Charlie Eriksen via Secunia SVCRP.
 
 = 2.6.1 =
 * Fixed post excerpt bug

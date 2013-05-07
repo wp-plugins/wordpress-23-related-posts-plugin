@@ -51,14 +51,17 @@ function wp_rp_get_options() {
 		return $wp_rp_options;
 	}
 
+	$wp_rp_options = get_option('wp_rp_options', false);
 	$wp_rp_meta = get_option('wp_rp_meta', false);
-	if(!$wp_rp_meta || $wp_rp_meta['version'] !== WP_RP_VERSION) {
+
+	if(!$wp_rp_meta || !$wp_rp_options || $wp_rp_meta['version'] !== WP_RP_VERSION) {
 		wp_rp_upgrade();
 		$wp_rp_meta = get_option('wp_rp_meta');
+		$wp_rp_options = get_option('wp_rp_options');
 	}
-	$wp_rp_meta = new ArrayObject($wp_rp_meta);
 
-	$wp_rp_options = new ArrayObject(get_option('wp_rp_options'));
+	$wp_rp_meta = new ArrayObject($wp_rp_meta);
+	$wp_rp_options = new ArrayObject($wp_rp_options);
 
 	return $wp_rp_options;
 }
@@ -177,7 +180,6 @@ function wp_rp_install() {
 		'show_turn_on_button' => true,
 		'name' => '',
 		'email' => '',
-		'show_blogger_network_form' => false,
 		'remote_notifications' => array(),
 		'turn_on_button_pressed' => false,
 		'show_statistics' => false,
