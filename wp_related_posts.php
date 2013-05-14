@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 2.6
+Version: 2.6.3
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. Click on <a href="admin.php?page=wordpress-related-posts">Related Posts tab</a> to configure your settings.
 Author: Zemanta Ltd.
@@ -275,10 +275,20 @@ function wp_rp_generate_related_posts_list_items($related_posts, $selected_relat
 
 		if ($platform_options["display_excerpt"]){
 			$excerpt_max_length = $platform_options["excerpt_max_length"];
-			if($related_post->post_excerpt){
-				$output .= '<br /><small>' . (mb_substr(strip_shortcodes(strip_tags($related_post->post_excerpt)), 0, $excerpt_max_length)) . '...</small>';
-			} else {
-				$output .= '<br /><small>' . (mb_substr(strip_shortcodes(strip_tags($related_post->post_content)), 0, $excerpt_max_length)) . '...</small>';
+			$excerpt = '';
+
+			if ($related_post->post_excerpt){
+				$excerpt = strip_shortcodes(strip_tags($related_post->post_excerpt));
+			}
+			if (!$excerpt) {
+				$excerpt = strip_shortcodes(strip_tags($related_post->post_content));
+			}
+
+			if ($excerpt) {
+				if (strlen($excerpt) > $excerpt_max_length) {
+					$excerpt = mb_substr($excerpt, 0, $excerpt_max_length - 3) . '...';
+				}
+				$output .= '<br /><small>' . $excerpt . '</small>';
 			}
 		}
 		$output .=  '</li>';
@@ -308,6 +318,7 @@ function wp_rp_should_exclude() {
 }
 
 function wp_rp_ajax_blogger_network_blacklist_callback() {
+	check_ajax_referer('wp_rp_ajax_nonce');
 	if (!current_user_can('delete_users')) {
 		die();
 	}
@@ -386,7 +397,8 @@ function wp_rp_head_resources() {
 			"\twindow._wp_rp_traffic_exchange = " . ($options['traffic_exchange_enabled'] ? 'true' : 'false') . ";\n" .
 			(current_user_can('edit_posts') ?
 				"\twindow._wp_rp_admin_ajax_url = '" . admin_url('admin-ajax.php') . "';\n" .
-				"\twindow._wp_rp_plugin_static_base_url = '" . esc_js(plugins_url('static/' , __FILE__)) . "';\n"
+				"\twindow._wp_rp_plugin_static_base_url = '" . esc_js(plugins_url('static/' , __FILE__)) . "';\n" .
+				"\twindow._wp_rp_ajax_nonce = '" . wp_create_nonce("wp_rp_ajax_nonce") . "';\n"
 			: '')  . 
 			wp_rp_render_head_script_variables();
 	}
@@ -412,17 +424,17 @@ function wp_rp_head_resources() {
 
 		if ($platform_options['theme_name'] === 'm-stream.css') {
 			//error_log("infinite JS loaded");
-			wp_enqueue_script('wp_rp_infiniterecs', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_INFINITE_RECS_JS_FILE, array('jquery'));
+			wp_enqueue_script('wp_rp_infiniterecs', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_INFINITE_RECS_JS_FILE, array('jquery'), WP_RP_VERSION);
 		}
 
 		if ($platform_options['theme_name'] === 'pinterest.css') {
-			wp_enqueue_script('wp_rp_pinterest', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_PINTEREST_JS_FILE, array('jquery'));
+			wp_enqueue_script('wp_rp_pinterest', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_PINTEREST_JS_FILE, array('jquery'), WP_RP_VERSION);
 		}
 	}
 
 	if (current_user_can('edit_posts')) {
-		wp_enqueue_style('wp_rp_edit_related_posts_css', WP_RP_STATIC_BASE_URL . 'wp-rp-css/edit_related_posts.css');
-		wp_enqueue_script('wp_rp_edit_related_posts_js', WP_RP_STATIC_BASE_URL . 'js/edit_related_posts.js', array('jquery'));
+		wp_enqueue_style('wp_rp_edit_related_posts_css', WP_RP_STATIC_BASE_URL . 'wp-rp-css/edit_related_posts.css', array(), WP_RP_VERSION);
+		wp_enqueue_script('wp_rp_edit_related_posts_js', WP_RP_STATIC_BASE_URL . 'js/edit_related_posts.js', array('jquery'), WP_RP_VERSION);
 	}
 
 	echo $output;
@@ -478,13 +490,10 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 
 	$posts_footer = '';
 	if (current_user_can('edit_posts')) {
-		$posts_footer = '<div class="wp_rp_footer">' .
-					'<a class="wp_rp_edit" id="wp_rp_edit_related_posts" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a>' .
-			'</div>';
-	} else if ($options['display_zemanta_linky']) {
-		$posts_footer = '<div class="wp_rp_footer">' .
-					'<a class="wp_rp_backlink" target="_blank" rel="nofollow" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a>' .
-			'</div>';
+		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a></div>';
+	}
+	if ($options['display_zemanta_linky']) {
+		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_backlink" target="_blank" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a></div>';
 	}
 
 	$css_classes = 'related_post wp_rp';

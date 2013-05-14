@@ -51,14 +51,17 @@ function wp_rp_get_options() {
 		return $wp_rp_options;
 	}
 
+	$wp_rp_options = get_option('wp_rp_options', false);
 	$wp_rp_meta = get_option('wp_rp_meta', false);
-	if(!$wp_rp_meta || $wp_rp_meta['version'] !== WP_RP_VERSION) {
+
+	if(!$wp_rp_meta || !$wp_rp_options || $wp_rp_meta['version'] !== WP_RP_VERSION) {
 		wp_rp_upgrade();
 		$wp_rp_meta = get_option('wp_rp_meta');
+		$wp_rp_options = get_option('wp_rp_options');
 	}
-	$wp_rp_meta = new ArrayObject($wp_rp_meta);
 
-	$wp_rp_options = new ArrayObject(get_option('wp_rp_options'));
+	$wp_rp_meta = new ArrayObject($wp_rp_meta);
+	$wp_rp_options = new ArrayObject($wp_rp_options);
 
 	return $wp_rp_options;
 }
@@ -173,13 +176,10 @@ function wp_rp_install() {
 		'first_version' => WP_RP_VERSION,
 		'new_user' => true,
 		'blog_tg' => rand(0, 1),
-		'show_upgrade_tooltip' => false,
-		'show_install_tooltip' => true,
 		'remote_recommendations' => false,
 		'show_turn_on_button' => true,
 		'name' => '',
 		'email' => '',
-		'show_blogger_network_form' => false,
 		'remote_notifications' => array(),
 		'turn_on_button_pressed' => false,
 		'show_statistics' => false,
@@ -189,7 +189,7 @@ function wp_rp_install() {
 
 	$wp_rp_options = array(
 		'related_posts_title'			=> __('Related Posts', 'wp_related_posts'),
-		'max_related_posts'			=> 5,
+		'max_related_posts'			=> 6,
 		'exclude_categories'			=> '',
 		'on_single_post'			=> true,
 		'on_rss'				=> false,
@@ -218,7 +218,7 @@ function wp_rp_install() {
 			'display_thumbnail'			=> false,
 			'display_excerpt'			=> false,
 			'excerpt_max_length'			=> 200,
-			'theme_name' 				=> 'momma.css',
+			'theme_name' 				=> 'vertical.css',
 			'theme_custom_css'			=> WP_RP_DEFAULT_CUSTOM_CSS,
 			'custom_theme_enabled' => false,
 		)
