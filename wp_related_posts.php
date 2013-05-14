@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 2.6.2
+Version: 2.6.3
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. Click on <a href="admin.php?page=wordpress-related-posts">Related Posts tab</a> to configure your settings.
 Author: Zemanta Ltd.
@@ -424,17 +424,17 @@ function wp_rp_head_resources() {
 
 		if ($platform_options['theme_name'] === 'm-stream.css') {
 			//error_log("infinite JS loaded");
-			wp_enqueue_script('wp_rp_infiniterecs', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_INFINITE_RECS_JS_FILE, array('jquery'));
+			wp_enqueue_script('wp_rp_infiniterecs', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_INFINITE_RECS_JS_FILE, array('jquery'), WP_RP_VERSION);
 		}
 
 		if ($platform_options['theme_name'] === 'pinterest.css') {
-			wp_enqueue_script('wp_rp_pinterest', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_PINTEREST_JS_FILE, array('jquery'));
+			wp_enqueue_script('wp_rp_pinterest', WP_RP_STATIC_BASE_URL . WP_RP_STATIC_PINTEREST_JS_FILE, array('jquery'), WP_RP_VERSION);
 		}
 	}
 
 	if (current_user_can('edit_posts')) {
-		wp_enqueue_style('wp_rp_edit_related_posts_css', WP_RP_STATIC_BASE_URL . 'wp-rp-css/edit_related_posts.css');
-		wp_enqueue_script('wp_rp_edit_related_posts_js', WP_RP_STATIC_BASE_URL . 'js/edit_related_posts.js', array('jquery'));
+		wp_enqueue_style('wp_rp_edit_related_posts_css', WP_RP_STATIC_BASE_URL . 'wp-rp-css/edit_related_posts.css', array(), WP_RP_VERSION);
+		wp_enqueue_script('wp_rp_edit_related_posts_js', WP_RP_STATIC_BASE_URL . 'js/edit_related_posts.js', array('jquery'), WP_RP_VERSION);
 	}
 
 	echo $output;
@@ -489,10 +489,11 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	}
 
 	$posts_footer = '';
+	if (current_user_can('edit_posts')) {
+		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a></div>';
+	}
 	if ($options['display_zemanta_linky']) {
-		$posts_footer = '<div class="wp_rp_footer">' .
-					'<a class="wp_rp_backlink" target="_blank" rel="nofollow" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a>' .
-			'</div>';
+		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_backlink" target="_blank" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a></div>';
 	}
 
 	$css_classes = 'related_post wp_rp';
