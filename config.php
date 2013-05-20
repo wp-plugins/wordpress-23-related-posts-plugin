@@ -230,6 +230,13 @@ function wp_rp_install() {
 	wp_rp_related_posts_db_table_install();
 }
 
+function wp_rp_migrate_2_6() {
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '2.7';
+	$wp_rp_meta['new_user'] = false;
+	update_option('wp_rp_meta', $wp_rp_meta);
+}
+
 function wp_rp_migrate_2_5() {
 	$wp_rp_meta = get_option('wp_rp_meta');
 	$wp_rp_options = get_option('wp_rp_options');
