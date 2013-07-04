@@ -53,7 +53,7 @@ function wp_rp_upload_attachment($url, $post_id) {
 
 	$tmp = download_url($url);
 	preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $url, $matches);
-	$file_array['name'] = sanitize_file_name(basename($matches[0]));
+	$file_array['name'] = sanitize_file_name(urldecode(basename($matches[0])));
 
 	$file_array['tmp_name'] = $tmp;
 	if (is_wp_error($tmp)) {
@@ -108,7 +108,7 @@ function wp_rp_actually_extract_images_from_post_html($post) {
 
 	foreach ($html_tags as $html_tag) {
 		if (preg_match('#src=([\'"])(.+?)\1#is', $html_tag, $matches) && !empty($matches)) {
-			$url = urldecode($matches[2]);
+			$url = $matches[2];
 
 			$attachment_id = wp_rp_get_image_from_img_tag($post->ID, $url, $html_tag);
 			if ($attachment_id) {
@@ -351,7 +351,7 @@ function wp_rp_process_latest_post_thumbnails() {
 function wp_rp_get_tag_regex( $tag ) {
 	if ( empty( $tag ) )
 		return;
-	return sprintf( '<%1$s[^<]*(?:>[\s\S]*<\/%1$s>|\s*\/>)', tag_escape( $tag ) );
+	return sprintf( '<%1$s[^<]*(?:>[\s\S]*<\/%1$s>|\s*\/?>)', tag_escape( $tag ) ); // Added the last ?
 }
 
 function wp_rp_img_html_to_post_id( $html, &$matched_html = null ) {
