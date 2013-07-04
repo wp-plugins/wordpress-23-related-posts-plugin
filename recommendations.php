@@ -128,6 +128,7 @@ function wp_rp_generate_tags($post) {
 
 		foreach ($tag_obj['labels'] as $label) {
 			$label = $tag_obj['prefix'] . strtolower($label);
+			$label = substr($label, 0, WP_RP_MAX_LABEL_LENGTH);
 
 			array_push($all_tags, $label);
 

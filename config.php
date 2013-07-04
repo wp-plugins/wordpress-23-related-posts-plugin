@@ -16,12 +16,15 @@ ul.related_post li a {
 ul.related_post li img {
 }");
 
+define('WP_RP_THUMBNAILS_NAME', 'wp_rp_thumbnail');
+define('WP_RP_THUMBNAILS_PROP_NAME', 'wp_rp_thumbnail_prop');
 define('WP_RP_THUMBNAILS_WIDTH', 150);
 define('WP_RP_THUMBNAILS_HEIGHT', 150);
 define('WP_RP_THUMBNAILS_DEFAULTS_COUNT', 31);
 
-define("WP_RP_CTR_DASHBOARD_URL", "http://d.related-posts.com/");
-define("WP_RP_CTR_REPORT_URL", "http://t.related-posts.com/pageview/?");
+define("WP_RP_MAX_LABEL_LENGTH", 32);
+
+define("WP_RP_CTR_DASHBOARD_URL", "http://d.zemanta.com/");
 define("WP_RP_STATIC_CTR_PAGEVIEW_FILE", "js/pageview.js");
 
 define("WP_RP_STATIC_RECOMMENDATIONS_JS_FILE", "js/recommendations.js");
@@ -153,7 +156,7 @@ function wp_rp_related_posts_db_table_install() {
 	$sql_tags = "CREATE TABLE $tags_table_name (
 	  post_id mediumint(9),
 	  post_date datetime NOT NULL,
-	  label VARCHAR(32) NOT NULL,
+	  label VARCHAR(" . WP_RP_MAX_LABEL_LENGTH . ") NOT NULL,
 	  weight float,
 	  INDEX post_id (post_id),
 	  INDEX label (label)
@@ -228,6 +231,18 @@ function wp_rp_install() {
 	update_option('wp_rp_options', $wp_rp_options);
 
 	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_2_7() {
+	global $wpdb;
+
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '2.8';
+	$wp_rp_meta['new_user'] = false;
+
+	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key IN ('_wp_rp_extracted_image_url', '_wp_rp_extracted_image_url_full')");
+
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_2_6() {

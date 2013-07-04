@@ -4,7 +4,7 @@ Tags: related,posts,post,related posts,plugin
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.6
-Stable tag: 2.7
+Stable tag: 2.8
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -74,6 +74,12 @@ New thumbnailer might break backwards compatibility for blogs with custom thumbn
 Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
+
+= 2.8 =
+* New thumbnailer
+* Edit Related Posts gets a visual upgrade, search functionality and a dose of awesome
+* Removed AB testing on mobile infinite stream
+* Bugfix in tag generator
 
 = 2.7 =
 * Improved thumbnailer
