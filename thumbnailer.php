@@ -238,14 +238,15 @@ function wp_rp_get_image_with_exact_size($image_data, $size) {
 function wp_rp_get_image_data($image_id) {
 	if (!$image_id || is_wp_error($image_id)) { return false; }
 
-	if (is_array($imagedata = wp_get_attachment_metadata($image_id))) {
-		return array(
-			'id' => $image_id,
-			'data' => $imagedata
-		);
+	$imagedata = wp_get_attachment_metadata($image_id);
+	if (!$imagedata || !is_array($imagedata) || !isset($imagedata['sizes']) || !is_array($imagedata['sizes'])) {
+		return false;
 	}
 
-	return false;
+	return array(
+		'id' => $image_id,
+		'data' => $imagedata
+	);
 }
 
 function wp_rp_get_attached_img_url($related_post, $size) {
