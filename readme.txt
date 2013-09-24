@@ -3,8 +3,8 @@ Contributors: zemanta
 Tags: related,posts,post,related posts,plugin
 License: GPLv2
 Requires at least: 3.3
-Tested up to: 3.5
-Stable tag: 2.6
+Tested up to: 3.6
+Stable tag: 2.9
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -47,16 +47,18 @@ We adopted the principle of having three "release channels". You can try the mos
 = Via admin: =
 1. Go to Plugins -> Add New
 2. Search for WordPress Related Posts
-3. Install and activate the first result
-4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
-5. Done!
+3. Install the plugin called "WordPress Related Posts" and activate it
+4. After activation click Turn on to get advanced features
+5. If you use any caching plugin please clear the cache
+6. Done!
 
 = Via upload: =
 1. Download the plugin .zip file
 2. Log in to yourdomain.com/wp-admin
 3. Click Plugins -> Add New -> Upload
-4. After installation go to Settings -> Related Posts in your plugins list to turn on Thumbnails & Statistics
-5. You're finished!
+4. After installation activate the plugin and click Turn on to get advanced features
+5. If you use any caching plugin please clear the cache
+6. You're finished!
 
 == Screenshots ==
 1. WordPress Related Posts Default Theme.
@@ -65,7 +67,37 @@ We adopted the principle of having three "release channels". You can try the mos
 
 == Upgrade Notice ==
 
+= 2.7 =
+New thumbnailer might break backwards compatibility for blogs with custom thumbnail sizes since it resizes all thumbnails to 150x150.
+
+= 2.6.2 =
+Fix for security vulnerability. Upgrade immediately.
+
 == Changelog ==
+
+= 2.9 =
+* Themes are now included with the plugin to simplify loading and customization
+* Simplified javascript loading
+
+= 2.8 =
+* New thumbnailer
+* Edit Related Posts gets a visual upgrade, search functionality and a dose of awesome
+* Removed AB testing on mobile infinite stream
+* Bugfix in tag generator
+
+= 2.7 =
+* Improved thumbnailer
+
+= 2.6.3 =
+* Due to popular demand, "Edit related posts" is back in action. Send us more feedback to support@zemanta.com. Thanks!
+
+= 2.6.2 =
+* Fix for Cross-Site Request Forgery vulnerability. Credits for finding and reporting the vulnerability go to Charlie Eriksen via Secunia SVCRP.
+
+= 2.6.1 =
+* Fixed post excerpt bug
+* Link back to Zemanta is off by default
+* Removed "edit related posts" functionality (already edited posts won't revert back)
 
 = 2.6 =
 * Improved editorial control
