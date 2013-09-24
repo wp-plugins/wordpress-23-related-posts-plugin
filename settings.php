@@ -268,10 +268,10 @@ function wp_rp_settings_page() {
 	<div class="wrap" id="wp_rp_wrap">
 		<input type="hidden" id="wp_rp_ajax_nonce" value="<?php echo wp_create_nonce("wp_rp_ajax_nonce"); ?>" />
 
-		<input type="hidden" id="wp_rp_json_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL . WP_RP_STATIC_JSON_PATH); ?>" />
 		<input type="hidden" id="wp_rp_version" value="<?php esc_attr_e(WP_RP_VERSION); ?>" />
 		<input type="hidden" id="wp_rp_dashboard_url" value="<?php esc_attr_e(WP_RP_CTR_DASHBOARD_URL); ?>" />
 		<input type="hidden" id="wp_rp_static_base_url" value="<?php esc_attr_e(WP_RP_STATIC_BASE_URL); ?>" />
+		<input type="hidden" id="wp_rp_plugin_static_base_url" value="<?php esc_attr_e(plugins_url("static/", __FILE__)); ?>" />
 
 		<?php if ($options['ctr_dashboard_enabled']):?>
 		<input type="hidden" id="wp_rp_blog_id" value="<?php esc_attr_e($meta['blog_id']); ?>" />

@@ -1,8 +1,8 @@
 <?php
 
 define('WP_RP_STATIC_BASE_URL', 'http://dtmvdvtzf8rz0.cloudfront.net/static/');
-define('WP_RP_STATIC_THEMES_PATH', 'wp-rp-css/');
-define('WP_RP_STATIC_JSON_PATH', 'json/');
+
+define('WP_RP_STATIC_THEMES_PATH', 'static/themes/');
 
 define("WP_RP_DEFAULT_CUSTOM_CSS",
 ".related_post_title {
@@ -25,10 +25,7 @@ define('WP_RP_THUMBNAILS_DEFAULTS_COUNT', 31);
 define("WP_RP_MAX_LABEL_LENGTH", 32);
 
 define("WP_RP_CTR_DASHBOARD_URL", "http://d.zemanta.com/");
-define("WP_RP_STATIC_CTR_PAGEVIEW_FILE", "js/pageview.js");
-
-define("WP_RP_STATIC_RECOMMENDATIONS_JS_FILE", "js/recommendations.js");
-define("WP_RP_STATIC_RECOMMENDATIONS_CSS_FILE", "wp-rp-css/recommendations.css");
+define("WP_RP_STATIC_LOADER_FILE", "js/loader.js");
 
 define("WP_RP_STATIC_INFINITE_RECS_JS_FILE", "js/infiniterecs.js");
 define("WP_RP_STATIC_PINTEREST_JS_FILE", "js/pinterest.js");
@@ -231,6 +228,16 @@ function wp_rp_install() {
 	update_option('wp_rp_options', $wp_rp_options);
 
 	wp_rp_related_posts_db_table_install();
+}
+
+function wp_rp_migrate_2_8() {
+	global $wpdb;
+
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '2.9';
+	$wp_rp_meta['new_user'] = false;
+
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_2_7() {
