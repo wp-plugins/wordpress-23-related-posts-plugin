@@ -10,21 +10,23 @@ WordPress Related Posts generates a list of related posts with thumbnails and gi
 
 == Description ==
 
-Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. The plugin also delivers statistics about Pageviews and Clicks\*. It supports different styles, thumbnails and is fully customizable.
+Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. Automatically added Related Posts can increase your internal traffic up to 10%. Just install and activate. To attract attention and improve SEO, link out to Related Posts across the web from your compose screen. Search for posts and hand-pick them with ease. Recommendations are provided by Zemanta's world-class semantic service, including advanced analytics.
+
+The plugin also delivers statistics about Pageviews and Clicks*. It supports different styles, thumbnails and is fully customizable.
 
 After installation, go to Settings -> Related Posts in your plugins list and Turn on Advanced Features!
 
-\* Real time traffic analytics are provided via third party service.
+* Real time traffic analytics are provided via third party service.
 
 == Frequently Asked Questions ==
+
+= What does this plugin do? =
+
+It places a list of links with thumbnails at the bottom of your posts. It increases pageviews and engages readers to stay on your site longer and discover more of your content.  It also recommends related posts from across the web and in turn promotes your posts to other users. In this way you get new unique visitors to your site and improve SEO.
 
 = Why should I use this plugin and not any other? =
 
 WordPress Related Posts is constantly improved to bring you the highest rates of audience engagement with your content. Our highest Click-Through rates speak for themselves.
-
-= What does this plugin do? =
-
-It places a list of links with thumbnails at the bottom of your posts. It increases pageviews and engages readers to stay on your site longer and discover more of your content.
 
 = Are there any settings? Plenty! =
 
@@ -38,9 +40,13 @@ It places a list of links with thumbnails at the bottom of your posts. It increa
 
 Yes, related posts are responsive so they adapt to the screen size to ensure maximum click-through rates.
 
-= Why does Zemanta have 3 similar plugins? What's the difference between them? =
+= Can I customize the widget? =
 
-We adopted the principle of having three "release channels". You can try the most experimental (still stable!) features in [Related Posts](http://wordpress.org/extend/plugins/related-posts/ "Related Posts"). The more advanced ones are in [WordPress Related Posts](http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/ "WordPress Related Posts"). If you're looking for the Professional version go for [Related Posts by Zemanta](http://wordpress.org/extend/plugins/related-posts-by-zemanta/ "Related Posts by Zemanta").
+Yes, Zemanta is offered in different themes which you can also customize with simple CSS.
+
+= Will Zemanta steal my "link-juice"? =
+
+No, Zemanta does not use redirects and is juice friendly. :)
 
 == Installation ==
 
