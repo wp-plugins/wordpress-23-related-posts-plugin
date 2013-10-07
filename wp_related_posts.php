@@ -446,7 +446,7 @@ function wp_rp_head_resources() {
 		}
 	}
 
-	if (current_user_can('edit_posts')) {
+	if (current_user_can('edit_posts') && $statistics_enabled) {
 		wp_enqueue_style('wp_rp_edit_related_posts_css', WP_RP_STATIC_BASE_URL . 'wp-rp-css/edit_related_posts.css', array(), WP_RP_VERSION);
 		wp_enqueue_script('wp_rp_edit_related_posts_js', WP_RP_STATIC_BASE_URL . 'js/edit_related_posts.js', array('jquery'), WP_RP_VERSION);
 	}
@@ -503,7 +503,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	}
 
 	$posts_footer = '';
-	if (current_user_can('edit_posts')) {
+	if (current_user_can('edit_posts') && $statistics_enabled) {
 		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a></div>';
 	}
 	if ($options['display_zemanta_linky']) {
