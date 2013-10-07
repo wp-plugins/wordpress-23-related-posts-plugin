@@ -8,6 +8,9 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
+	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration');
+	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache');
+
 	$wpdb->query(
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
 	);
@@ -154,73 +157,84 @@ function wp_rp_generate_tags($post) {
 function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $post;
 
-	$related_post_ids = null;
+	$timestamp = time();
+	$related_posts_query_result_cache_expiration = (int) get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', true);
+	$related_posts_query_result_cache = get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache', true);
 
-	$options = wp_rp_get_options();
-	$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+	if (!$related_posts_query_result_cache || !$related_posts_query_result_cache_expiration || $related_posts_query_result_cache_expiration < $timestamp) { // Cache empty or never cached or cache expired
 
-	$tags_query = "SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID;";
-	$tags = $wpdb->get_col($tags_query, 0);
-	if (empty($tags)) {
-		$tags = wp_rp_generate_tags($post);
+		$related_post_ids = null;
+
+		$options = wp_rp_get_options();
+		$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
+
+		$tags_query = "SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID;";
+		$tags = $wpdb->get_col($tags_query, 0);
 		if (empty($tags)) {
+			$tags = wp_rp_generate_tags($post);
+			if (empty($tags)) {
+				return array();
+			}
+		}
+
+		if($options['exclude_categories']) {
+			$exclude_categories = get_categories(array('include' => $options['exclude_categories']));
+			$exclude_categories_labels = array_map(create_function('$c', 'return "C_" . $c->name;'), $exclude_categories);
+		} else {
+			$exclude_categories_labels = array();
+		}
+
+		$total_number_of_posts = $wpdb->get_col("SELECT count(distinct(post_id)) FROM " . $wpdb->prefix . "wp_rp_tags;", 0);
+		if (empty($total_number_of_posts)) {
 			return array();
 		}
-	}
+		$total_number_of_posts = $total_number_of_posts[0];
 
-	if($options['exclude_categories']) {
-		$exclude_categories = get_categories(array('include' => $options['exclude_categories']));
-		$exclude_categories_labels = array_map(create_function('$c', 'return "C_" . $c->name;'), $exclude_categories);
-	} else {
-		$exclude_categories_labels = array();
-	}
+		$post_id_query = $wpdb->prepare("
+			SELECT
+				target.post_id, sum(target.weight * log(%d / least(%d, freqs.freq))) as score
+			FROM
+				" . $wpdb->prefix . "wp_rp_tags as target,
+				(SELECT label, count(1) as freq FROM " . $wpdb->prefix . "wp_rp_tags
+					WHERE label IN (" . implode(', ', array_fill(0, count($tags), "%s"))  . ")
+					GROUP BY label
+				) as freqs
+			WHERE
+				target.post_id NOT IN (%s) AND
+				" . ($options['max_related_post_age_in_days'] > 0 ? "target.post_date > DATE_SUB(CURDATE(), INTERVAL %s DAY) AND" : "") . "
+				target.label=freqs.label AND
+				target.label IN (" . implode(', ', array_fill(0, count($tags), "%s"))  . ")" .
+				(empty($exclude_categories_labels) ? "" : " AND
+					target.post_id NOT IN (
+						SELECT post_id FROM " . $wpdb->prefix . "wp_rp_tags
+						WHERE label IN (" . implode(', ', array_fill(0, count($exclude_categories_labels), "%s")) . ")
+					)") . "
+			GROUP BY target.post_id
+			ORDER BY score desc, target.post_id desc
+			LIMIT %d;",
+			array_merge(
+				array($total_number_of_posts, $total_number_of_posts),
+				$tags,
+				array($exclude_ids_str),
+				$options['max_related_post_age_in_days'] > 0 ? array($options['max_related_post_age_in_days']) : array(),
+				$tags,
+				$exclude_categories_labels,
+				array($limit * 2)
+			)
+		);	// limit * 2 just in case
 
-	$total_number_of_posts = $wpdb->get_col("SELECT count(distinct(post_id)) FROM " . $wpdb->prefix . "wp_rp_tags;", 0);
-	if (empty($total_number_of_posts)) {
-		return array();
-	}
-	$total_number_of_posts = $total_number_of_posts[0];
+		$related_posts_query_result_cache = $wpdb->get_results($post_id_query, 0);
+		if (empty($related_posts_query_result_cache)) {
+			return array();
+		}
 
-	$post_id_query = $wpdb->prepare("
-		SELECT
-			target.post_id, sum(target.weight * log(%d / least(%d, freqs.freq))) as score
-		FROM
-			" . $wpdb->prefix . "wp_rp_tags as target,
-			(SELECT label, count(1) as freq FROM " . $wpdb->prefix . "wp_rp_tags
-				WHERE label IN (" . implode(', ', array_fill(0, count($tags), "%s"))  . ")
-				GROUP BY label
-			) as freqs
-		WHERE
-			target.post_id NOT IN (%s) AND
-			" . ($options['max_related_post_age_in_days'] > 0 ? "target.post_date > DATE_SUB(CURDATE(), INTERVAL %s DAY) AND" : "") . "
-			target.label=freqs.label AND
-			target.label IN (" . implode(', ', array_fill(0, count($tags), "%s"))  . ")" .
-			(empty($exclude_categories_labels) ? "" : " AND
-				target.post_id NOT IN (
-					SELECT post_id FROM " . $wpdb->prefix . "wp_rp_tags
-					WHERE label IN (" . implode(', ', array_fill(0, count($exclude_categories_labels), "%s")) . ")
-				)") . "
-		GROUP BY target.post_id
-		ORDER BY score desc, target.post_id desc
-		LIMIT %d;",
-		array_merge(
-			array($total_number_of_posts, $total_number_of_posts),
-			$tags,
-			array($exclude_ids_str),
-			$options['max_related_post_age_in_days'] > 0 ? array($options['max_related_post_age_in_days']) : array(),
-			$tags,
-			$exclude_categories_labels,
-			array($limit * 2)
-		)
-	);	// limit * 2 just in case
-
-	$related_posts_with_score = $wpdb->get_results($post_id_query, 0);
-	if (empty($related_posts_with_score)) {
-		return array();
+		// Update the cache
+		update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 24 * 60 * 60); // one day
+		update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache', $related_posts_query_result_cache);
 	}
 
 	$related_posts_with_score_map = array();
-	foreach ($related_posts_with_score as $rp) {
+	foreach ($related_posts_query_result_cache as $rp) {
 		$related_posts_with_score_map[$rp->post_id] = $rp->score;
 	}
 
