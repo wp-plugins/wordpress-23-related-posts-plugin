@@ -243,7 +243,7 @@ function wp_rp_migrate_2_9() {
 	global $wpdb;
 
 	$wp_rp_meta = get_option('wp_rp_meta');
-	$wp_rp_meta['version'] = '2.9';
+	$wp_rp_meta['version'] = '3.0';
 	$wp_rp_meta['new_user'] = false;
 
 	update_option('wp_rp_meta', $wp_rp_meta);
