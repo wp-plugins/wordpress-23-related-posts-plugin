@@ -24,6 +24,7 @@ function wp_rp_update_related_posts_callback() {
 	}
 
 	update_post_meta($post_id, '_wp_rp_selected_related_posts', $articles);
+	delete_post_meta($post_id, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts']); // Delete existing caches upon update, so that the new recs get calculated
 	die('ok');
 }
 add_action('wp_ajax_rp_update_related_posts', 'wp_rp_update_related_posts_callback');

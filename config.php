@@ -185,7 +185,7 @@ function wp_rp_install() {
 		'show_statistics' => false,
 		'show_traffic_exchange' => false,
 		'show_zemanta_linky_option' => true,
-		'classic_user' => true
+		'classic_user' => strpos(get_bloginfo('language'), 'en') === 0 // Enable only if "any" english is the default language
 	);
 
 	$wp_rp_options = array(
@@ -237,6 +237,16 @@ function wp_rp_is_classic() {
 		return true;
 	}
 	return false;
+}
+
+function wp_rp_migrate_2_9() {
+	global $wpdb;
+
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '2.9';
+	$wp_rp_meta['new_user'] = false;
+
+	update_option('wp_rp_meta', $wp_rp_meta);
 }
 
 function wp_rp_migrate_2_8() {

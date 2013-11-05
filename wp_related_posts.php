@@ -507,7 +507,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a></div>';
 	}
 	if ($options['display_zemanta_linky']) {
-		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_backlink" target="_blank" href="http://www.zemanta.com/?wp-related-posts">Zemanta</a></div>';
+		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_backlink" target="_blank" href="http://www.zemanta.com/?wp-related-posts" rel="nofollow">Zemanta</a></div>';
 	}
 
 	$css_classes = 'related_post wp_rp';

@@ -8,8 +8,10 @@ function wp_rp_update_tags($post_id) {
 		$post = get_post($post->post_parent);
 	}
 
+	$options = wp_rp_get_options();
+
 	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration');
-	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache');
+	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts']);
 
 	$wpdb->query(
 		$wpdb->prepare('DELETE from ' . $wpdb->prefix . 'wp_rp_tags WHERE post_id=%d', $post->ID)
@@ -156,16 +158,15 @@ function wp_rp_generate_tags($post) {
 
 function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	global $wpdb, $post;
+	$options = wp_rp_get_options();
 
 	$timestamp = time();
 	$related_posts_query_result_cache_expiration = (int) get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', true);
-	$related_posts_query_result_cache = get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache', true);
+	$related_posts_query_result_cache = get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts'], true);
 
 	if (!$related_posts_query_result_cache || !$related_posts_query_result_cache_expiration || $related_posts_query_result_cache_expiration < $timestamp) { // Cache empty or never cached or cache expired
 
 		$related_post_ids = null;
-
-		$options = wp_rp_get_options();
 		$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
 
 		$tags_query = "SELECT label FROM " . $wpdb->prefix . "wp_rp_tags WHERE post_id=$post->ID;";
@@ -229,8 +230,13 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 		}
 
 		// Update the cache
-		update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 24 * 60 * 60); // one day
-		update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache', $related_posts_query_result_cache);
+		if ($timestamp - $post->post_date > 30 * 24 * 60 * 60) { // Post is older than one month
+			update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 30 * 24 * 60 * 60); // Cache for one month
+		} else {
+			update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 24 * 60 * 60); // Cache for one day
+		}
+
+		update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts'], $related_posts_query_result_cache);
 	}
 
 	$related_posts_with_score_map = array();

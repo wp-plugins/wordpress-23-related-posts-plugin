@@ -207,6 +207,13 @@ function wp_rp_settings_page() {
 			}
 		}
 
+		if (isset($postdata['wp_rp_classic_state'])) {
+			$meta['classic_user'] = true;
+		} else {
+			$meta['classic_user'] = false;
+		}
+		wp_rp_update_meta($meta);
+
 		if (isset($postdata['wp_rp_turn_on_button_pressed'])) {
 			$meta['show_turn_on_button'] = false;
 			$meta['turn_on_button_pressed'] = $postdata['wp_rp_turn_on_button_pressed'];
@@ -518,8 +525,12 @@ function wp_rp_settings_page() {
 							</td>
 						</tr>
 						<tr valign="top">
-							<td colspan="2">
-
+							<td colspan="2"><?php if(strpos(get_bloginfo('language'), 'en') === 0): ?>
+								<br/>
+								<label>
+									<input name="wp_rp_classic_state" type="checkbox" id="wp_rp_classic_state" value="yes" <?php checked($meta['classic_user']); ?>>
+									<?php _e("Display Related Posts Recommendations on Compose Screen",'wp_related_posts');?>
+								</label><?php endif; ?>
 								<br/>
 								<label>
 									<input name="wp_rp_on_single_post" type="checkbox" id="wp_rp_on_single_post" value="yes" <?php checked($options['on_single_post']); ?>>
@@ -548,14 +559,12 @@ function wp_rp_settings_page() {
 										<input name="wp_rp_promoted_content_enabled" type="checkbox" id="wp_rp_promoted_content_enabled" value="yes" <?php checked($options['promoted_content_enabled']); ?> />
 										<?php _e('Promoted Content', 'wp_related_posts');?>*
 									</label>
-								</div>
-					<?php if($meta['show_zemanta_linky_option']): ?>
+								</div><?php if($meta['show_zemanta_linky_option']): ?>
 								<label>
 									<input name="wp_rp_display_zemanta_linky" type="checkbox" id="wp_rp_display_zemanta_linky" value="yes" <?php checked($options['display_zemanta_linky']); ?> />
 									<?php _e("Support us (show our logo)",'wp_related_posts');?>
-								</label>
+								</label><?php endif; ?>
 							</td>
-					<?php endif; ?>
 						</tr>
 					</table>
 					<p class="submit"><input type="submit" value="<?php _e('Save changes', 'wp_related_posts'); ?>" class="button-primary" /></p>

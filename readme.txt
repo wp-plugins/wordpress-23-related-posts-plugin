@@ -81,6 +81,10 @@ Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
 
+= 3.0 =
+* Opt-out for Related recommendations (articles)
+* Improved caching
+
 = 2.9 =
 * Themes are now included with the plugin to simplify loading and customization
 * Simplified javascript loading
