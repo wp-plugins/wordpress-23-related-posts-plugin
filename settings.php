@@ -525,7 +525,7 @@ function wp_rp_settings_page() {
 							</td>
 						</tr>
 						<tr valign="top">
-							<td colspan="2"><?php if(strpos(get_bloginfo('language'), 'en') === 0): ?>
+							<td colspan="2"><?php if(strpos(get_bloginfo('language'), 'en') === 0 || $meta['classic_user']): ?>
 								<br/>
 								<label>
 									<input name="wp_rp_classic_state" type="checkbox" id="wp_rp_classic_state" value="yes" <?php checked($meta['classic_user']); ?>>
