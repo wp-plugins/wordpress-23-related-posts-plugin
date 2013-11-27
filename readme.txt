@@ -81,6 +81,11 @@ Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
 
+= 3.2 =
+* Bug fixes for "Edit related posts" feature
+* Changed URL for static content
+* Added settings to fix custom size thumbnails issues (re-generating thumbnails might take a few minutes)
+
 = 3.1 =
 * Related content (articles) on compose screen for all users with English WordPress interface
 * Language detection for WordPressP interface: non-English users don't get the widget, existing ones get opt-out
