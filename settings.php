@@ -502,7 +502,8 @@ function wp_rp_settings_page() {
 					<table class="form-table">
 						<tbody>
 						<tr><td>
-								<p>All themes are <strong>optimized</strong> for thumbnails of size 150x150px.  They might not work well with custom size thumbnails.<br> Specify your custom css to override theme's style.</p>
+								Our themes were created with thumbnail size of 150x150px in mind.<br>
+								If you want to use custom sizes, override theme's CSS rules in the Custom CSS section under Theme Settings above.
 						</td></tr>
 						<tr><td>
 								<label>

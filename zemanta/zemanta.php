@@ -43,8 +43,11 @@ class WPRPZemanta {
 	* Initialize plugin
 	*
 	*/
-	public function init() 
-	{
+	public function init() {
+		if (defined('ZEMANTA_PLUGIN_VERSION_OPTION')) { // Make sure this doesn't clash with the Editorial Assistant
+			return;
+		}
+
 		add_action('wp_ajax_zemanta_set_featured_image', array($this, 'ajax_zemanta_set_featured_image'));
 		add_action('edit_form_advanced', array($this, 'assets'), 1);
 		add_action('edit_page_form', array($this, 'assets'), 1);

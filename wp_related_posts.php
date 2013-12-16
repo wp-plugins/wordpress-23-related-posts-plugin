@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: WordPress Related Posts
-Version: 3.2
+Version: 3.3
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-23-related-posts-plugin/
 Description: Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. Click on <a href="admin.php?page=wordpress-related-posts">Related Posts tab</a> to configure your settings.
 Author: Zemanta Ltd.
 Author URI: http://www.zemanta.com
 */
 
-define('WP_RP_VERSION', '3.2');
+define('WP_RP_VERSION', '3.3');
 
 define('WP_RP_PLUGIN_FILE', plugin_basename(__FILE__));
 
@@ -290,7 +290,7 @@ function wp_rp_generate_related_posts_list_items($related_posts, $selected_relat
 			$output .=  '<a href="' . $post_url . '" class="wp_rp_thumbnail">' . $img . '</a>';
 		}
 
-		if ($platform_options["display_publish_date"]){
+		if ($platform_options["display_publish_date"]) {
 			$dateformat = get_option('date_format');
 			$output .= '<small class="wp_rp_publish_date">' . mysql2date($dateformat, $related_post->post_date) . '</small> ';
 			//$output .= mysql2date($dateformat, $related_post->post_date) . " -- ";

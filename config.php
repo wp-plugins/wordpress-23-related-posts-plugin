@@ -242,6 +242,19 @@ function wp_rp_is_classic() {
 	return false;
 }
 
+function wp_rp_migrate_3_2() {
+	global $wpdb;
+
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '3.3';
+	$wp_rp_meta['new_user'] = false;
+	if (floatval($wp_rp_meta['first_version']) < 2.8 && strpos(get_bloginfo('language'), 'en') === 0) { // Enable widget to all "old" users out there (old = users that started with plugin version 2.7 or below), that have their interface in english.
+		$wp_rp_meta['classic_user'] = true;
+	}
+	update_option('wp_rp_meta', $wp_rp_meta);
+
+}
+
 function wp_rp_migrate_3_1() {
 	global $wpdb;
 
