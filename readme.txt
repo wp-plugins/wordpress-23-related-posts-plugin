@@ -3,8 +3,8 @@ Contributors: zemanta
 Tags: related,posts,post,related posts,plugin
 License: GPLv2
 Requires at least: 3.3
-Tested up to: 3.6
-Stable tag: 3.3
+Tested up to: 3.8
+Stable tag: 3.3.1
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -30,6 +30,7 @@ WordPress Related Posts is constantly improved to bring you the highest rates of
 
 = Are there any settings? Plenty! =
 
+* responsive themes
 * thumbnail size, style
 * number of posts
 * display post excerpt, publish date, number of comments
@@ -80,6 +81,10 @@ New thumbnailer might break backwards compatibility for blogs with custom thumbn
 Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
+
+= 3.3.1 =
+* Added setting for admins to restrict the ability to edit automatically added Related posts to admins only
+* Getting ready to reorganize settings page
 
 = 3.3 =
 * Fixed compatibility issues with Zemanta Editorial Assistant

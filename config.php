@@ -206,6 +206,7 @@ function wp_rp_install() {
 		'thumbnail_use_custom'			=> false,
 		'thumbnail_custom_field'		=> false,
 		'display_zemanta_linky'			=> false,
+		'only_admins_can_edit_related_posts' => false,
 
 		'mobile' => array(
 			'display_comment_count'			=> false,
@@ -240,6 +241,21 @@ function wp_rp_is_classic() {
 		return true;
 	}
 	return false;
+}
+
+function wp_rp_migrate_3_3() {
+	global $wpdb;
+
+	$wp_rp_meta = get_option('wp_rp_meta');
+	$wp_rp_meta['version'] = '3.3.1';
+	$wp_rp_meta['new_user'] = false;
+	if (floatval($wp_rp_meta['first_version']) < 2.8 && strpos(get_bloginfo('language'), 'en') === 0) { // Enable widget to all "old" users out there (old = users that started with plugin version 2.7 or below), that have their interface in english.
+		$wp_rp_meta['classic_user'] = true;
+	}
+	$wp_rp_options = get_option('wp_rp_options');
+	$wp_rp_options['only_admins_can_edit_related_posts'] = false;
+	update_option('wp_rp_meta', $wp_rp_meta);
+	update_option('wp_rp_options', $wp_rp_options);
 }
 
 function wp_rp_migrate_3_2() {

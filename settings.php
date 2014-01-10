@@ -170,6 +170,7 @@ function wp_rp_settings_page() {
 			'thumbnail_use_custom' => isset($postdata['wp_rp_thumbnail_use_custom']) && $postdata['wp_rp_thumbnail_use_custom'] === 'yes',
 			'thumbnail_custom_field' => isset($postdata['wp_rp_thumbnail_custom_field']) ? trim($postdata['wp_rp_thumbnail_custom_field']) : '',
 			'display_zemanta_linky' => $meta['show_zemanta_linky_option'] ? isset($postdata['wp_rp_display_zemanta_linky']) : true,
+			'only_admins_can_edit_related_posts' => !empty($postdata['wp_rp_only_admins_can_edit_related_posts']),
 
 			'mobile' => array(
 				'display_comment_count' => isset($postdata['wp_rp_mobile_display_comment_count']),
@@ -594,6 +595,12 @@ function wp_rp_settings_page() {
 									<input name="wp_rp_display_zemanta_linky" type="checkbox" id="wp_rp_display_zemanta_linky" value="yes" <?php checked($options['display_zemanta_linky']); ?> />
 									<?php _e("Support us (show our logo)",'wp_related_posts');?>
 								</label><?php endif; ?>
+									<div>
+									<label>
+										<input type="checkbox" name="wp_rp_only_admins_can_edit_related_posts" id="wp_rp_only_admins_can_edit_related_posts" value="yes" <?php checked($options['only_admins_can_edit_related_posts']); ?> />
+										<?php _e("Only admins can edit Related Posts",'wp_related_posts');?>
+									</label>
+								</div>
 							</td>
 						</tr>
 					</table>
