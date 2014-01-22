@@ -70,7 +70,7 @@ function wp_rp_upload_attachment($url, $post_id) {
 
 	$post_data = array(
 		'guid' => $url,
-		'post_title' => 'Zemanta Related Posts Thumbnail',
+		'post_title' => 'rp_' . $file_array['name'],
 	);
 
 	$attachment_id = media_handle_sideload($file_array, $post_id, null, $post_data);
@@ -138,25 +138,8 @@ function wp_rp_update_attachment_id($attachment_id) {
 	$platform_options = wp_rp_get_platform_options();
 	if (!$img_path) { return false; }
 
-	if (!empty($platform_options['custom_size_thumbnail_enabled'])) {
-		// generate_attachment_metadata works with media thumbnail settings only
-		// store user's options to restore them after update
-		$media_thumb_width = get_option('thumbnail_size_w');
-		$media_thumb_height = get_option('thumbnail_size_h');
-		$media_crop = get_option('thumbnail_crop');
-		update_option('thumbnail_size_w', $platform_options['custom_thumbnail_width']);
-		update_option('thumbnail_size_h', $platform_options['custom_thumbnail_height']);
-		update_option('thumbnail_crop', 1);
-	}
-
 	$attach_data = wp_generate_attachment_metadata($attachment_id, $img_path);
 	wp_update_attachment_metadata($attachment_id, $attach_data);
-
-	if (!empty($platform_options['custom_size_thumbnail_enabled'])) {
-		update_option('thumbnail_size_w', $media_thumb_width);
-		update_option('thumbnail_size_h', $media_thumb_height);
-		update_option('thumbnail_crop', $media_crop);
-	}
 
 	return $attachment_id;
 }
@@ -184,7 +167,9 @@ function wp_rp_cron_do_extract_images_from_post($post_id, $attachment_id) {
 add_action('wp_rp_cron_extract_images_from_post', 'wp_rp_cron_do_extract_images_from_post', 10, 2);
 
 function wp_rp_extract_images_from_post($post, $attachment_id=null) {
-	if(empty($post->post_content) && !$attachment_id) { return; }
+	//WP quirk: posts can have an image, but still no attachment
+	//if(empty($post->post_content) && !$attachment_id) { return; }
+	if(empty($post->post_content)) { return; }
 
 	delete_post_meta($post->ID, '_wp_rp_image');
 	wp_schedule_single_event(time(), 'wp_rp_cron_extract_images_from_post', array($post->ID, $attachment_id));
@@ -205,6 +190,10 @@ function wp_rp_post_save_update_image($post_id) {
 	delete_post_meta($post->ID, '_wp_rp_image');
 
 	wp_rp_get_post_thumbnail_img($post);
+
+	$options = wp_rp_get_options();
+	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration');
+	delete_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts']);
 }
 add_action('save_post', 'wp_rp_post_save_update_image');
 
@@ -242,10 +231,31 @@ function wp_rp_get_image_with_exact_size($image_data, $size) {
 
 	$img_url = wp_get_attachment_url($image_data['id']);
 	$img_url_basename = wp_basename($img_url);
+	$platform_options = wp_rp_get_platform_options();
 
 	// Calculate exact dimensions for proportional images
 	if (!$size[0]) { $size[0] = (int) ($image_data['data']['width'] / $image_data['data']['height'] * $size[1]); }
 	if (!$size[1]) { $size[1] = (int) ($image_data['data']['height'] / $image_data['data']['width'] * $size[0]); }
+
+	if (!$image_data['data']['sizes']) {
+		$w = $image_data['data']['width'];
+		$h = $image_data['data']['height'];
+
+		$thumb_width = $platform_options['custom_size_thumbnail_enabled'] ? $platform_options['custom_thumbnail_width'] : WP_RP_THUMBNAILS_WIDTH;
+		$thumb_height = $platform_options['custom_size_thumbnail_enabled'] ? $platform_options['custom_thumbnail_height'] : WP_RP_THUMBNAILS_HEIGHT;
+
+		if ($w == $thumb_width && $h == $thumb_height) {
+			$file = explode("/", $image_data['data']['file']);
+			$file = $file[count($file) - 1];
+			$img_url = str_replace($img_url_basename, wp_basename($file), $img_url);
+			return array(
+				'url' => $img_url,
+				'file' => $file,
+				'width' => $w,
+				'height' => $h
+			);
+		}
+	}
 
 	foreach ($image_data['data']['sizes'] as $_size => $data) {
 		// width and height can be both string and integers. WordPress..
@@ -266,7 +276,6 @@ function wp_rp_get_image_with_exact_size($image_data, $size) {
 
 function wp_rp_get_image_data($image_id) {
 	if (!$image_id || is_wp_error($image_id)) { return false; }
-
 	$imagedata = wp_get_attachment_metadata($image_id);
 	if (!$imagedata || !is_array($imagedata) || !isset($imagedata['sizes']) || !is_array($imagedata['sizes'])) {
 		return false;
@@ -308,7 +317,6 @@ function wp_rp_get_attached_img_url($related_post, $size) {
 		wp_rp_extract_images_from_post($related_post);
 		return false;
 	}
-
 	if ($img_src = wp_rp_get_image_with_exact_size($image_data, $size)) {
 		return $img_src['url'];
 	}
@@ -399,12 +407,10 @@ function wp_rp_img_html_to_post_id( $html, &$matched_html = null ) {
 	if ( ! preg_match_all( '#class=([\'"])(.+?)\1#is', $matched_html, $matches ) || empty( $matches ) )
 		return $attachment_id;
 
-	$attr = array();
-	foreach ( $matches[1] as $key => $attribute_name )
-		$attr[ $attribute_name ] = $matches[2][ $key ];
+	$img_class = $matches[2][0];
 
-	if ( ! $attachment_id && ! empty( $attr['class'] ) && false !== strpos( $attr['class'], 'wp-image-' ) )
-		if ( preg_match( '#wp-image-([0-9]+)#i', $attr['class'], $matches ) )
+	if ( ! $attachment_id && ! empty( $img_class ) && false !== strpos( $img_class, 'wp-image-' ) )
+		if ( preg_match( '#wp-image-([0-9]+)#i', $img_class, $matches ) )
 			$attachment_id = absint( $matches[1] );
 
 	return $attachment_id;

@@ -165,7 +165,6 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 	$related_posts_query_result_cache = get_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_'.$options['max_related_posts'], true);
 
 	if (!$related_posts_query_result_cache || !$related_posts_query_result_cache_expiration || $related_posts_query_result_cache_expiration < $timestamp) { // Cache empty or never cached or cache expired
-
 		$related_post_ids = null;
 		$exclude_ids_str = wp_rp_get_exclude_ids_list_string($exclude_ids);
 
@@ -230,7 +229,7 @@ function wp_rp_fetch_related_posts_v2($limit = 10, $exclude_ids = array()) {
 		}
 
 		// Update the cache
-		if ($timestamp - $post->post_date > 30 * 24 * 60 * 60) { // Post is older than one month
+		if ($timestamp - strtotime($post->post_date) > 30 * 24 * 60 * 60) { // Post is older than one month
 			update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 30 * 24 * 60 * 60); // Cache for one month
 		} else {
 			update_post_meta($post->ID, '_wp_rp_related_posts_query_result_cache_expiration', $timestamp + 24 * 60 * 60); // Cache for one day
