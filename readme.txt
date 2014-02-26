@@ -4,7 +4,7 @@ Tags: related,posts,post,related posts,plugin
 License: GPLv2
 Requires at least: 3.3
 Tested up to: 3.8
-Stable tag: 3.3.2
+Stable tag: 3.3.3
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
 
@@ -81,6 +81,11 @@ New thumbnailer might break backwards compatibility for blogs with custom thumbn
 Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
+
+= 3.3.3 =
+* Fixed Zemanta Readside plugins incompatibility
+* Uninstallation added
+* Fixed migration bugs
 
 = 3.3.2 =
 * Changed default thumbnail title to image file name
