@@ -202,8 +202,16 @@ add_action('save_post', 'wp_rp_post_save_update_image');
  * Get thumbnails when post is displayed
  */
 
-function wp_rp_get_img_tag($src, $alt) {
-	return '<img src="'. esc_attr($src) . '" alt="' . esc_attr($alt) . '" />';
+function wp_rp_get_img_tag($src, $alt, $size=null) {
+	if (!$size || !is_array($size)) {
+		$size = array(WP_RP_THUMBNAILS_WIDTH, WP_RP_THUMBNAILS_HEIGHT);
+	}
+	$size_attr = ($size[0] ? ('width="' . $size[0] . '" ') : '');
+	if ($size[1]) {
+		$size_attr .= 'height="' . $size[1] . '" ';
+	}
+	return '<img src="'. esc_attr($src) . '" alt="' . esc_attr($alt) . '" '.$size_attr.'/>';
+
 }
 
 function wp_rp_get_default_thumbnail_url($seed = false, $size = 'thumbnail') {
@@ -313,7 +321,7 @@ function wp_rp_get_attached_img_url($related_post, $size) {
 		}
 	}
 
-	if (!$image_data) {
+	if (!$image_data) { 
 		wp_rp_extract_images_from_post($related_post);
 		return false;
 	}
@@ -352,7 +360,7 @@ function wp_rp_get_post_thumbnail_img($related_post, $size = null, $force = fals
 
 	$post_title = wptexturize($related_post->post_title);
 	if (property_exists($related_post, 'thumbnail')) {
-		return wp_rp_get_img_tag($related_post->thumbnail, $post_title);
+		return wp_rp_get_img_tag($related_post->thumbnail, $post_title, $size);
 	}
 
 	$size = wp_rp_get_thumbnail_size_array($size);
@@ -362,16 +370,16 @@ function wp_rp_get_post_thumbnail_img($related_post, $size = null, $force = fals
 		$thumbnail_src = get_post_meta($related_post->ID, $options["thumbnail_custom_field"], true);
 
 		if ($thumbnail_src) {
-			return wp_rp_get_img_tag($thumbnail_src, $post_title);
+			return wp_rp_get_img_tag($thumbnail_src, $post_title, $size);
 		}
 	}
 
 	$attached_img_url = wp_rp_get_attached_img_url($related_post, $size);
 	if ($attached_img_url) {
-		return wp_rp_get_img_tag($attached_img_url, $post_title);
+		return wp_rp_get_img_tag($attached_img_url, $post_title, $size);
 	}
 
-	return wp_rp_get_img_tag(wp_rp_get_default_thumbnail_url($related_post->ID, $size), $post_title);
+	return wp_rp_get_img_tag(wp_rp_get_default_thumbnail_url($related_post->ID, $size), $post_title, $size);
 }
 
 function wp_rp_process_latest_post_thumbnails() {
