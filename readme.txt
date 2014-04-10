@@ -18,7 +18,7 @@ After installation, go to Settings -> Related Posts in your plugins list and Tur
 
 **Share the Link Love**
 
-[vimeo http://vimeo.com/46745200]
+[vimeo http://vimeo.com/91619827]
 
 Note: Real time traffic analytics are provided via third party service.
 
