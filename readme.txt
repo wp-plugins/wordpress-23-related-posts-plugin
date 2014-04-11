@@ -11,16 +11,19 @@ WordPress Related Posts generates a list of related posts with thumbnails and gi
 == Description ==
 
 Quickly increase your readers' engagement with your posts by adding Related Posts in the footer of your content. Automatically added Related Posts can increase your internal traffic up to 10%. Just install and activate. To attract attention and improve SEO, link out to Related Posts across the web from your compose screen. Search for posts and hand-pick them with ease. Recommendations are provided by Zemanta's world-class semantic service, including advanced analytics.
-
 The plugin also delivers statistics about Pageviews and Clicks*. It supports different styles, thumbnails and is fully customizable.
 
 After installation, go to Settings -> Related Posts in your plugins list and Turn on Advanced Features!
+
+
+[Click here to read more about this plugin.](http://zem.si/1kGo9V6)
+
 
 **Share the Link Love**
 
 [vimeo http://vimeo.com/91619827]
 
-Note: Real time traffic analytics are provided via third party service.
+  *  Note: Real time traffic analytics are provided via third party service.
 
 
 == Frequently Asked Questions ==
