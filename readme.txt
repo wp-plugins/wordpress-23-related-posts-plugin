@@ -3,7 +3,7 @@ Contributors: zemanta
 Tags: related,posts,post,related posts,plugin,seo
 License: GPLv2
 Requires at least: 3.3
-Tested up to: 3.8.2
+Tested up to: 3.9
 Stable tag: 3.4
 
 WordPress Related Posts generates a list of related posts with thumbnails and gives you click-through statistics.
