@@ -42,6 +42,7 @@ function wp_rp_subscription($email_or_unsubscribe, $subscription_types) {
 		$post = array(
 			'api_key' => $meta['zemanta_api_key'],
 			'platform' => 'wordpress-wprp',
+			'url' => get_site_url(),
 			'subscriptions' => $subscription_types
 		);
 
@@ -353,6 +354,8 @@ function wp_rp_settings_page() {
 		'order' => 'ASC',
 		'hide_empty' => false
 	));
+
+	$blog_url = get_site_url();
 	
 	include wp_rp_get_template('settings');
 }
