@@ -54,6 +54,10 @@ Yes, Zemanta is offered in different themes which you can also customize with si
 
 No, Zemanta does not use redirects and is juice friendly. :)
 
+= What about Terms of Service and Privacy Policy? =
+	
+Before using the plugin please read the full version of [Zemanta Terms of Service](http://www.zemanta.com/legal/terms-of-service/) and [Zemanta Privacy Policy](http://www.zemanta.com/legal/privacy/).
+
 == Installation ==
 
 = Via admin: =
