@@ -4,7 +4,7 @@ Tags: related,posts,post,related posts,plugin,seo
 License: GPLv2
 Requires at least: 3.6
 Tested up to: 4.0
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 
 WordPress Related Posts - the plugin for related posts with thumbnails. Caching included.
 
@@ -92,6 +92,9 @@ New thumbnailer might break backwards compatibility for blogs with custom thumbn
 Fix for security vulnerability. Upgrade immediately.
 
 == Changelog ==
+
+= 3.5.2 =
+* Fixed excerpt bug
 
 = 3.5.1 =
 * The subscription API forwards blog URLs
