@@ -1,5 +1,5 @@
 <?php
-define('WP_RP_VERSION', '3.5.2');
+define('WP_RP_VERSION', '3.5.3');
 
 define('WP_RP_PLUGIN_FILE', plugin_basename(__FILE__));
 
@@ -75,7 +75,11 @@ global $wp_rp_output;
 $wp_rp_output = array();
 function wp_rp_add_related_posts_hook($content) {
 	global $wp_rp_output, $post;
-
+	
+	if( !is_object($post) ) {
+		return $content;
+	}
+	
 	$options = wp_rp_get_options();
 
 	if ($content != "" && $post->post_type === 'post' && (($options["on_single_post"] && is_single()) || (is_feed() && $options["on_rss"]))) {
