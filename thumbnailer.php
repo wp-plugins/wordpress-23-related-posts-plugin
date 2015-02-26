@@ -120,6 +120,7 @@ function wp_rp_actually_extract_images_from_post_html($post) {
 	foreach ($html_tags as $html_tag) {
 		if (preg_match('#src=([\'"])(.+?)\1#is', $html_tag, $matches) && !empty($matches)) {
 			$url = $matches[2];
+			if (substr($url, 0, 2) == '//') { $url = "http:$url"; }
 
 			$attachment_id = wp_rp_get_image_from_img_tag($post->ID, $url, $html_tag);
 			if ($attachment_id) {
@@ -148,6 +149,7 @@ function wp_rp_cron_do_extract_images_from_post($post_id, $attachment_id) {
 	// Prevent multiple thumbnail extractions for a single post
 	if (get_post_meta($post_id, '_wp_rp_image', true) !== '') { return; }
 
+	$post_id = str_replace("in_", "", "$post_id");
 	$post_id = (int) $post_id;
 	$attachment_id = (int) $attachment_id;
 	$post = get_post($post_id);
@@ -171,8 +173,10 @@ function wp_rp_extract_images_from_post($post, $attachment_id=null) {
 	//if(empty($post->post_content) && !$attachment_id) { return; }
 	if(empty($post->post_content)) { return; }
 
-	delete_post_meta($post->ID, '_wp_rp_image');
-	wp_schedule_single_event(time(), 'wp_rp_cron_extract_images_from_post', array($post->ID, $attachment_id));
+	$post_id = str_replace("in_", "", "$post->ID");
+	delete_post_meta($post_id, '_wp_rp_image');
+	wp_schedule_single_event(time(), 'wp_rp_cron_extract_images_from_post', array($post_id, $attachment_id));
+
 }
 
 
@@ -217,6 +221,7 @@ function wp_rp_get_img_tag($src, $alt, $size=null) {
 function wp_rp_get_default_thumbnail_url($seed = false, $size = 'thumbnail') {
 	$options = wp_rp_get_options();
 	$upload_dir = wp_upload_dir();
+	$seed = (int)$seed;
 
 	if ($options['default_thumbnail_path']) {
 		return $options['default_thumbnail_path'];
@@ -240,6 +245,7 @@ function wp_rp_get_image_with_exact_size($image_data, $size) {
 	$img_url = wp_get_attachment_url($image_data['id']);
 	$img_url_basename = wp_basename($img_url);
 	$platform_options = wp_rp_get_platform_options();
+	$pinterest = $size[1] === 0;
 
 	// Calculate exact dimensions for proportional images
 	if (!$size[0]) { $size[0] = (int) ($image_data['data']['width'] / $image_data['data']['height'] * $size[1]); }
@@ -265,7 +271,15 @@ function wp_rp_get_image_with_exact_size($image_data, $size) {
 	
 	foreach ($image_data['data']['sizes'] as $_size => $data) {
 		// width and height can be both string and integers. WordPress..
-		if (($size[0] == $data['width']) && ($size[1] == $data['height'])) {
+		$width_ok = ($size[0] == $data['width']);
+		// Pinterest fix (don't match exact sizes, we could be wrong
+		if ($pinterest) {
+			$height_ok = ($size[1] < $data['height'] + 5) && ($size[1] > $data['height'] - 5);
+		} else {
+			$height_ok = ($size[1] == $data['height']);
+		}
+			   
+		if ($width_ok && $height_ok) {		
 			$file = $data['file'];
 			$img_url = str_replace($img_url_basename, wp_basename($file), $img_url);
 			return array(
@@ -294,21 +308,23 @@ function wp_rp_get_image_data($image_id) {
 }
 
 function wp_rp_get_attached_img_url($related_post, $size) {
-	$extracted_image = get_post_meta($related_post->ID, '_wp_rp_image', true);
+	$post_id = str_replace("in_", "", "$related_post->ID");
+	$extracted_image = get_post_meta($post_id, '_wp_rp_image', true);
 	if ($extracted_image === 'empty') { return false; }
 
 	$image_data = wp_rp_get_image_data((int)$extracted_image);
 	if (!$image_data && $extracted_image) {
 		// image_id in the db is incorrect
-		delete_post_meta($related_post->ID, '_wp_rp_image');
+		delete_post_meta($post_id, '_wp_rp_image');
 	}
-	if (!$image_data && has_post_thumbnail($related_post->ID)) {
-		$image_data = wp_rp_get_image_data(get_post_thumbnail_id($related_post->ID));
+	if (!$image_data && has_post_thumbnail($post_id)) {
+		$image_data = wp_rp_get_image_data(get_post_thumbnail_id($post_id));
 	}
+
 
 	if (!$image_data && function_exists('get_post_format_meta') && function_exists('img_html_to_post_id')) {
 		// WP 3.6 Image post format. Check wp-includes/media.php:get_the_post_format_image for the reference.
-		$meta = get_post_format_meta($related_post->ID);
+		$meta = get_post_format_meta($post_id);
 		if (!empty($meta['image'])) {
 			if (is_numeric($meta['image'])) {
 				$image_id = absint($meta['image']);
@@ -356,21 +372,29 @@ function wp_rp_get_post_thumbnail_img($related_post, $size = null, $force = fals
 		return false;
 	}
 
+	$post_id = str_replace("in_", "", "$related_post->ID");
 	$post_title = wptexturize($related_post->post_title);
-	if (property_exists($related_post, 'thumbnail')) {
-		return wp_rp_get_img_tag($related_post->thumbnail, $post_title, $size);
-	}
 
 	$size = wp_rp_get_thumbnail_size_array($size);
 	if (!$size) { return false; }
 	
 	if ($options['thumbnail_use_custom']) {
-		$thumbnail_src = get_post_meta($related_post->ID, $options["thumbnail_custom_field"], true);
+		$thumbnail_src = get_post_meta($post_id, $options["thumbnail_custom_field"], true);
 
 		if ($thumbnail_src) {
 			return wp_rp_get_img_tag($thumbnail_src, $post_title, $size);
 		}
 	}
+	$featured_image = get_post_thumbnail_id($post_id);
+	if ($featured_image) {
+		$featured_image_data = wp_rp_get_image_data($featured_image);
+		$featured_image_thumb = wp_rp_get_image_with_exact_size($featured_image_data, $size);
+		if ($featured_image_thumb) {
+			return wp_rp_get_img_tag($featured_image_thumb["url"], $post_title, $size);
+		} else {
+			return get_the_post_thumbnail($post_id, $size);
+		}
+    }
 
 	$attached_img_url = wp_rp_get_attached_img_url($related_post, $size);
 	if ($attached_img_url) {

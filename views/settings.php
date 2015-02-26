@@ -42,7 +42,26 @@
 		</table>
 	</div>
 	<?php endif;  ?>
-	
+	<div class="container article-upload-container">
+		<h2>Amazing new feature - Upload your history of posts</h2>
+		<p>
+			You can now upload your content! This means you will be reaching out to even more people that write about similar topics – not only new but also old posts will now be suggested in related articles section, to you and to other bloggers.
+		</p>
+		<p>
+			Note: If you have a very large database, it can take some time to upload your articles, so please be patient. =)
+		</p>
+		<?php if (! $articles_uploaded): ?>
+		<form method="get" action="">
+			<fieldset>
+				<input type="hidden" name="page" value="wordpress-related-posts" />
+				<input class="button-primary" type="submit" name="wp_rp_upload_articles" value="<?php _e("Upload my articles to Zemanta", 'wp_related_posts');?>">
+			</fieldset>
+		</form>
+		<?php else: ?>
+		<p>Your articles are being uploaded.</p>
+		<?php endif; ?>
+		<h3>Number of articles in Zemanta network: <?php echo $articles_count; ?></h3>
+	</div>
 	<!-- MAIN FORM -->
 	<form method="post" enctype="multipart/form-data" action="<?php echo $form_url; ?>" id="wp_rp_settings_form" style="display: <?php echo $form_display; ?>;">
 		<?php wp_nonce_field('wp_rp_settings', '_wp_rp_nonce') ?>		
