@@ -5,6 +5,9 @@ define("WP_RP_ZEMANTA_SUBSCRIPTION_URL", "http://prefs.zemanta.com/api/");
 define('WP_RP_STATIC_THEMES_PATH', 'static/themes/');
 define('WP_RP_STATIC_JSON_PATH', 'json/');
 define('WP_RP_CONTENT_BASE_URL', 'https://wprp.zemanta.com/static/');
+define("WP_RP_ZEMANTA_UPLOAD_URL", "http://prefs.zemanta.com/api/upload-articles/");
+define("WP_RP_ZEMANTA_ARTICLE_COUNT_URL", "http://prefs.zemanta.com/api/article-count/");
+
 
 define("WP_RP_DEFAULT_CUSTOM_CSS",
 ".related_post_title {
@@ -250,6 +253,13 @@ function wp_rp_is_classic() {
 		return true;
 	}
 	return false;
+}
+
+function wp_rp_migrate_3_5_3() {
+	$meta = get_option('wp_rp_meta');
+	$meta['version'] = '3.5.4';
+	$meta['new_user'] = false;
+	update_option('wp_rp_meta', $meta);	
 }
 
 function wp_rp_migrate_3_5_2() {
