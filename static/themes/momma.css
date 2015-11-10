@@ -130,3 +130,7 @@ ul.related_post li small {
 		font-size: 14px !important;
 	}
 }
+
+ul.related_post li .wp_rp_category a {
+	display: inline !important;
+}

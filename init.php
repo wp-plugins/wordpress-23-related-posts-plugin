@@ -1,5 +1,5 @@
 <?php
-define('WP_RP_VERSION', '3.5.4');
+define('WP_RP_VERSION', '3.6');
 
 define('WP_RP_PLUGIN_FILE', plugin_basename(__FILE__));
 
@@ -282,7 +282,7 @@ function wp_rp_text_shorten($text, $max_chars) {
 	return $shortened_text . WP_RP_EXCERPT_SHORTENED_SYMBOL; //'...';
 }
   
-function wp_rp_generate_related_posts_list_items($related_posts, $selected_related_posts) {
+function wp_rp_generate_related_posts_list_items($related_posts, $selected_related_posts, $post_categories) {
 	$options = wp_rp_get_options();
 	$platform_options = wp_rp_get_platform_options();
 	$output = "";
@@ -361,6 +361,21 @@ function wp_rp_generate_related_posts_list_items($related_posts, $selected_relat
 				}
 				$output .= ' <small class="wp_rp_excerpt">' . $excerpt . '</small>';
 			}
+		}
+		if ($platform_options["display_category"] && !empty($post_categories)){
+			$output .= ' <small class="wp_rp_category">Posted in ';
+			$num_categories = 0;
+			$id = $related_post->ID;
+			if (strpos($id, "in_") !== false) { $id = substr($id, 3); }
+			foreach($post_categories[$id] as $cat_id => $cat_name) {
+				$cat_url = esc_url(get_category_link($cat_id));
+				if ($num_categories > 0) {
+					$output .= ', ';
+				}
+				$output .= '<a href="' . $cat_url . '" target="_parent">' . $cat_name . '</a>';
+				$num_categories++;
+			}
+			$output .= '</small>';
 		}
 		$output .=  '</li>';
 	}
@@ -506,6 +521,11 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 		return;
 	}
 
+	$post_categories = array();
+	if ($platform_options["display_category"]){
+		$post_categories = wp_rp_get_post_categories();
+	}
+
 	$posts_footer = '';
 	if (current_user_can($options['only_admins_can_edit_related_posts'] ? 'manage_options' : 'edit_posts')) {
 		$posts_footer .= '<div class="wp_rp_footer"><a class="wp_rp_edit" href="#" id="wp_rp_edit_related_posts">Edit Related Posts</a></div>';
@@ -517,7 +537,7 @@ function wp_rp_get_related_posts($before_title = '', $after_title = '') {
 	$css_classes = 'related_post wp_rp';
 	$css_classes_wrap = ' ' . str_replace(array('.css', '-'), array('', '_'), esc_attr('wp_rp_' . $platform_options['theme_name']));
 
-	$related_posts_lis = wp_rp_generate_related_posts_list_items($related_posts, $selected_related_posts);
+	$related_posts_lis = wp_rp_generate_related_posts_list_items($related_posts, $selected_related_posts, $post_categories);
 	$related_posts_ul = '<ul class="' . $css_classes . '">' . $related_posts_lis . '</ul>';
 
 	$related_posts_title = $title ? ($before_title ? $before_title . $title . $after_title : '<h3 class="related_post_title">' . $title . '</h3>') : '';

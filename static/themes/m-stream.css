@@ -97,3 +97,8 @@ ul.related_post li small {
 		height: 100px !important;
 	}
 }
+
+ul.related_post li .wp_rp_category a {
+	display: inline !important;
+}
+

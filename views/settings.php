@@ -131,6 +131,10 @@
 						<input name="wp_rp_desktop_excerpt_max_length" type="text" id="wp_rp_desktop_excerpt_max_length" class="small-text" value="<?php esc_attr_e($options['desktop']["excerpt_max_length"]); ?>" /> <span class="description"><?php _e('Maximum Number of Characters.', 'wp_related_posts'); ?></span>
 					</label><br />
 					<label>
+						<input name="wp_rp_desktop_display_category" type="checkbox" id="wp_rp_desktop_display_category" value="yes" <?php checked($options['desktop']["display_category"]); ?>>
+						<?php _e("Display Post Categories",'wp_related_posts');?>
+					</label><br />
+					<label>
 						<input type="checkbox" id="wp_rp_desktop_custom_theme_enabled" name="wp_rp_desktop_custom_theme_enabled" value="yes" <?php checked($options['desktop']['custom_theme_enabled']); ?> />
 						<?php _e("Enable custom CSS",'wp_related_posts'); ?>
 					</label>

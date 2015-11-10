@@ -44,6 +44,7 @@ function wp_rp_upload_articles($api_key) {
 		"posts" => array(),
 	);
 	foreach(get_posts() as $post) {
+		if ($post->post_status !== "publish" || $post->post_type !== "post") { continue; }
 		$obj = array(
 			"ID" => $post->ID,
 			"URL" => get_permalink($post->ID), 

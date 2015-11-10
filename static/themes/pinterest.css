@@ -178,3 +178,7 @@ div.wp_rp_footer a.wp_rp_edit {
 	border-radius: 2px !important;
 	padding: 3px 6px;
 }
+
+ul.related_post li .wp_rp_category a {
+	display: inline !important;
+}

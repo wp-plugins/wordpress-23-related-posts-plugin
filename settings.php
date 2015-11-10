@@ -265,6 +265,7 @@ function wp_rp_settings_page() {
 				'display_comment_count' => isset($postdata['wp_rp_desktop_display_comment_count']),
 				'display_publish_date' => isset($postdata['wp_rp_desktop_display_publish_date']),
 				'display_excerpt' => isset($postdata['wp_rp_desktop_display_excerpt']),
+				'display_category' => isset($postdata['wp_rp_desktop_display_category']),
 				'display_thumbnail' => isset($postdata['wp_rp_desktop_display_thumbnail']),
 				'excerpt_max_length' => (isset($postdata['wp_rp_desktop_excerpt_max_length']) && is_numeric(trim($postdata['wp_rp_desktop_excerpt_max_length']))) ? intval(trim($postdata['wp_rp_desktop_excerpt_max_length'])) : 200,
 				'custom_theme_enabled' => isset($postdata['wp_rp_desktop_custom_theme_enabled']),

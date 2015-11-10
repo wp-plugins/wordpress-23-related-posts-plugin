@@ -83,3 +83,8 @@ ul.related_post li a.wp_rp_thumbnail img {
 	margin-right: 0 !important;
 	display: block !important;
 }
+
+ul.related_post li .wp_rp_category a {
+	display: inline !important;
+}
+
